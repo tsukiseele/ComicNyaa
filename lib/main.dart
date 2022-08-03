@@ -4,12 +4,15 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:archive/archive_io.dart';
+import 'package:flutter/cupertino.dart';
 
 String concatPath(dirname , filename) {
   return '$dirname${Platform.pathSeparator}$filename';
@@ -27,13 +30,13 @@ Future<void> getRules() async {
 
   for (final file in archive) {
     final filename = file.name;
-    print(filename);
+    // print(filename);
     if (file.isFile) {
       final data = file.content as List<int>;
 
       final json =  jsonDecode(utf8.decode(data));
 
-      print(json);
+      // print(json);
       // File('out/' + filename)
       //   ..createSync(recursive: true)
       //   ..writeAsBytesSync(data);
@@ -95,7 +98,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
-  String _data = '';
+  List<String> _data= [];
 
   void _incrementCounter() {
     setState(() {
@@ -109,62 +112,86 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
   void getData() async {
-    await getRules();
+    // await getRules();
     var httpClient = HttpClient();
     var uri = Uri.http(
         'api.hlo.li', '/music/playlist/detail', {'id': '7490559834'});
     var request = await httpClient.getUrl(uri);
     var response = await request.close();
-    var responseBody = await response.transform(const Utf8Decoder()).join();
-    setState(()  {
-      _data = responseBody;
+    print('YYYYYYYY');
+    Map<String, dynamic> responseBody = jsonDecode(await response.transform(const Utf8Decoder()).join());
+    print('XXXXXXXXXXXXXXX');
+    // print(responseBody);
+    // responseBody
+    var list = responseBody['playlist']['tracks'] as List<dynamic>;
+    // print('LIST: ' + list.toString());
+    // final result = list.map((key, value) => {
+    //   MapEntry(key, value['al']['picUrl']);
+    //     }).values as List<String>;
+    final d = list.map((value) {
+      print('=======================');
+      print(value['al']['picUrl']);
+      return value['al']['picUrl'];
+    }).cast<String>();
+    setState(() {
+      _data = d.toList();
     });
-  }
+  } 
+
 
   @override
   Widget build(BuildContext context) {
+
+    // getData();
     // This method is rerun every time setState is called, for instance as done
     // by the _incrementCounter method above.
     //
     // The Flutter framework has been optimized to make rerunning build methods
     // fast, so that you can just rebuild anything that needs updating rather
     // than having to individually change instances of widgets.
+
+
     return Scaffold(
       appBar: AppBar(
         // Here we take the value from the MyHomePage object that was created by
         // the App.build method, and use it to set our appbar title.
         title: Text(widget.title),
       ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Invoke "debug painting" (press "p" in the console, choose the
-          // "Toggle Debug Paint" action from the Flutter Inspector in Android
-          // Studio, or the "Toggle Debug Paint" command in Visual Studio Code)
-          // to see the wireframe for each widget.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Image(image: NetworkImage('https://flutter.github.io/assets-for-api-docs/assets/widgets/owl-2.jpg')),
-            const Text(
-              'You have pushed the button this many times:',
-            ),
-            Text(
-              '$_counter --- $_data',
-              style: Theme.of(context).textTheme.headline4,
-            ),
-          ],
-        ),
+      body:
+          MasonryGridView.count(crossAxisCount: 4,
+            mainAxisSpacing: 4,
+            crossAxisSpacing: 4,
+            itemBuilder: (context, index) {
+              return Material(
+                // index: index,
+                // extent: (index % 5 + 1) * 100,
+                elevation: 8.0,
+                borderRadius: const BorderRadius.all(Radius.circular(8.0)),
+                child: CachedNetworkImage(
+                  imageUrl: "https://gimg2.baidu.com/image_search/src=http%3A%2F%2Fimg1.yuntouxiang.com%2Fuploads%2F20130521%2F21-022304_646.jpg&refer=http%3A%2F%2Fimg1.yuntouxiang.com&app=2002&size=f9999,10000&q=a80&n=0&g=0n&fmt=jpeg?sec=1613615452&t=590bdef8fdbfb5c972066acbeca6543d",
+                  imageBuilder: (context, imageProvider) =>
+                      Container(
+                        decoration: BoxDecoration(
+                          borderRadius: const BorderRadius.all(
+                              Radius.circular(8.0)),
+                          image: DecorationImage(
+                            image: imageProvider,
+                            fit: BoxFit.fitHeight,
+                          ),
+                        ),
+                      ),
+                ),
+              );
+            }
+            // ListView.builder(
+            //   itemCount: _data.length,
+            //   itemBuilder: (context, index) {
+            //     return ListTile(
+            //       leading: Image(image: NetworkImage(_data[index])),
+            //       trailing: const Icon(Icons.shopping_cart),
+            //       title: Text(_data[index]),
+            //     );
+            //   },
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _incrementCounter,
@@ -174,3 +201,11 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 }
+
+// class Tile extends Widget {
+//   @override
+//   Element createElement() {
+//     // TODO: implement createElement
+//     throw UnimplementedError();
+//   }
+// }
