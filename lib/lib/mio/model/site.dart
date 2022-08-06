@@ -1,7 +1,4 @@
-import 'dart:collection';
-
-import 'package:collection/collection.dart';
-import 'package:comic_nyaa/lib/mio/model/site_.dart';
+import 'dart:math';
 
 import 'base.dart';
 
@@ -31,46 +28,54 @@ class Site {
 
   Site.fromJson(Map<String, dynamic> json) {
     name = json['name'];
-    id = json['id'];
-    version = json['version'];
+    id = int.parse(json['id'].toString());
+    version = int.parse(json['version'].toString());
     author = json['author'];
     rating = json['rating'];
     details = json['details'];
     type = json['type'];
     icon = json['icon'];
-    headers =
-    json['headers'] != null ? new Headers.fromJson(json['headers']) : null;
-    sections = json['sections'] != null
-        ? new Sections.fromJson(json['sections'])
-        : null;
+    headers = json['headers'] != null ? Headers.fromJson(json['headers']) : null;
+    sections = json['sections'] != null ? Sections.fromJson(json['sections']) : null;
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['name'] = this.name;
-    data['id'] = this.id;
-    data['version'] = this.version;
-    data['author'] = this.author;
-    data['rating'] = this.rating;
-    data['details'] = this.details;
-    data['type'] = this.type;
-    data['icon'] = this.icon;
-    if (this.headers != null) {
-      data['headers'] = this.headers!.toJson();
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['name'] = name;
+    data['id'] = id;
+    data['version'] = version;
+    data['author'] = author;
+    data['rating'] = rating;
+    data['details'] = details;
+    data['type'] = type;
+    data['icon'] = icon;
+    if (headers != null) {
+      data['headers'] = headers!.toJson();
     }
-    if (this.sections != null) {
-      data['sections'] = this.sections!.toJson();
+    if (sections != null) {
+      data['sections'] = sections!.toJson();
     }
     return data;
   }
 }
 
 class Headers extends BaseMap<String, String> {
-  Headers.fromJson(super.json) : super.fromJson();
+  // Headers.fromJson(super.json) : super.fromJson();
+
+  Headers.fromJson(Map<String, dynamic> json) {
+    addAll(json.map((key, value) => MapEntry(key, value)));
+  }
 }
 
+
 class Sections extends BaseMap<String, Section> {
-  Sections.fromJson(super.json) : super.fromJson();
+  // Sections.fromJson(json) : super.fromJson(json.map((key, value) =>
+  //     MapEntry(key, Section.fromJson(value))));
+
+  Sections.fromJson(Map<String, dynamic> json) {
+    addAll(json.map((key, value) => MapEntry(key, Section.fromJson(value))));
+  }
+
 }
 
 class Section {
@@ -116,7 +121,34 @@ class Children {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = Map<String, dynamic>();
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['selector'] = selector;
+    data['capture'] = capture;
+    data['replacement'] = replacement;
+    if (rules != null) {
+      data['rules'] = rules!.toJson();
+    }
+    return data;
+  }
+}
+
+class Selector {
+  String? selector;
+  String? capture;
+  String? replacement;
+  Rules? rules;
+
+  Selector({this.selector, this.capture, this.replacement, this.rules});
+
+  Selector.fromJson(Map<String, dynamic> json) {
+    selector = json['selector'];
+    capture = json['capture'];
+    replacement = json['replacement'];
+    rules = json['rules'] != null ? Rules.fromJson(json['rules']) : null;
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = <String, dynamic>{};
     data['selector'] = selector;
     data['capture'] = capture;
     data['replacement'] = replacement;
@@ -128,7 +160,20 @@ class Children {
 }
 
 class Rules extends BaseMap<String, Selector> {
-  Rules.fromJson(super.json) : super.fromJson();
+
+  Rules.fromJson(Map<String, dynamic> json) {
+    addAll(json.map((key, value) => MapEntry(key, Selector.fromJson(value))));
+  }
+  // Rules.fromJson(json) : super.fromJson(
+
+    // return json.map((key, value) {
+    //   print('SSS' + json.toString());
+    //   print('T1: ' + json.runtimeType.toString());
+    //   final entry = MapEntry<String, Selector>(key, Selector.fromJson(value));
+    //   print('T2: ' + entry.runtimeType.toString());
+    //   return entry;
+    // }) as Map<String, dynamic>
+  // });
   // Rules.fromJson(Map<String, Selector> json) {
   //   addAll(json);
   // }
@@ -147,9 +192,17 @@ class Search {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['index'] = this.index;
-    data['reuse'] = this.reuse;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['index'] = index;
+    data['reuse'] = reuse;
     return data;
   }
+}
+
+
+abstract class Meta {
+  List<Meta>? children;
+  String? $children;
+  Site? $site;
+  Section? $section;
 }

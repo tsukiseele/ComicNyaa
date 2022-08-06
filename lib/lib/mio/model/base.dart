@@ -1,7 +1,8 @@
 import 'dart:collection';
+import 'dart:math';
 
 class BaseMap<K, V> extends MapMixin<K, V> {
-  Map<K, V> json = Map.identity();
+  Map<K, V> json = <K, V>{};
 
   @override
   V? operator [](Object? key) {
@@ -27,8 +28,15 @@ class BaseMap<K, V> extends MapMixin<K, V> {
     return json.remove(key);
   }
 
-  BaseMap.fromJson(Map<K, V> json) {
-    addAll(json);
-  }
+  // BaseMap.fromJson(Map<String, dynamic> json) {
+  //   print('STARTTTTTTTTTTTT:');
+  //
+  //   final val = json.map((key, value) => MapEntry(key as K, value as V));
+  //   print('VALTYPE:' + val.runtimeType.toString());
+  //
+  //   addAll(val);
+  //   print('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX');
+  // }
+
   BaseMap<String, dynamic> toJson() => this as BaseMap<String, dynamic>;
 }

@@ -38,8 +38,11 @@ Future<void> getRules() async {
       final data = file.content as List<int>;
 
       final json = jsonDecode(utf8.decode(data));
-      final site = Site.fromJson(json);
-      print('SITE!!! ' + site.toString());
+      final map = Map<String, dynamic>.from(json);
+      print('MAP!!! ' + map.toString());
+
+      final site = Site.fromJson(map);
+      print('SITE!!! ' + site.sections.toString());
       // print(json);
       // File('out/' + filename)
       //   ..createSync(recursive: true)
@@ -129,7 +132,6 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void getData() async {
-    // await getRules();
     var httpClient = HttpClient();
     var uri =
         Uri.http('api.hlo.li', '/music/playlist/detail', {'id': '7490559834'});
@@ -147,10 +149,12 @@ class _MyHomePageState extends State<MyHomePage> {
     //   MapEntry(key, value['al']['picUrl']);
     //     }).values as List<String>;
     final d = list.map((value)   {
-      print('=======================');
-      print(value['al']['picUrl']);
+      // print('=======================');
+      // print(value['al']['picUrl']);
       return value['al']['picUrl'];
     }).cast<String>();
+
+    await getRules();
     setState(() {
       _data = d.toList();
     });

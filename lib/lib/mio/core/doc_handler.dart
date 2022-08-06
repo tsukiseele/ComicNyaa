@@ -3,7 +3,7 @@ import 'dart:html';
 import 'package:comic_nyaa/lib/mio/core/rule_loader.dart';
 import 'package:html/parser.dart';
 
-import '../model/site_.dart';
+import '../model/site.dart';
 
 /// 站点内容解析器，通过加载JSON配置抓取网页内容，并封装成数据集
 ///
@@ -78,7 +78,7 @@ return result
 /// @param {*} rules
 /// @return {Promise<T extends Meta>}
   Future<T> parseChildrenConcurrency(T item, Rules rules, [bool extend = true]) async {
-if (item.$children != null && rules.$children != null) {
+if (item.$children != null && rules['\$children'] != null) {
 List<T> histroy = List.empty();
 int page = 0;
 // do {
