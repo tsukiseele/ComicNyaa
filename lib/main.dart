@@ -5,6 +5,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:comic_nyaa/lib/mio/model/site.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:dio/dio.dart';
@@ -37,7 +38,8 @@ Future<void> getRules() async {
       final data = file.content as List<int>;
 
       final json = jsonDecode(utf8.decode(data));
-
+      final site = Site.fromJson(json);
+      print('SITE!!! ' + site.toString());
       // print(json);
       // File('out/' + filename)
       //   ..createSync(recursive: true)
@@ -144,7 +146,7 @@ class _MyHomePageState extends State<MyHomePage> {
     // final result = list.map((key, value) => {
     //   MapEntry(key, value['al']['picUrl']);
     //     }).values as List<String>;
-    final d = list.map((value) {
+    final d = list.map((value)   {
       print('=======================');
       print(value['al']['picUrl']);
       return value['al']['picUrl'];
@@ -176,7 +178,7 @@ class _MyHomePageState extends State<MyHomePage> {
             crossAxisCount: 2,
             mainAxisSpacing: 8.0,
             crossAxisSpacing: 8.0,
-            itemCount: imageList.length,
+            itemCount: _data.length,
             itemBuilder: (context, index) {
               // extent: (index % 5 + 1) * 100,
               return Material(
@@ -187,11 +189,11 @@ class _MyHomePageState extends State<MyHomePage> {
                       CachedNetworkImage(
                         placeholder: (context, url) =>
                             const CircularProgressIndicator(),
-                        imageUrl: imageList[index],
+                        imageUrl: _data[index],
                       ),
                       Container(
                         padding: const EdgeInsets.all(8.0),
-                        child: Text(imageList[index]),
+                        child: Text(_data[index]),
                       )
                     ],
                   ));
