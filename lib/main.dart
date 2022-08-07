@@ -5,6 +5,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:comic_nyaa/lib/mio/core/doc_handler.dart';
 import 'package:comic_nyaa/lib/mio/model/site.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart' show rootBundle;
@@ -19,7 +20,7 @@ String concatPath(dirname, filename) {
   return '$dirname${Platform.pathSeparator}$filename';
 }
 
-Future<void> getRules() async {
+Future<List<Site>> getRules() async {
   // var rs = await Dio().get('https://hlo.li/static/rules.zip',
   //     options: Options(responseType: ResponseType.bytes));
   final appDir = await getApplicationDocumentsDirectory();
@@ -30,7 +31,7 @@ Future<void> getRules() async {
   final rs = await Dio().download('https://hlo.li/static/rules.zip', savePath);
   final bytes = File(savePath).readAsBytesSync();
   final archive = ZipDecoder().decodeBytes(bytes);
-
+  final sites = <Site>[];
   for (final file in archive) {
     final filename = file.name;
     // print(filename);
@@ -39,10 +40,11 @@ Future<void> getRules() async {
 
       final json = jsonDecode(utf8.decode(data));
       final map = Map<String, dynamic>.from(json);
-      print('MAP!!! ' + map.toString());
+      // print('MAP!!! ' + map.toString());
 
       final site = Site.fromJson(map);
-      print('SITE!!! ' + site.sections.toString());
+      sites.add(site);
+      // print('SITE!!! ' + site.sections.toString());
       // print(json);
       // File('out/' + filename)
       //   ..createSync(recursive: true)
@@ -51,12 +53,18 @@ Future<void> getRules() async {
       // Directory('out/' + filename).create(recursive: true);
     }
   }
+  print('SITES$sites');
+  print('LOAD SITE: ${sites[0].name}');
+
+  final results = Mio(sites[0]).parseSite();
+  print('RESULTS$results');
+  return sites;
 }
 
 // Future<String> loadAsset() async {
 //   // return await rootBundle.loadStructuredData('assets/config.json');
 // }
-void main() {
+void main() async {
   runApp(const MyApp());
 }
 

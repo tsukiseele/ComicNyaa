@@ -82,13 +82,15 @@ class Section {
   String? index;
   String? name;
   String? details;
+  String? reuse;
   Rules? rules;
 
-  Section({this.index, this.name, this.details, this.rules});
+  Section({this.index, this.name, this.reuse, this.details, this.rules});
 
   Section.fromJson(Map<String, dynamic> json) {
     index = json['index'];
     name = json['name'];
+    reuse = json['reuse'];
     details = json['details'];
     rules = json['rules'] != null ? Rules.fromJson(json['rules']) : null;
   }
@@ -97,6 +99,7 @@ class Section {
     final Map<String, dynamic> data = <String, dynamic>{};
     data['index'] = index;
     data['name'] = name;
+    data['reuse'] = reuse;
     data['details'] = details;
     if (rules != null) {
       data['rules'] = rules!.toJson();
@@ -133,25 +136,31 @@ class Children {
 }
 
 class Selector {
+  String? regex;
   String? selector;
   String? capture;
   String? replacement;
-  Rules? rules;
+  bool? flat; // $children only
+  Rules? rules; // $children only
 
-  Selector({this.selector, this.capture, this.replacement, this.rules});
+  Selector({this.regex, this.selector, this.capture, this.replacement, this.flat, this.rules});
 
   Selector.fromJson(Map<String, dynamic> json) {
+    regex = json['regex'];
     selector = json['selector'];
     capture = json['capture'];
     replacement = json['replacement'];
+    flat = bool.fromEnvironment(json['flat'].toString());
     rules = json['rules'] != null ? Rules.fromJson(json['rules']) : null;
   }
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
+    data['regex'] = regex;
     data['selector'] = selector;
     data['capture'] = capture;
     data['replacement'] = replacement;
+    data['flat'] = flat;
     if (rules != null) {
       data['rules'] = rules!.toJson();
     }

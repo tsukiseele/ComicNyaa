@@ -1,6 +1,11 @@
 import 'dart:collection';
 import 'dart:math';
 
+isEmpty(Object? o) {
+  return o == null || o == "";
+}
+
+
 class BaseMap<K, V> extends MapMixin<K, V> {
   Map<K, V> json = <K, V>{};
 
