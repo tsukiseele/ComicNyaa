@@ -63,7 +63,7 @@ class ComicNyaa extends StatelessWidget {
 
 Future<List<MImage>> getGallery(site) async {
   print('LOAD SITE: ${site.name}');
-  final results = await Mio(site).parseSite();
+  final results = await Mio(site).setKeywords('namori').parseSite();
   final images = List.of(results.map((item) => MImage.fromJson(item)));
   for (var image in images) {
     print(image.title);
@@ -87,7 +87,7 @@ class _HomePageState extends State<HomePage> {
   void _getImagesData() async {
     final sites = await getRules();
     sites.forEachIndexed((i, element) => print('$i: ${element.name}'));
-    final site = sites[25];
+    final site = sites[22];
     final result = await getGallery(site);
     setState(() {
       _images = result;

@@ -1,6 +1,9 @@
-# moe_comic
+## ComicNyaa
 
-A new Flutter project.
+> A lovely comic reader.
+> 一个可爱的跨平台漫画阅读器.
+
+
 
 ## Getting Started
 

@@ -1,4 +1,4 @@
-package com.tsukiseele.moe_comic
+package com.tsukiseele.comic_nyaa
 
 import io.flutter.embedding.android.FlutterActivity
 

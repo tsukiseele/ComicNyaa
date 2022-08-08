@@ -90,12 +90,12 @@ BEGIN
         BLOCK "040904e4"
         BEGIN
             VALUE "CompanyName", "com.tsukiseele" "\0"
-            VALUE "FileDescription", "moe_comic" "\0"
+            VALUE "FileDescription", "comic_nyaa" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "moe_comic" "\0"
+            VALUE "InternalName", "comic_nyaa" "\0"
             VALUE "LegalCopyright", "Copyright (C) 2022 com.tsukiseele. All rights reserved." "\0"
-            VALUE "OriginalFilename", "moe_comic.exe" "\0"
-            VALUE "ProductName", "moe_comic" "\0"
+            VALUE "OriginalFilename", "comic_nyaa.exe" "\0"
+            VALUE "ProductName", "comic_nyaa" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END

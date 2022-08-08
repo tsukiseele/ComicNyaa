@@ -50,9 +50,9 @@ class Mio<T extends Meta> {
       [bool isParseChildren = false]) async {
     if (site == null) throw Exception('site cannot be empty!');
 // 复用规则，现在已经在SiteLoader中处理
-// if (section.reuse) {
-//   section.rules = this.site.sections[section.reuse].rules
-// }
+if (section.reuse != null) {
+  section.rules = site?.sections?['${section.reuse}']?.rules;
+}
     final result = await parseRules(section.index!, section.rules!);
     for (var item in result) {
       item[r'$section'] = section;
@@ -120,19 +120,18 @@ class Mio<T extends Meta> {
   /// @param {Number} keywords 关键字
   /// @returns {Promise<<T extends Meta>[]>}
   Future<List<Map<String, dynamic>>> parseRules(String indexUrl, Rules rule,
-      [int page = 1, String keywords = '']) async {
+      [int? page, String? keywords]) async {
     // 生成URL
-    final url = replaceUrlTemplate(indexUrl, page, keywords);
+    final url = replaceUrlTemplate(indexUrl, page ?? this.page, keywords ?? this.keywords);
     print('URL: $url');
     // 发送请求
     final html = await requestText(url, headers: site?.headers);
     // 检查无效响应
     if (isEmpty(html)) return [];
     // 加载文档
-    final doc = parse(html); //cheerio.load(html);
+    final doc = parse(html);
     final List<Map<String, dynamic>> resultSet = [];
     // 遍历选择器集
-    // for (const k of Object.keys(rule)) {
     for (final k in rule.keys) {
       final exp = rule[k];
       print('EXP: regex=${exp?.regex}, selector=${exp?.selector}');
@@ -141,8 +140,7 @@ class Mio<T extends Meta> {
         // 匹配选择器内容
         if (exp?.selector != null) {
           // 此处的选择器只应选择一个元素，否则result会被刷新为最后一个
-          selectEach(
-              doc, exp?.selector as String, (result) => (context = result));
+          selectEach(doc, exp?.selector as String, (result) => (context = result));
         } else {
           context = doc.getElementsByTagName('html').toString();
         }
@@ -207,8 +205,7 @@ class Mio<T extends Meta> {
   /// @param {string} selector 选择器
   /// @param {function} each (content: string, index: number) => void
   selectEach(Document doc, String selector, Function each) {
-    final matches = REG_SELECTOR_TEMPLATE
-        .allMatches(selector); //RegExp(r"\$\((.+?)\)\.(\w+?)\((.*?)\)")
+    final matches = REG_SELECTOR_TEMPLATE.allMatches(selector);
     if (matches.isEmpty) return;
     final match = matches.first;
     print('FFFF: ${match.groupCount}, $matches');
