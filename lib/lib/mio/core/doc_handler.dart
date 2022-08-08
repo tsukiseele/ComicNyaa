@@ -20,18 +20,9 @@ final REG_PAGE_TEMPLATE = RegExp(r"\{page\s*?:\s*?(-?\d*)[,\s]*?(-?\d*?)\}");
 final REG_PAGE_MATCH = RegExp(r"\{page\s*?:.*?\}");
 final REG_KEYWORD_TEMPLATE = RegExp(r"\{keywords\s*?:\s*?(.*?)\}");
 final REG_KEYWORD_MATCH = RegExp(r"\{keywords\s*?:.*?\}");
-final REG_SELECTOR_TEMPLATE = RegExp(r"\w+");
+final REG_SELECTOR_TEMPLATE = RegExp(r"\$\((.+?)\)\.(\w+?)\((.*?)\)");
 
-// final config = {
-//
-// request: async (url: string, options: RequestOptions) => {
-// if (!fetch) throw new Error("fetch is not defined");
-// const resp = await fetch(url, options)
-// return resp.ok ? await resp.text() : ''
-// }
-// }
 class Mio<T extends Meta> {
-  // static var request = ()
   Site? site;
   int page = 1;
   String? keywords;
@@ -184,7 +175,6 @@ class Mio<T extends Meta> {
           // 执行最终替换，并添加到结果集
           resultSet[index][k] =
               replaceRegex(result, exp?.capture, exp?.replacement);
-          ;
         });
       }
     }
@@ -198,7 +188,7 @@ class Mio<T extends Meta> {
   /// @returns {Promise<String>} 响应文本
   Future<String> requestText(String url, {dynamic headers}) async {
     final response = await Dio()
-        .get(url, options: Options(responseType: ResponseType.plain));
+        .get(url, options: Options(responseType: ResponseType.plain, sendTimeout: 10000));
     final html = response.data.toString();
     return html;
   }
@@ -208,7 +198,7 @@ class Mio<T extends Meta> {
   Section? getCurrentSection() {
     if (site == null) throw Exception('site cannot be empty!');
     final section =
-    keywords != null ? site?.sections!['search'] : site?.sections!["home"];
+        keywords != null ? site?.sections!['search'] : site?.sections!["home"];
 // 复用规则
 // if (section.reuse) {
 //   section.rules = this.site.sections[section.reuse].rules
@@ -221,12 +211,21 @@ class Mio<T extends Meta> {
   /// @param {string} selector 选择器
   /// @param {function} each (content: string, index: number) => void
   selectEach(Document doc, String selector, Function each) {
-    final matches = REG_SELECTOR_TEMPLATE.allMatches(selector);//RegExp(r"\$\((.+?)\)\.(\w+?)\((.*?)\)")
+    final matches = REG_SELECTOR_TEMPLATE
+        .allMatches(selector); //RegExp(r"\$\((.+?)\)\.(\w+?)\((.*?)\)")
     if (matches.isEmpty) return;
     final match = matches.first;
-    final select = match.groupCount > 1 ? match.group(1)! : '';
+    print('FFFF: ${match.groupCount}, ${matches}');
+
+    for (int index = 0; index < match.groupCount; index++) {
+      print('SSS: $index, ${match.group(index)}');
+    }
+
+    final select = match.groupCount > 1
+        ? match.group(1)!
+        : throw Exception('empty selecor!!');
     final func = match.groupCount > 2 ? match.group(2) : 'text';
-    final attr = match.groupCount > 3 ? match.group(3) : '';
+    final attr = match.groupCount > 3 ? match.group(3) : 'src';
     // 遍历元素集
     doc.querySelectorAll(select).forEachIndexed((index, el) {
       var result = '';
@@ -235,11 +234,11 @@ class Mio<T extends Meta> {
           result = el.attributes[attr] ?? '';
           break;
         case 'text':
-        // result = $(el).text();
+          // result = $(el).text();
           result = el.toString();
           break;
         case 'html':
-        // result = $(el).html() || '';
+          // result = $(el).html() || '';
           result = el.innerHtml;
           break;
       }
