@@ -1,5 +1,4 @@
 import 'dart:collection';
-import 'dart:math';
 
 isEmpty(Object? o) {
   return o == null || o == "";
@@ -34,13 +33,8 @@ class BaseMap<K, V> extends MapMixin<K, V> {
   }
 
   // BaseMap.fromJson(Map<String, dynamic> json) {
-  //   print('STARTTTTTTTTTTTT:');
-  //
   //   final val = json.map((key, value) => MapEntry(key as K, value as V));
-  //   print('VALTYPE:' + val.runtimeType.toString());
-  //
   //   addAll(val);
-  //   print('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX');
   // }
 
   BaseMap<String, dynamic> toJson() => this as BaseMap<String, dynamic>;

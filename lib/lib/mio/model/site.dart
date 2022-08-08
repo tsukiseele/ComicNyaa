@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'base.dart';
 
 class Site {
@@ -69,13 +67,9 @@ class Headers extends BaseMap<String, String> {
 
 
 class Sections extends BaseMap<String, Section> {
-  // Sections.fromJson(json) : super.fromJson(json.map((key, value) =>
-  //     MapEntry(key, Section.fromJson(value))));
-
   Sections.fromJson(Map<String, dynamic> json) {
     addAll(json.map((key, value) => MapEntry(key, Section.fromJson(value))));
   }
-
 }
 
 class Section {
@@ -169,24 +163,9 @@ class Selector {
 }
 
 class Rules extends BaseMap<String, Selector> {
-
   Rules.fromJson(Map<String, dynamic> json) {
     addAll(json.map((key, value) => MapEntry(key, Selector.fromJson(value))));
   }
-  // Rules.fromJson(json) : super.fromJson(
-
-    // return json.map((key, value) {
-    //   print('SSS' + json.toString());
-    //   print('T1: ' + json.runtimeType.toString());
-    //   final entry = MapEntry<String, Selector>(key, Selector.fromJson(value));
-    //   print('T2: ' + entry.runtimeType.toString());
-    //   return entry;
-    // }) as Map<String, dynamic>
-  // });
-  // Rules.fromJson(Map<String, Selector> json) {
-  //   addAll(json);
-  // }
-  // Map<String, dynamic> toJson() => this;
 }
 
 class Search {

@@ -1,20 +1,16 @@
 import 'dart:async';
-import 'dart:math';
 import 'package:collection/collection.dart';
-import 'package:comic_nyaa/lib/mio/core/rule_loader.dart';
 import 'package:dio/dio.dart';
 import 'package:html/parser.dart';
 import 'package:html/dom.dart';
-
 import '../model/meta.dart';
 import '../model/site.dart';
 
 /// 站点内容解析器，通过加载JSON配置抓取网页内容，并封装成数据集
 ///
 /// @author tsukiseele
-/// @date 2022.6.20
-/// @license MIT
-// import * as cheerio from 'cheerio'
+/// @date 2022.8.8
+/// @license Apache License 2.0
 
 final REG_PAGE_TEMPLATE = RegExp(r"\{page\s*?:\s*?(-?\d*)[,\s]*?(-?\d*?)\}");
 final REG_PAGE_MATCH = RegExp(r"\{page\s*?:.*?\}");
@@ -65,7 +61,7 @@ class Mio<T extends Meta> {
     // if (isParseChildren && section.rules?[r'$children'] != null) {
     //   await parseChildrenOfList(result, section.rules!);
     // }
-    print('RESULT: ' + result.toString());
+    print('RESULT: $result');
     return result;
   }
 
@@ -187,8 +183,8 @@ class Mio<T extends Meta> {
   /// @param {Object} options 操作
   /// @returns {Promise<String>} 响应文本
   Future<String> requestText(String url, {dynamic headers}) async {
-    final response = await Dio()
-        .get(url, options: Options(responseType: ResponseType.plain, sendTimeout: 10000));
+    final response = await Dio().get(url,
+        options: Options(responseType: ResponseType.plain, sendTimeout: 10000));
     final html = response.data.toString();
     return html;
   }
@@ -215,7 +211,7 @@ class Mio<T extends Meta> {
         .allMatches(selector); //RegExp(r"\$\((.+?)\)\.(\w+?)\((.*?)\)")
     if (matches.isEmpty) return;
     final match = matches.first;
-    print('FFFF: ${match.groupCount}, ${matches}');
+    print('FFFF: ${match.groupCount}, $matches');
 
     for (int index = 0; index < match.groupCount; index++) {
       print('SSS: $index, ${match.group(index)}');

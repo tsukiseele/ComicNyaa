@@ -1,5 +1,3 @@
-// import 'dart:convert';
-
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
@@ -84,24 +82,21 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  int _counter = 0;
-  List<MImage> _data = [];
+  List<MImage> _images = [];
 
-  void _incrementCounter() {
-    setState(() {
-      _counter++;
-      getData();
-    });
-  }
-
-  void getData() async {
+  void _getImagesData() async {
     final sites = await getRules();
     sites.forEachIndexed((i, element) => print('$i: ${element.name}'));
-    final site = sites[22];
+    final site = sites[25];
     final result = await getGallery(site);
     setState(() {
-      _data = result;
+      _images = result;
     });
+  }
+  @override
+  void initState() {
+    super.initState();
+    _getImagesData();
   }
 
   @override
@@ -116,7 +111,7 @@ class _HomePageState extends State<HomePage> {
             crossAxisCount: 2,
             mainAxisSpacing: 8.0,
             crossAxisSpacing: 8.0,
-            itemCount: _data.length,
+            itemCount: _images.length,
             itemBuilder: (context, index) {
               return Material(
                   elevation: 4.0,
@@ -126,18 +121,18 @@ class _HomePageState extends State<HomePage> {
                       CachedNetworkImage(
                         placeholder: (context, url) =>
                             const CircularProgressIndicator(),
-                        imageUrl: _data[index].coverUrl ?? '',
+                        imageUrl: _images[index].coverUrl ?? '',
                       ),
                       Container(
                         padding: const EdgeInsets.all(8.0),
-                        child: Text(_data[index].title ?? ''),
+                        child: Text(_images[index].title ?? ''),
                       )
                     ],
                   ));
             }),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
+        onPressed: _getImagesData,
         tooltip: 'Increment',
         child: const Icon(Icons.add),
       ), // This trailing comma makes auto-formatting nicer for build methods.
