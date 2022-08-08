@@ -9,6 +9,7 @@ import 'package:comic_nyaa/lib/mio/model/site.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_displaymode/flutter_displaymode.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:archive/archive_io.dart';
@@ -59,11 +60,12 @@ class ComicNyaa extends StatelessWidget {
       home: const HomePage(title: 'Home'),
     );
   }
+
 }
 
 Future<List<MImage>> getGallery(site) async {
   print('LOAD SITE: ${site.name}');
-  final results = await Mio(site).setKeywords('namori').parseSite();
+  final results = await Mio(site).setKeywords('').parseSite();
   final images = List.of(results.map((item) => MImage.fromJson(item)));
   for (var image in images) {
     print(image.title);
@@ -87,7 +89,7 @@ class _HomePageState extends State<HomePage> {
   void _getImagesData() async {
     final sites = await getRules();
     sites.forEachIndexed((i, element) => print('$i: ${element.name}'));
-    final site = sites[22];
+    final site = sites[9];
     final result = await getGallery(site);
     setState(() {
       _images = result;
@@ -95,8 +97,9 @@ class _HomePageState extends State<HomePage> {
   }
   @override
   void initState() {
-    super.initState();
+    setOptimalDisplayMode();
     _getImagesData();
+    super.initState();
   }
 
   @override
@@ -108,19 +111,19 @@ class _HomePageState extends State<HomePage> {
       body: Container(
         padding: const EdgeInsets.all(8.0),
         child: MasonryGridView.count(
-            crossAxisCount: 2,
+            crossAxisCount: 3,
             mainAxisSpacing: 8.0,
             crossAxisSpacing: 8.0,
             itemCount: _images.length,
             itemBuilder: (context, index) {
               return Material(
-                  elevation: 4.0,
+                  elevation: 2.0,
                   borderRadius: const BorderRadius.all(Radius.circular(0.0)),
                   child: Column(
                     children: [
                       CachedNetworkImage(
-                        placeholder: (context, url) =>
-                            const CircularProgressIndicator(),
+                        // placeholder: (context, url) =>
+                        //     const CircularProgressIndicator(),
                         imageUrl: _images[index].coverUrl ?? '',
                       ),
                       Container(
@@ -137,5 +140,22 @@ class _HomePageState extends State<HomePage> {
         child: const Icon(Icons.add),
       ), // This trailing comma makes auto-formatting nicer for build methods.
     );
+  } Future<void> setOptimalDisplayMode() async {
+    final List<DisplayMode> supported = await FlutterDisplayMode.supported;
+    final DisplayMode active = await FlutterDisplayMode.active;
+
+    final List<DisplayMode> sameResolution = supported.where(
+            (DisplayMode m) => m.width == active.width
+            && m.height == active.height).toList()..sort(
+            (DisplayMode a, DisplayMode b) =>
+            b.refreshRate.compareTo(a.refreshRate));
+
+    final DisplayMode mostOptimalMode = sameResolution.isNotEmpty
+        ? sameResolution.first
+        : active;
+
+    /// This setting is per session.
+    /// Please ensure this was placed with `initState` of your root widget.
+    await FlutterDisplayMode.setPreferredMode(mostOptimalMode);
   }
 }

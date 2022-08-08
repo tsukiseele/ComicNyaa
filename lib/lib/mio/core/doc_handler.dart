@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 import 'package:collection/collection.dart';
 import 'package:dio/dio.dart';
 import 'package:html/parser.dart';
@@ -205,20 +206,14 @@ if (section.reuse != null) {
   /// @param {string} selector 选择器
   /// @param {function} each (content: string, index: number) => void
   selectEach(Document doc, String selector, Function each) {
-    final matches = REG_SELECTOR_TEMPLATE.allMatches(selector);
+    final matches = RegExp(r"\$\((.+?)\)\.(\w+?)\((.*?)\)").allMatches(selector);//REG_SELECTOR_TEMPLATE.allMatches(selector);
     if (matches.isEmpty) return;
     final match = matches.first;
-    print('FFFF: ${match.groupCount}, $matches');
-
-    for (int index = 0; index < match.groupCount; index++) {
-      print('SSS: $index, ${match.group(index)}');
-    }
-
-    final select = match.groupCount > 1
+    final select = match.groupCount > 0
         ? match.group(1)!
         : throw Exception('empty selecor!!');
-    final func = match.groupCount > 2 ? match.group(2) : 'text';
-    final attr = match.groupCount > 3 ? match.group(3) : 'src';
+    final func = match.groupCount > 1 ? match.group(2) : 'text';
+    final attr = match.groupCount > 2 ? match.group(3) : 'src';
     // 遍历元素集
     doc.querySelectorAll(select).forEachIndexed((index, el) {
       var result = '';
@@ -227,11 +222,9 @@ if (section.reuse != null) {
           result = el.attributes[attr] ?? '';
           break;
         case 'text':
-          // result = $(el).text();
-          result = el.toString();
+          result = el.text;
           break;
         case 'html':
-          // result = $(el).html() || '';
           result = el.innerHtml;
           break;
       }
@@ -245,6 +238,7 @@ if (section.reuse != null) {
   /// @param {String} replacement 替换式
   /// @returns {String} 结果
   String replaceRegex(String text, String? capture, String? replacement) {
+    print('VVVVVV: $text, $capture, $replacement');
     if (text == "") return replacement ?? "";
     if (capture == null || capture == "") return text;
     if (replacement == null || replacement == "") {
@@ -254,10 +248,10 @@ if (section.reuse != null) {
     final result = RegExp(capture).allMatches(text);
     if (result.isNotEmpty) {
       final groups = result.first;
-      for (int index = 0; index < groups.groupCount; index++) {
-        print('index: $index, group: ${groups.group(index)}');
+      for (int index = 0; index < groups.groupCount + 1; index++) {
+        // print('index: $index, group: ${groups.group(index)}');
         replacement = replacement?.replaceAll(
-            RegExp(r"\$" + index.toString()), groups.group(index) ?? '');
+            RegExp("\\\$$index"), groups.group(index) ?? '');
       }
     }
     return replacement ?? "";
