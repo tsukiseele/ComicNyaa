@@ -20,8 +20,7 @@ String concatPath(dirname, filename) {
 
 Future<List<Site>> getRules() async {
   final appDir = await getApplicationDocumentsDirectory();
-  final ruleDir =
-      await Directory(concatPath(appDir.path, 'rules')).create(recursive: true);
+  final ruleDir = await Directory(concatPath(appDir.path, 'rules')).create(recursive: true);
   final savePath = concatPath(ruleDir.path, 'rules.zip');
   print('savePath: $savePath');
   await Dio().download('https://hlo.li/static/rules.zip', savePath);
@@ -50,6 +49,7 @@ void main() async {
 
 class ComicNyaa extends StatelessWidget {
   const ComicNyaa({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -60,7 +60,6 @@ class ComicNyaa extends StatelessWidget {
       home: const HomePage(title: 'Home'),
     );
   }
-
 }
 
 Future<List<MImage>> getGallery(site) async {
@@ -85,6 +84,11 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   List<MImage> _images = [];
+  static const List<String> _kOptions = <String>[
+    'aardvark',
+    'bobcat',
+    'chameleon',
+  ];
 
   void _getImagesData() async {
     final sites = await getRules();
@@ -95,6 +99,7 @@ class _HomePageState extends State<HomePage> {
       _images = result;
     });
   }
+
   @override
   void initState() {
     setOptimalDisplayMode();
@@ -108,51 +113,63 @@ class _HomePageState extends State<HomePage> {
       appBar: AppBar(
         title: Text(widget.title),
       ),
-      body: Container(
-        padding: const EdgeInsets.all(8.0),
-        child: MasonryGridView.count(
-            crossAxisCount: 3,
-            mainAxisSpacing: 8.0,
-            crossAxisSpacing: 8.0,
-            itemCount: _images.length,
-            itemBuilder: (context, index) {
-              return Material(
-                  elevation: 2.0,
-                  borderRadius: const BorderRadius.all(Radius.circular(0.0)),
-                  child: Column(
-                    children: [
-                      CachedNetworkImage(
-                        // placeholder: (context, url) =>
-                        //     const CircularProgressIndicator(),
-                        imageUrl: _images[index].coverUrl ?? '',
-                      ),
-                      Container(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Text(_images[index].title ?? ''),
-                      )
-                    ],
-                  ));
-            }),
-      ),
+      body: Column(children: [
+        Autocomplete<String>(
+          optionsBuilder: (TextEditingValue textEditingValue) {
+            if (textEditingValue.text == '') {
+              return const Iterable<String>.empty();
+            }
+            return _kOptions.where((String option) {
+              return option.contains(textEditingValue.text.toLowerCase());
+            });
+          },
+          onSelected: (String selection) {
+            debugPrint('You just selected $selection');
+          },
+        ),
+        Flexible(
+            child: MasonryGridView.count(
+                padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
+                crossAxisCount: 3,
+                mainAxisSpacing: 8.0,
+                crossAxisSpacing: 8.0,
+                itemCount: _images.length,
+                itemBuilder: (context, index) {
+                  return Material(
+                      elevation: 2.0,
+                      borderRadius: const BorderRadius.all(Radius.circular(4.0)),
+                      child: InkWell(
+                          onTap: () {},
+                          child: Column(
+                            children: [
+                              CachedNetworkImage(
+                                placeholder: (context, url) => const CircularProgressIndicator(),
+                                imageUrl: _images[index].coverUrl ?? '',
+                              ),
+                              Container(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text(_images[index].title ?? ''),
+                              )
+                            ],
+                          )));
+                }))
+      ]),
+      // ]),
       floatingActionButton: FloatingActionButton(
         onPressed: _getImagesData,
         tooltip: 'Increment',
         child: const Icon(Icons.add),
       ), // This trailing comma makes auto-formatting nicer for build methods.
     );
-  } Future<void> setOptimalDisplayMode() async {
+  }
+
+  Future<void> setOptimalDisplayMode() async {
     final List<DisplayMode> supported = await FlutterDisplayMode.supported;
     final DisplayMode active = await FlutterDisplayMode.active;
 
-    final List<DisplayMode> sameResolution = supported.where(
-            (DisplayMode m) => m.width == active.width
-            && m.height == active.height).toList()..sort(
-            (DisplayMode a, DisplayMode b) =>
-            b.refreshRate.compareTo(a.refreshRate));
+    final List<DisplayMode> sameResolution = supported.where((DisplayMode m) => m.width == active.width && m.height == active.height).toList()..sort((DisplayMode a, DisplayMode b) => b.refreshRate.compareTo(a.refreshRate));
 
-    final DisplayMode mostOptimalMode = sameResolution.isNotEmpty
-        ? sameResolution.first
-        : active;
+    final DisplayMode mostOptimalMode = sameResolution.isNotEmpty ? sameResolution.first : active;
 
     /// This setting is per session.
     /// Please ensure this was placed with `initState` of your root widget.
