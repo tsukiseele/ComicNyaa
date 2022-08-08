@@ -208,10 +208,3 @@ class Search {
   }
 }
 
-
-abstract class Meta {
-  List<Meta>? children;
-  String? $children;
-  Site? $site;
-  Section? $section;
-}

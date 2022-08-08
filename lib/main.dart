@@ -53,11 +53,6 @@ Future<List<Site>> getRules() async {
       // Directory('out/' + filename).create(recursive: true);
     }
   }
-  print('SITES$sites');
-  print('LOAD SITE: ${sites[0].name}');
-
-  final results = Mio(sites[0]).parseSite();
-  print('RESULTS$results');
   return sites;
 }
 
@@ -93,6 +88,20 @@ class MyApp extends StatelessWidget {
   }
 }
 
+Future<List<Map<String, dynamic>>> getGallery(site) async {
+  print('LOAD SITE: ${site.name}');
+// for (var value in sites) {
+//   print(value.name);
+// }
+  final results = await Mio(site).parseSite();
+  results.forEach((element) {
+    print(element['title']);
+    print(element['coverUrl']);
+  });
+  print('PARSE RESULTS: $results');
+  return results;
+}
+
 class MyHomePage extends StatefulWidget {
   const MyHomePage({Key? key, required this.title}) : super(key: key);
 
@@ -113,7 +122,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
-  List<String> _data = [];
+  List<Map<String, dynamic>> _data = [];
   List<String> imageList = [
     'https://cdn.pixabay.com/photo/2019/03/15/09/49/girl-4056684_960_720.jpg',
     'https://cdn.pixabay.com/photo/2020/12/15/16/25/clock-5834193__340.jpg',
@@ -140,31 +149,35 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void getData() async {
-    var httpClient = HttpClient();
-    var uri =
-        Uri.http('api.hlo.li', '/music/playlist/detail', {'id': '7490559834'});
-    var request = await httpClient.getUrl(uri);
-    var response = await request.close();
-    print('YYYYYYYY');
-    Map<String, dynamic> responseBody =
-        jsonDecode(await response.transform(const Utf8Decoder()).join());
-    print('XXXXXXXXXXXXXXX');
-    // print(responseBody);
-    // responseBody
-    var list = responseBody['playlist']['tracks'] as List<dynamic>;
-    // print('LIST: ' + list.toString());
-    // final result = list.map((key, value) => {
-    //   MapEntry(key, value['al']['picUrl']);
-    //     }).values as List<String>;
-    final d = list.map((value)   {
-      // print('=======================');
-      // print(value['al']['picUrl']);
-      return value['al']['picUrl'];
-    }).cast<String>();
+    // var httpClient = HttpClient();
+    // var uri =
+    //     Uri.http('api.hlo.li', '/music/playlist/detail', {'id': '7490559834'});
+    // var request = await httpClient.getUrl(uri);
+    // var response = await request.close();
+    // print('YYYYYYYY');
+    // Map<String, dynamic> responseBody =
+    //     jsonDecode(await response.transform(const Utf8Decoder()).join());
+    // print('XXXXXXXXXXXXXXX');
+    // // print(responseBody);
+    // // responseBody
+    // var list = responseBody['playlist']['tracks'] as List<dynamic>;
+    // // print('LIST: ' + list.toString());
+    // // final result = list.map((key, value) => {
+    // //   MapEntry(key, value['al']['picUrl']);
+    // //     }).values as List<String>;
+    // final d = list.map((value)   {
+    //   // print('=======================');
+    //   // print(value['al']['picUrl']);
+    //   return value['al']['picUrl'];
+    // }).cast<String>();
 
-    await getRules();
+    final sites = await getRules();
+    final site = sites[27]; // Yande
+    // final site = sites[25]; // Safebooru
+    // final site = sites[20]; // Konachan
+    final result = await getGallery(site);
     setState(() {
-      _data = d.toList();
+      _data = result; //d.toList();
     });
   }
 
@@ -201,11 +214,11 @@ class _MyHomePageState extends State<MyHomePage> {
                       CachedNetworkImage(
                         placeholder: (context, url) =>
                             const CircularProgressIndicator(),
-                        imageUrl: _data[index],
+                        imageUrl: _data[index]['coverUrl'],
                       ),
                       Container(
                         padding: const EdgeInsets.all(8.0),
-                        child: Text(_data[index]),
+                        child: Text(_data[index]['title']),
                       )
                     ],
                   ));
