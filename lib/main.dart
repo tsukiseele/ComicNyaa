@@ -167,7 +167,10 @@ class _HomePageState extends State<HomePage> {
     final List<DisplayMode> supported = await FlutterDisplayMode.supported;
     final DisplayMode active = await FlutterDisplayMode.active;
 
-    final List<DisplayMode> sameResolution = supported.where((DisplayMode m) => m.width == active.width && m.height == active.height).toList()..sort((DisplayMode a, DisplayMode b) => b.refreshRate.compareTo(a.refreshRate));
+    final List<DisplayMode> sameResolution = supported
+        .where((DisplayMode m) => m.width == active.width && m.height == active.height)
+        .toList()
+      ..sort((DisplayMode a, DisplayMode b) => b.refreshRate.compareTo(a.refreshRate));
 
     final DisplayMode mostOptimalMode = sameResolution.isNotEmpty ? sameResolution.first : active;
 
