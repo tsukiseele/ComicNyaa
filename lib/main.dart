@@ -3,9 +3,6 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:collection/collection.dart';
-import 'package:comic_nyaa/lib/mio/core/doc_handler.dart';
-import 'package:comic_nyaa/lib/mio/model/meta.dart';
-import 'package:comic_nyaa/lib/mio/model/site.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
@@ -13,6 +10,11 @@ import 'package:flutter_displaymode/flutter_displaymode.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:archive/archive_io.dart';
+
+import 'package:comic_nyaa/library/mio/model/site.dart';
+import 'package:comic_nyaa/library/mio/core/mio.dart';
+import 'package:comic_nyaa/model/typed_model.dart';
+import 'package:comic_nyaa/views/detail.dart';
 
 String concatPath(dirname, filename) {
   return '$dirname${Platform.pathSeparator}$filename';
@@ -62,14 +64,14 @@ class ComicNyaa extends StatelessWidget {
   }
 }
 
-Future<List<MImage>> getGallery(site) async {
+Future<List<TypedModel>> getGallery(Site site) async {
   print('LOAD SITE: ${site.name}');
-  final results = await Mio(site).setKeywords('').parseSite();
-  final images = List.of(results.map((item) => MImage.fromJson(item)));
-  for (var image in images) {
-    print(image.title);
-    print(image.coverUrl);
-  }
+  final results = await (Mio(site)..setKeywords('')).parseSite();
+  final images = List.of(results.map((item) => TypedModel.fromJson(item)));
+  // for (var image in images) {
+  //   print(image.title);
+  //   print(image.coverUrl);
+  // }
   print('PARSE RESULTS: $images');
   return images;
 }
@@ -83,7 +85,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  List<MImage> _images = [];
+  List<TypedModel> _images = [];
   static const List<String> _kOptions = <String>[
     'aardvark',
     'bobcat',
@@ -93,7 +95,7 @@ class _HomePageState extends State<HomePage> {
   void _getImagesData() async {
     final sites = await getRules();
     sites.forEachIndexed((i, element) => print('$i: ${element.name}'));
-    final site = sites[9];
+    final site = sites[26];
     final result = await getGallery(site);
     setState(() {
       _images = result;
@@ -139,7 +141,12 @@ class _HomePageState extends State<HomePage> {
                       elevation: 2.0,
                       borderRadius: const BorderRadius.all(Radius.circular(4.0)),
                       child: InkWell(
-                          onTap: () {},
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => const DetailsView()),
+                            );
+                          },
                           child: Column(
                             children: [
                               CachedNetworkImage(

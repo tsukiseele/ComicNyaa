@@ -1,4 +1,4 @@
-import 'base.dart';
+import './base.dart';
 
 class Site {
   String? name;

@@ -4,7 +4,7 @@ import 'package:collection/collection.dart';
 import 'package:dio/dio.dart';
 import 'package:html/parser.dart';
 import 'package:html/dom.dart';
-import '../model/meta.dart';
+import '../model/model.dart';
 import '../model/site.dart';
 
 /// 站点内容解析器，通过加载JSON配置抓取网页内容，并封装成数据集
@@ -19,21 +19,19 @@ final REG_KEYWORD_TEMPLATE = RegExp(r"\{keywords\s*?:\s*?(.*?)\}");
 final REG_KEYWORD_MATCH = RegExp(r"\{keywords\s*?:.*?\}");
 final REG_SELECTOR_TEMPLATE = RegExp(r"\$\((.+?)\)\.(\w+?)\((.*?)\)");
 
-class Mio<T extends Meta> {
+class Mio<T extends Model> {
   Site? site;
   int page = 1;
   String? keywords;
 
   Mio(this.site);
 
-  Mio<T> setPage(int page) {
+  void setPage(int page) {
     this.page = page;
-    return this;
   }
 
-  Mio<T> setKeywords(String keywords) {
+  void setKeywords(String keywords) {
     this.keywords = keywords;
-    return this;
   }
 
   /// 解析Site对象，返回结果集
@@ -174,6 +172,9 @@ if (section.reuse != null) {
       }
     }
     print('RESULT SET === $resultSet');
+    for (var item in resultSet) {
+      item['type'] = site?.type ?? 'unknown';
+    }
     return resultSet; // resultSet;
   }
 
@@ -206,7 +207,7 @@ if (section.reuse != null) {
   /// @param {string} selector 选择器
   /// @param {function} each (content: string, index: number) => void
   selectEach(Document doc, String selector, Function each) {
-    final matches = RegExp(r"\$\((.+?)\)\.(\w+?)\((.*?)\)").allMatches(selector);//REG_SELECTOR_TEMPLATE.allMatches(selector);
+    final matches = /*RegExp(r"\$\((.+?)\)\.(\w+?)\((.*?)\)")*/REG_SELECTOR_TEMPLATE.allMatches(selector);//REG_SELECTOR_TEMPLATE.allMatches(selector);
     if (matches.isEmpty) return;
     final match = matches.first;
     final select = match.groupCount > 0
@@ -238,7 +239,6 @@ if (section.reuse != null) {
   /// @param {String} replacement 替换式
   /// @returns {String} 结果
   String replaceRegex(String text, String? capture, String? replacement) {
-    print('VVVVVV: $text, $capture, $replacement');
     if (text == "") return replacement ?? "";
     if (capture == null || capture == "") return text;
     if (replacement == null || replacement == "") {
