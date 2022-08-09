@@ -95,7 +95,7 @@ class _HomePageState extends State<HomePage> {
   void _getImagesData() async {
     final sites = await getRules();
     sites.forEachIndexed((i, element) => print('$i: ${element.name}'));
-    final site = sites[26];
+    final site = sites[9];
     final result = await getGallery(site);
     setState(() {
       _images = result;
@@ -144,7 +144,8 @@ class _HomePageState extends State<HomePage> {
                           onTap: () {
                             Navigator.push(
                               context,
-                              MaterialPageRoute(builder: (context) => const DetailsView()),
+                              MaterialPageRoute(builder: (context) =>
+                                  DetailsView(model: _images[index])),
                             );
                           },
                           child: Column(

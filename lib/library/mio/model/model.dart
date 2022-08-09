@@ -16,8 +16,8 @@ abstract class Model {
     type = json['type'];
     children = json['children'];
     $children = json[r'$children'];
-    $site = json[r'$site'] != null ? Site.fromJson(json[r'$site']) : null;
-    $section = json[r'$section'] != null ? Section.fromJson(json[r'$section']) : null;
+    $site = json[r'$site'] != null ? json[r'$site'] /*Site.fromJson(json[r'$site']) */: null;
+    $section = json[r'$section'] != null ? json[r'$section'] /*Section.fromJson(json[r'$section'])*/ : null;
   }
 
   Map<String, dynamic> toJson() {

@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:math';
 import 'package:collection/collection.dart';
 import 'package:dio/dio.dart';
 import 'package:html/parser.dart';
@@ -36,8 +35,7 @@ class Mio<T extends Model> {
 
   /// 解析Site对象，返回结果集
   /// @returns {Promise<<T extends Meta>[]>}
-  Future<List<Map<String, dynamic>>> parseSite(
-      [bool isParseChildren = false]) async {
+  Future<List<Map<String, dynamic>>> parseSite([bool isParseChildren = false]) async {
     return await parseSection(getCurrentSection()!, isParseChildren);
   }
 
@@ -45,70 +43,73 @@ class Mio<T extends Model> {
   /// @param {Section} section 站点板块
   /// @param {Number} deep 解析深度
   /// @return {Promise<<T extends Meta>[]>}
-  Future<List<Map<String, dynamic>>> parseSection(Section section,
-      [bool isParseChildren = false]) async {
+  Future<List<Map<String, dynamic>>> parseSection(Section section, [bool isParseChildren = false]) async {
     if (site == null) throw Exception('site cannot be empty!');
 // 复用规则，现在已经在SiteLoader中处理
-if (section.reuse != null) {
-  section.rules = site?.sections?['${section.reuse}']?.rules;
-}
+    if (section.reuse != null) {
+      section.rules = site?.sections?['${section.reuse}']?.rules;
+    }
     final result = await parseRules(section.index!, section.rules!);
     for (var item in result) {
       item[r'$section'] = section;
       item[r'$site'] = site;
     }
-    // if (isParseChildren && section.rules?[r'$children'] != null) {
-    //   await parseChildrenOfList(result, section.rules!);
-    // }
+    if (isParseChildren && section.rules?[r'$children'] != null) {
+      await parseChildrenOfList(result, section.rules!);
+    }
     print('RESULT: $result');
     return result;
   }
 
-//   Future<void> parseChildrenOfList(List<T> list, Rules rules) async {
-//     Future.wait(list.map((item) => parseChildrenConcurrency(item, rules)));
-// // await Promise.allSettled(list.map((item) => this.parseChildrenConcurrency(item, rules)))
-//   }
+  Future<void> parseChildrenOfList(List<Map<String, dynamic>> list, Rules rules) async {
+    await Future.wait(list.map((item) => parseChildrenConcurrency(item, rules)));
+// await Promise.allSettled(list.map((item) => this.parseChildrenConcurrency(item, rules)))
+  }
 
   /// 解析Children，自动检测末尾，自动继承父级，自动拉平单项子级
   /// @param {*} item
   /// @param {*} rules
   /// @return {Promise<T extends Meta>}
-//   Future<T> parseChildrenConcurrency(T item, Rules rules,
-//       [bool extend = true]) async {
-//     if (item.$children != null && rules['\$children'] != null) {
-//       List<T> histroy = List.empty();
-//       int page = 0;
-//       Selector $children = rules[r'$children']!;
-// // do {
-//       final children = await parseRules(item.$children!, $children.rules!, page = page++);
-// // if (children && histroy && children.length && histroy.length && children.length === histroy.length && this.objectEquals(children[0], histroy[0])) break
-// // if (children != null && children.length > 0 && histroy.isNotEmpty && children.length == histroy.length && this.objectEquals(children[0], histroy[0])) break;
-// //
-// // histroy = JSON.parse(JSON.stringify(children));
-//       if (children.isNotEmpty) {
-// // 解析下级子节点
-//         if (children[0].$children != null &&
-//             rules['$children']?.rules != null) {
-//           await Future.wait(children.map((child) =>
-//               parseChildrenConcurrency(
-//                   child, rules['$children']?.rules as Rules)));
-//         }
-// // 判断是否拉平子节点，否则追加到子节点下
-//         if ($children.flat != null && $children.flat == true) {
-// // Object.assign(item, children[0]);
-// //           break;
-//         } else {
-// // 判断并继承父节点字段
-// // extend && children.forEach((child, index) => (children[index] = Object.assign({}, item, child)))
-//           item.children != null ? item.children?.addAll(children) : (
-//               item.children = children);
-//           // break;
-//         }
-//       }
-// // } while (histroy && histroy.length);
-//     }
-//     return item;
-//   }
+  Future<Map<String, dynamic>> parseChildrenConcurrency(Map<String, dynamic> item, Rules rules) async {
+    if (item[r'$children'] != null && rules[r'$children'] != null) {
+      List<Map<String, dynamic>> histroy = [];
+      int page = 0;
+      Selector $children = rules[r'$children']!;
+      do {
+        final children = await parseRules(item[r'$children']!, $children.rules!, page = page++);
+// if (children && histroy && children.length && histroy.length && children.length === histroy.length && this.objectEquals(children[0], histroy[0])) break
+// if (children != null && children.length > 0 && histroy.isNotEmpty && children.length == histroy.length && this.objectEquals(children[0], histroy[0])) break;
+//
+// histroy = JSON.parse(JSON.stringify(children));
+        if (children.length == histroy.length && children.equals(histroy)) break;
+
+        if (children.isNotEmpty) {
+// 解析下级子节点
+          if (children.first[r'$children'] != null && rules[r'$children']?.rules != null) {
+            await Future.wait(children.map((child) => parseChildrenConcurrency(child, rules[r'$children']?.rules as Rules)));
+          }
+// 判断是否拉平子节点，否则追加到子节点下
+          if ($children.flat != null && $children.flat == true) {
+            item.addAll(children.first);
+            break;
+// Object.assign(item, children[0]);
+//           break;
+          } else {
+// 判断并继承父节点字段
+// extend && children.forEach((child, index) => (children[index] = Object.assign({}, item, child)))
+          if ($children.extend == true) {
+            // children.forEach((child) {
+            //   item.keys
+            // });
+          }
+          item['children'] != null ? item['children']?.addAll(children) : (item['children'] = children);
+            // break;
+          }
+        }
+      } while (histroy.isNotEmpty);
+    }
+    return item;
+  }
 
   bool isEmpty(Object? o) {
     return o == null || o == "";
@@ -118,8 +119,7 @@ if (section.reuse != null) {
   /// @param {Number} page 页码
   /// @param {Number} keywords 关键字
   /// @returns {Promise<<T extends Meta>[]>}
-  Future<List<Map<String, dynamic>>> parseRules(String indexUrl, Rules rule,
-      [int? page, String? keywords]) async {
+  Future<List<Map<String, dynamic>>> parseRules(String indexUrl, Rules rule, [int? page, String? keywords]) async {
     // 生成URL
     final url = replaceUrlTemplate(indexUrl, page ?? this.page, keywords ?? this.keywords);
     print('URL: $url');
@@ -151,8 +151,7 @@ if (section.reuse != null) {
           while (resultSet.length < i) {
             resultSet.add(<String, dynamic>{});
           }
-          resultSet[i][k] =
-              replaceRegex(item.input, exp?.capture, exp?.replacement);
+          resultSet[i][k] = replaceRegex(item.input, exp?.capture, exp?.replacement);
         });
 
 // 以第一个组为匹配值
@@ -166,8 +165,7 @@ if (section.reuse != null) {
             resultSet.add(<String, dynamic>{});
           }
           // 执行最终替换，并添加到结果集
-          resultSet[index][k] =
-              replaceRegex(result, exp?.capture, exp?.replacement);
+          resultSet[index][k] = replaceRegex(result, exp?.capture, exp?.replacement);
         });
       }
     }
@@ -183,8 +181,7 @@ if (section.reuse != null) {
   /// @param {Object} options 操作
   /// @returns {Promise<String>} 响应文本
   Future<String> requestText(String url, {dynamic headers}) async {
-    final response = await Dio().get(url,
-        options: Options(responseType: ResponseType.plain, sendTimeout: 10000));
+    final response = await Dio().get(url, options: Options(responseType: ResponseType.plain, sendTimeout: 10000));
     final html = response.data.toString();
     return html;
   }
@@ -193,8 +190,7 @@ if (section.reuse != null) {
   /// @returns {Section}
   Section? getCurrentSection() {
     if (site == null) throw Exception('site cannot be empty!');
-    final section =
-        keywords != null ? site?.sections!['search'] : site?.sections!["home"];
+    final section = keywords != null ? site?.sections!['search'] : site?.sections!["home"];
 // 复用规则
 // if (section.reuse) {
 //   section.rules = this.site.sections[section.reuse].rules
@@ -207,14 +203,14 @@ if (section.reuse != null) {
   /// @param {string} selector 选择器
   /// @param {function} each (content: string, index: number) => void
   selectEach(Document doc, String selector, Function each) {
-    final matches = /*RegExp(r"\$\((.+?)\)\.(\w+?)\((.*?)\)")*/REG_SELECTOR_TEMPLATE.allMatches(selector);//REG_SELECTOR_TEMPLATE.allMatches(selector);
+    final matches = REG_SELECTOR_TEMPLATE.allMatches(selector);
     if (matches.isEmpty) return;
     final match = matches.first;
-    final select = match.groupCount > 0
-        ? match.group(1)!
-        : throw Exception('empty selecor!!');
+    var select = match.groupCount > 0 ? match.group(1)! : throw Exception('empty selecor!!');
     final func = match.groupCount > 1 ? match.group(2) : 'text';
     final attr = match.groupCount > 2 ? match.group(3) : 'src';
+    // 选择器语法兼容
+    select = select.replaceAll(RegExp(r':eq\('), ':nth-child(');
     // 遍历元素集
     doc.querySelectorAll(select).forEachIndexed((index, el) {
       var result = '';
@@ -250,8 +246,7 @@ if (section.reuse != null) {
       final groups = result.first;
       for (int index = 0; index < groups.groupCount + 1; index++) {
         // print('index: $index, group: ${groups.group(index)}');
-        replacement = replacement?.replaceAll(
-            RegExp("\\\$$index"), groups.group(index) ?? '');
+        replacement = replacement?.replaceAll(RegExp("\\\$$index"), groups.group(index) ?? '');
       }
     }
     return replacement ?? "";
@@ -270,8 +265,6 @@ if (section.reuse != null) {
     p = pageMatch.length > 1 ? p + int.parse(pageMatch[1].input) : p;
     p = pageMatch.length > 2 ? p * int.parse(pageMatch[2].input) : p;
 
-    return template
-        .replaceAll(REG_PAGE_MATCH, p.toString())
-        .replaceAll(REG_KEYWORD_MATCH, keywords ?? k);
+    return template.replaceAll(REG_PAGE_MATCH, p.toString()).replaceAll(REG_KEYWORD_MATCH, keywords ?? k);
   }
 }

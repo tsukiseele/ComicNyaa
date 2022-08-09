@@ -106,14 +106,16 @@ class Children {
   String? selector;
   String? capture;
   String? replacement;
+  String? extend;
   Rules? rules;
 
-  Children({this.selector, this.capture, this.replacement, this.rules});
+  Children({this.selector, this.capture, this.replacement, this.extend, this.rules});
 
   Children.fromJson(Map<String, dynamic> json) {
     selector = json['selector'];
     capture = json['capture'];
     replacement = json['replacement'];
+    extend = json['extend'];
     rules = json['rules'] != null ? Rules.fromJson(json['rules']) : null;
   }
 
@@ -122,6 +124,7 @@ class Children {
     data['selector'] = selector;
     data['capture'] = capture;
     data['replacement'] = replacement;
+    data['extend'] = extend;
     if (rules != null) {
       data['rules'] = rules!.toJson();
     }
@@ -135,9 +138,10 @@ class Selector {
   String? capture;
   String? replacement;
   bool? flat; // $children only
+  bool? extend; // $children only
   Rules? rules; // $children only
 
-  Selector({this.regex, this.selector, this.capture, this.replacement, this.flat, this.rules});
+  Selector({this.regex, this.selector, this.capture, this.replacement, this.flat, this.extend, this.rules});
 
   Selector.fromJson(Map<String, dynamic> json) {
     regex = json['regex'];
@@ -145,6 +149,7 @@ class Selector {
     capture = json['capture'];
     replacement = json['replacement'];
     flat = bool.fromEnvironment(json['flat'].toString());
+    extend = bool.fromEnvironment(json['extend'].toString());
     rules = json['rules'] != null ? Rules.fromJson(json['rules']) : null;
   }
 
@@ -155,6 +160,7 @@ class Selector {
     data['capture'] = capture;
     data['replacement'] = replacement;
     data['flat'] = flat;
+    data['extend'] = extend;
     if (rules != null) {
       data['rules'] = rules!.toJson();
     }

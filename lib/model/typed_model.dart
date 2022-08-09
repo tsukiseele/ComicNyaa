@@ -6,7 +6,7 @@ class TypedModel extends Model {
 
   TypedModel({this.coverUrl, this.title});
 
-  TypedModel.fromJson(Map<String, dynamic> json) {
+  TypedModel.fromJson(Map<String, dynamic> json) : super.fromJson(json) {
     coverUrl = json['coverUrl'];
     title = json['title'];
   }
