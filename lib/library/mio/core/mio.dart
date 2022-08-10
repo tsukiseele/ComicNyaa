@@ -66,7 +66,7 @@ class Mio<T extends Model> {
 // await Promise.allSettled(list.map((item) => this.parseChildrenConcurrency(item, rules)))
   }
 
-  /// 解析Children，自动检测末尾，自动继承父级，自动拉平单项子级
+  /// 解析Children，自动检测末尾，自动继承父级，自动拉平单节点子级
   /// @param {*} item
   /// @param {*} rules
   /// @return {Promise<T extends Meta>}

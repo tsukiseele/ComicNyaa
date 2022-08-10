@@ -58,13 +58,10 @@ class Site {
 }
 
 class Headers extends BaseMap<String, String> {
-  // Headers.fromJson(super.json) : super.fromJson();
-
   Headers.fromJson(Map<String, dynamic> json) {
     addAll(json.map((key, value) => MapEntry(key, value)));
   }
 }
-
 
 class Sections extends BaseMap<String, Section> {
   Sections.fromJson(Map<String, dynamic> json) {
@@ -102,33 +99,9 @@ class Section {
   }
 }
 
-class Children {
-  String? selector;
-  String? capture;
-  String? replacement;
-  String? extend;
-  Rules? rules;
-
-  Children({this.selector, this.capture, this.replacement, this.extend, this.rules});
-
-  Children.fromJson(Map<String, dynamic> json) {
-    selector = json['selector'];
-    capture = json['capture'];
-    replacement = json['replacement'];
-    extend = json['extend'];
-    rules = json['rules'] != null ? Rules.fromJson(json['rules']) : null;
-  }
-
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = <String, dynamic>{};
-    data['selector'] = selector;
-    data['capture'] = capture;
-    data['replacement'] = replacement;
-    data['extend'] = extend;
-    if (rules != null) {
-      data['rules'] = rules!.toJson();
-    }
-    return data;
+class Rules extends BaseMap<String, Selector> {
+  Rules.fromJson(Map<String, dynamic> json) {
+    addAll(json.map((key, value) => MapEntry(key, Selector.fromJson(value))));
   }
 }
 
@@ -168,28 +141,4 @@ class Selector {
   }
 }
 
-class Rules extends BaseMap<String, Selector> {
-  Rules.fromJson(Map<String, dynamic> json) {
-    addAll(json.map((key, value) => MapEntry(key, Selector.fromJson(value))));
-  }
-}
-
-class Search {
-  String? index;
-  String? reuse;
-
-  Search({this.index, this.reuse});
-
-  Search.fromJson(Map<String, dynamic> json) {
-    index = json['index'];
-    reuse = json['reuse'];
-  }
-
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = <String, dynamic>{};
-    data['index'] = index;
-    data['reuse'] = reuse;
-    return data;
-  }
-}
 

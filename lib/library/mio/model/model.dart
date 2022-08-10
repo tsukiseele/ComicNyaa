@@ -1,36 +1,37 @@
 import './site.dart';
 
 abstract class Model {
-  List<Model>? children;
-  String? $children;
-  Site? $site;
-  Section? $section;
   String? type;
+  List<Model>? children;// 需要实现类序列化
+  String? $children;
+  Site? $site; // 不可序列化
+  Section? $section; // 不可序列化
 
   Model({this.type, this.children, this.$children, this.$site, this.$section});
 
-  static formJson<T extends Model>(T type) {
-
-  }
   Model.fromJson(Map<String, dynamic> json) {
     type = json['type'];
-    children = json['children'];
+    // children = json['children'];
     $children = json[r'$children'];
-    $site = json[r'$site'] != null ? json[r'$site'] /*Site.fromJson(json[r'$site']) */: null;
-    $section = json[r'$section'] != null ? json[r'$section'] /*Section.fromJson(json[r'$section'])*/ : null;
+    $site = json[r'$site'];
+    $section = json[r'$section'];
+    // $site = json[r'$site'] != null ?  Site.fromJson(json[r'$site']) : null;
+    // $section = json[r'$section'] != null ? Section.fromJson(json[r'$section']) : null;
   }
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
     data['type'] = type;
-    data['children'] = children;
+    // data['children'] = children;
     data[r'$children'] = $children;
-    if ($site != null) {
-      data[r'$site'] = $site!.toJson();
-    }
-    if ($section != null) {
-      data[r'$section'] = $section!.toJson();
-    }
+    data[r'$site'] = $site;
+    data[r'$section'] = $section;
+    // if ($site != null) {
+    //   data[r'$site'] = $site!.toJson();
+    // }
+    // if ($section != null) {
+    //   data[r'$section'] = $section!.toJson();
+    // }
     return data;
   }
 }

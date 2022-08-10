@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:collection/collection.dart';
+import 'package:comic_nyaa/views/detail/comic_detail_view.dart';
+import 'package:comic_nyaa/views/detail/image_detail_view.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
@@ -14,7 +16,7 @@ import 'package:archive/archive_io.dart';
 import 'package:comic_nyaa/library/mio/model/site.dart';
 import 'package:comic_nyaa/library/mio/core/mio.dart';
 import 'package:comic_nyaa/model/typed_model.dart';
-import 'package:comic_nyaa/views/detail.dart';
+import 'package:comic_nyaa/views/detail/video_detail_view.dart';
 
 String concatPath(dirname, filename) {
   return '$dirname${Platform.pathSeparator}$filename';
@@ -25,7 +27,7 @@ Future<List<Site>> getRules() async {
   final ruleDir = await Directory(concatPath(appDir.path, 'rules')).create(recursive: true);
   final savePath = concatPath(ruleDir.path, 'rules.zip');
   print('savePath: $savePath');
-  await Dio().download('https://hlo.li/static/rules.zip', savePath);
+  // await Dio().download('https://hlo.li/static/rules.zip', savePath);
   // 读取规则
   final bytes = File(savePath).readAsBytesSync();
   final archive = ZipDecoder().decodeBytes(bytes);
@@ -59,7 +61,7 @@ class ComicNyaa extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.teal,
       ),
-      home: const HomePage(title: 'Home'),
+      home: const MainView(title: 'Home'),
     );
   }
 }
@@ -68,24 +70,19 @@ Future<List<TypedModel>> getGallery(Site site) async {
   print('LOAD SITE: ${site.name}');
   final results = await (Mio(site)..setKeywords('')).parseSite();
   final images = List.of(results.map((item) => TypedModel.fromJson(item)));
-  // for (var image in images) {
-  //   print(image.title);
-  //   print(image.coverUrl);
-  // }
-  print('PARSE RESULTS: $images');
   return images;
 }
 
-class HomePage extends StatefulWidget {
-  const HomePage({Key? key, required this.title}) : super(key: key);
+class MainView extends StatefulWidget {
+  const MainView({Key? key, required this.title}) : super(key: key);
   final String title;
 
   @override
-  State<HomePage> createState() => _HomePageState();
+  State<MainView> createState() => _MainViewState();
 }
 
-class _HomePageState extends State<HomePage> {
-  List<TypedModel> _images = [];
+class _MainViewState extends State<MainView> {
+  List<TypedModel> _models = [];
   static const List<String> _kOptions = <String>[
     'aardvark',
     'bobcat',
@@ -98,8 +95,26 @@ class _HomePageState extends State<HomePage> {
     final site = sites[9];
     final result = await getGallery(site);
     setState(() {
-      _images = result;
+      _models = result;
     });
+  }
+
+  void _jump(TypedModel model) {
+    Widget? target;
+    switch (model.type) {
+      case 'image':
+        target = ImageDetailView(model: model);
+        break;
+      case 'video':
+        target = VideoDetailView(model: model);
+        break;
+      case 'comic':
+        target = ComicDetailView(model: model);
+        break;
+    }
+    if (target != null) {
+      Navigator.push(context, MaterialPageRoute(builder: (context) => target!));
+    }
   }
 
   @override
@@ -135,28 +150,22 @@ class _HomePageState extends State<HomePage> {
                 crossAxisCount: 3,
                 mainAxisSpacing: 8.0,
                 crossAxisSpacing: 8.0,
-                itemCount: _images.length,
+                itemCount: _models.length,
                 itemBuilder: (context, index) {
                   return Material(
                       elevation: 2.0,
                       borderRadius: const BorderRadius.all(Radius.circular(4.0)),
                       child: InkWell(
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) =>
-                                  DetailsView(model: _images[index])),
-                            );
-                          },
+                          onTap: () => _jump(_models[index]),
                           child: Column(
                             children: [
                               CachedNetworkImage(
                                 placeholder: (context, url) => const CircularProgressIndicator(),
-                                imageUrl: _images[index].coverUrl ?? '',
+                                imageUrl: _models[index].coverUrl ?? '',
                               ),
                               Container(
                                 padding: const EdgeInsets.all(8.0),
-                                child: Text(_images[index].title ?? ''),
+                                child: Text(_models[index].title ?? ''),
                               )
                             ],
                           )));
