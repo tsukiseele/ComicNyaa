@@ -5,6 +5,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:collection/collection.dart';
 import 'package:comic_nyaa/views/detail/comic_detail_view.dart';
 import 'package:comic_nyaa/views/detail/image_detail_view.dart';
+import 'package:extended_image/extended_image.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
@@ -83,6 +84,7 @@ class MainView extends StatefulWidget {
 
 class _MainViewState extends State<MainView> {
   List<TypedModel> _models = [];
+  final Map<int, double> _heights = {};
   static const List<String> _kOptions = <String>[
     'aardvark',
     'bobcat',
@@ -92,7 +94,7 @@ class _MainViewState extends State<MainView> {
   void _getImagesData() async {
     final sites = await getRules();
     sites.forEachIndexed((i, element) => print('$i: ${element.name}'));
-    final site = sites[8];
+    final site = sites[9];
     final result = await getGallery(site);
     setState(() {
       _models = result;
@@ -159,10 +161,19 @@ class _MainViewState extends State<MainView> {
                           onTap: () => _jump(_models[index]),
                           child: Column(
                             children: [
-                              CachedNetworkImage(
-                                placeholder: (context, url) => const CircularProgressIndicator(),
-                                imageUrl: _models[index].coverUrl ?? '',
-                              ),
+                          ExtendedImage.network(_models[index].coverUrl ?? '',
+                            height: _heights[index],
+                            afterPaintImage: (Canvas canvas, Rect rect, image, Paint paint) {
+                              // print('PAINT IMAGE HEIGHT: ${image.height}');
+                              // print('PAINT RECT HEIGHT: ${rect.height}');
+                              if (_heights[index] == null) {
+                                _heights[index] = rect.height;
+                              }
+                            },),
+                              // CachedNetworkImage(
+                              //   placeholder: (context, url) => const CircularProgressIndicator(),
+                              //   imageUrl: _models[index].coverUrl ?? '',
+                              // ),
                               Container(
                                 padding: const EdgeInsets.all(8.0),
                                 child: Text(_models[index].title ?? ''),
