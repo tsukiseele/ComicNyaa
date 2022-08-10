@@ -88,9 +88,12 @@ class Mio<T extends Model> {
           if (children.first[r'$children'] != null && rules[r'$children']?.rules != null) {
             await Future.wait(children.map((child) => parseChildrenConcurrency(child, rules[r'$children']?.rules as Rules)));
           }
+          var ddd = $children;
+          print('XXXYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY: ${ddd.toJson().toString()}');
 // 判断是否拉平子节点，否则追加到子节点下
           if ($children.flat != null && $children.flat == true) {
             item.addAll(children.first);
+            print('YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY: ${item.toString()}');
             break;
 // Object.assign(item, children[0]);
 //           break;
@@ -134,30 +137,29 @@ class Mio<T extends Model> {
     for (final k in rule.keys) {
       final exp = rule[k];
       print('EXP: regex=${exp?.regex}, selector=${exp?.selector}');
+      // 使用正则匹配
       if (exp?.regex != null) {
+        if (exp?.regex == '') return resultSet;
         var context = '';
         // 匹配选择器内容
         if (exp?.selector != null) {
           // 此处的选择器只应选择一个元素，否则result会被刷新为最后一个
           selectEach(doc, exp?.selector as String, (result) => (context = result));
         } else {
-          context = doc.getElementsByTagName('html').toString();
+          context = doc.getElementsByTagName('html')[0].innerHtml;
+          print('CONTeXT: $context');
         }
         // 匹配正则内容
-        final regexp = RegExp(exp?.regex as String);
+        final regexp = RegExp(exp?.regex ?? '');
         var groups = List.of(regexp.allMatches(context));
-
         groups.forEachIndexed((i, item) {
           while (resultSet.length < i) {
             resultSet.add(<String, dynamic>{});
           }
-          resultSet[i][k] = replaceRegex(item.input, exp?.capture, exp?.replacement);
+          final match = item.groupCount > 0 ? item.group(1) : item.group(0);
+          resultSet[i][k] = replaceRegex(match ?? '', exp?.capture, exp?.replacement);
         });
-
-// 以第一个组为匹配值
-// resultSet[i] || resultSet.push({} as T)
-// resultSet[i][k] = this.replaceRegex(res[1], exp.capture, exp.replacement)
-//         }
+      // 使用选择器匹配
       } else if (exp?.selector != null) {
         selectEach(doc, exp?.selector as String, (result, index) {
           print('RRRR: $result, IIII: $index');

@@ -17,50 +17,54 @@ class VideoDetailView extends StatefulWidget {
 
 class VideoDetailViewState extends State<VideoDetailView> {
   final title = '';
-  Map<String, dynamic>? children;
 
+  // Map<String, dynamic>? children;
+  TypedModel? model;
   VideoPlayerController? _controller;
   ChewieController? _chewieController;
 
-  void getChildren() async {
-    // try {
-      final model = widget.model;
-      print('model.\$section: ${model.$section}');
-      final dynamicResult = await Mio(model.$site).parseChildrenConcurrency(model.toJson(), model.$section!.rules!);
-      final models = TypedModel.fromJson(dynamicResult);
-      print('MODELS: $dynamicResult');
-
-      print('data: $dynamicResult');
-      // print('URL: ${dynamicResult.['sampleUrl'] ?? dynamicResult['largerUrl'] ?? dynamicResult['originUrl']}');
-      print('UUUUUU: ${getUrl(dynamicResult)}');
-      setState(() {
-        children = dynamicResult; //TypedModel.fromJson(dynamicResult);
-      });
-      // 加载视频
-      final url = getUrl(children);
-      print('PLAY URL: $url}');
-      _controller = VideoPlayerController.network(url);
-      await _controller?.initialize();
+  Future<void> play(String url) async {
+    if (url == '') return;
+    print('PLAY URL: $url}');
+    // 丢弃原始源
+    await _controller?.dispose();
+    _chewieController?.dispose();
+    // 加载新URL
+    _controller = VideoPlayerController.network(url);
+    await _controller?.initialize();
+    setState(() {
       _chewieController = ChewieController(
         videoPlayerController: _controller!,
         autoPlay: true,
         looping: true,
       );
-      setState(() {});
-    // } catch (e) {
-    //   print('ERROR: ${e.toString()}');
-    // }
-    // return data;;
+    });
   }
 
-  String getUrl(Map<String, dynamic>? item) {
+  void getChildren() async {
+    // try {
+    final parent = widget.model;
+    print('model.\$section: ${parent.$section}');
+    final dynamicResult = await Mio(parent.$site).parseChildrenConcurrency(parent.toJson(), parent.$section!.rules!);
+    final model = TypedModel.fromJson(dynamicResult);
+
+    // 加载视频
+    await play(getUrl(model));
+
+    setState(() {
+      this.model = model;
+    });
+  }
+
+  // String getUrl(Map<String, dynamic>? item) {
+  String getUrl(TypedModel? item) {
     if (item == null) return '';
     try {
-      final children = item['children'] != null ? item['children'][0] : null;
+      final children = item.children != null ? item.children![0] : null;
       if (children != null) {
-        return children['sampleUrl'] ?? children['largerUrl'] ?? children['originUrl'];
+        return children.originUrl ?? children.largerUrl ?? children.sampleUrl ?? '';
       }
-      return item['sampleUrl'] ?? item['largerUrl'] ?? item['originUrl'] ?? '';
+      return item.originUrl ?? item.largerUrl ?? item.sampleUrl ?? '';
     } catch (e) {
       print('ERROR: $e');
     }
@@ -85,42 +89,50 @@ class VideoDetailViewState extends State<VideoDetailView> {
             child: Column(children: [
               Center(
                 child: widget.model.type == 'image'
-                    ? Image.network(getUrl(children))
+                    ? Image.network(getUrl(model))
                     : _controller?.value.isInitialized ?? false
                         ? AspectRatio(
-                            aspectRatio: _controller?.value.aspectRatio ?? .75,
+                            aspectRatio: _controller?.value.aspectRatio ?? 16/9,
                             // child: VideoPlayer(_controller!),
                             child: Chewie(controller: _chewieController!))
                         : Container(),
               ),
-              Offstage(
-                offstage: widget.model.type == 'video',
-                child: Row(
-                  children: [
-                    Offstage(
-                        offstage: children?['originUrl'] != null,
-                        child: ElevatedButton(
-                            onPressed: () {
-                              // _controller?.value.isPlaying ?? false ? _controller?.pause() : _controller?.play();
-                            },
-                            child: const Text('高解析度'))),
-                    Offstage(
-                        offstage: children?['largerUrl'] != null,
-                        child: ElevatedButton(
-                            onPressed: () {
-                              // _controller?.value.isPlaying ?? false ? _controller?.pause() : _controller?.play();
-                            },
-                            child: const Text('中解析度'))),
-                    Offstage(
-                        offstage: children?['sampleUrl'] != null,
-                        child: ElevatedButton(
-                            onPressed: () {
-                              // _controller?.value.isPlaying ?? false ? _controller?.pause() : _controller?.play();
-                            },
-                            child: const Text('低解析度'))),
-                  ],
-                ),
-              )
+              Row(
+                children: [
+                  Offstage(
+                      offstage: model?.originUrl == null,
+                      child: ElevatedButton(
+                          onPressed: () {
+                            play(model!.originUrl!);
+                            // _controller?.value.isPlaying ?? false ? _controller?.pause() : _controller?.play();
+                          },
+                          child: const Text('高解析度'))),
+                  Offstage(
+                      offstage: model?.largerUrl == null,
+                      child: ElevatedButton(
+                          onPressed: () {
+                            play(model!.largerUrl!);
+                            // _controller?.value.isPlaying ?? false ? _controller?.pause() : _controller?.play();
+                          },
+                          child: const Text('中解析度'))),
+                  Offstage(
+                      offstage: model?.sampleUrl == null,
+                      child: ElevatedButton(
+                          onPressed: () {
+                            play(model!.sampleUrl!);
+                            // _controller?.value.isPlaying ?? false ? _controller?.pause() : _controller?.play();
+                          },
+                          child: const Text('低解析度'))),
+                ],
+              ),
             ])));
+  }
+
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    _controller?.dispose();
+    _chewieController?.dispose();
+    super.dispose();
   }
 }

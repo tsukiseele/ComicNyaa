@@ -121,8 +121,8 @@ class Selector {
     selector = json['selector'];
     capture = json['capture'];
     replacement = json['replacement'];
-    flat = bool.fromEnvironment(json['flat'].toString());
-    extend = bool.fromEnvironment(json['extend'].toString());
+    flat = json['flat']?.toString().parseBool();
+    extend = json['extend']?.toString().parseBool();
     rules = json['rules'] != null ? Rules.fromJson(json['rules']) : null;
   }
 
