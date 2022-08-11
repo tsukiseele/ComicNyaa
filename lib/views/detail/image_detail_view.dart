@@ -1,12 +1,9 @@
-import 'package:carousel_slider/carousel_slider.dart';
-import 'package:chewie/chewie.dart';
 import 'package:comic_nyaa/library/mio/core/mio.dart';
 import 'package:comic_nyaa/models/typed_model.dart';
 import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
-import 'package:video_player/video_player.dart';
 
 class ImageDetailView extends StatefulWidget {
   const ImageDetailView({Key? key, required this.model}) : super(key: key);
@@ -22,8 +19,6 @@ class ImageDetailView extends StatefulWidget {
 class ImageDetailViewState extends State<ImageDetailView> {
   TypedModel? _model;
   List<TypedModel>? _children;
-  VideoPlayerController? _controller;
-  ChewieController? _chewieController;
   int currentIndex = 0;
 
   void getChildren() async {

@@ -1,33 +1,21 @@
 import 'dart:async';
-import 'dart:convert';
-import 'dart:io';
-import 'package:collection/collection.dart';
-import 'package:comic_nyaa/app/global.dart';
-import 'package:comic_nyaa/views/detail/comic_detail_view.dart';
-import 'package:comic_nyaa/views/detail/image_detail_view.dart';
-import 'package:extended_image/extended_image.dart';
-import 'package:flutter/services.dart' show rootBundle;
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_displaymode/flutter_displaymode.dart';
-import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:archive/archive_io.dart';
 
-import 'package:comic_nyaa/library/mio/model/site.dart';
-import 'package:comic_nyaa/library/mio/core/mio.dart';
-import 'package:comic_nyaa/models/typed_model.dart';
-import 'package:comic_nyaa/views/detail/video_detail_view.dart';
 
 import 'comic_nyaa.dart';
-import 'models/typed_model.dart';
 
 void main() async {
   runApp(const ComicNyaa());
 }
 
-class ComicNyaa extends StatelessWidget {
+class ComicNyaa extends StatefulWidget {
   const ComicNyaa({Key? key}) : super(key: key);
+  @override
+  State<StatefulWidget> createState() => ComicNyaaState();
+}
+
+class ComicNyaaState extends State<ComicNyaa> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -37,5 +25,24 @@ class ComicNyaa extends StatelessWidget {
       ),
       home: const MainView(title: 'Home'),
     );
+  }
+  @override
+  void initState() {
+    setOptimalDisplayMode();
+    super.initState();
+  }
+
+  Future<void> setOptimalDisplayMode() async {
+    final List<DisplayMode> supported = await FlutterDisplayMode.supported;
+    final DisplayMode active = await FlutterDisplayMode.active;
+    final List<DisplayMode> sameResolution = supported
+        .where((DisplayMode m) => m.width == active.width && m.height == active.height)
+        .toList()
+      ..sort((DisplayMode a, DisplayMode b) => b.refreshRate.compareTo(a.refreshRate));
+
+    final DisplayMode mostOptimalMode = sameResolution.isNotEmpty ? sameResolution.first : active;
+    /// This setting is per session.
+    /// Please ensure this was placed with `initState` of your root widget.
+    await FlutterDisplayMode.setPreferredMode(mostOptimalMode);
   }
 }

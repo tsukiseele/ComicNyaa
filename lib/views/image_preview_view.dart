@@ -1,8 +1,3 @@
-import 'package:chewie/chewie.dart';
-import 'package:comic_nyaa/library/mio/core/mio.dart';
-import 'package:comic_nyaa/models/typed_model.dart';
-import 'package:flutter/material.dart';
-import 'package:video_player/video_player.dart';
 
 // class DetailsView extends StatefulWidget {
 //   const DetailsView({Key? key, required this.model}) : super(key: key);

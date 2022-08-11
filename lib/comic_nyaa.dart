@@ -8,14 +8,11 @@ import 'package:comic_nyaa/views/detail/comic_detail_view.dart';
 import 'package:comic_nyaa/views/detail/image_detail_view.dart';
 import 'package:comic_nyaa/views/detail/video_detail_view.dart';
 import 'package:extended_image/extended_image.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import 'package:comic_nyaa/library/mio/model/site.dart';
 import 'package:comic_nyaa/library/mio/core/mio.dart';
 import 'package:comic_nyaa/models/typed_model.dart';
-import 'package:comic_nyaa/views/detail/video_detail_view.dart';
-import 'package:flutter_displaymode/flutter_displaymode.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 
 import 'app/global.dart';
@@ -53,9 +50,6 @@ class MainView extends StatefulWidget {
 }
 
 class _MainViewState extends State<MainView> {
-  // init() async {
-  //   await Config.initializle();
-  // }
   List<TypedModel> _models = [];
   final Map<int, double> _heightCache = {};
   static const List<String> _kOptions = <String>[
@@ -102,7 +96,7 @@ class _MainViewState extends State<MainView> {
 
   @override
   void initState() {
-    setOptimalDisplayMode();
+    // setOptimalDisplayMode();
     _getImagesData();
     super.initState();
   }
@@ -168,21 +162,5 @@ class _MainViewState extends State<MainView> {
         child: const Icon(Icons.refresh),
       ), // This trailing comma makes auto-formatting nicer for build methods.
     );
-  }
-
-  Future<void> setOptimalDisplayMode() async {
-    final List<DisplayMode> supported = await FlutterDisplayMode.supported;
-    final DisplayMode active = await FlutterDisplayMode.active;
-
-    final List<DisplayMode> sameResolution = supported
-        .where((DisplayMode m) => m.width == active.width && m.height == active.height)
-        .toList()
-      ..sort((DisplayMode a, DisplayMode b) => b.refreshRate.compareTo(a.refreshRate));
-
-    final DisplayMode mostOptimalMode = sameResolution.isNotEmpty ? sameResolution.first : active;
-
-    /// This setting is per session.
-    /// Please ensure this was placed with `initState` of your root widget.
-    await FlutterDisplayMode.setPreferredMode(mostOptimalMode);
   }
 }

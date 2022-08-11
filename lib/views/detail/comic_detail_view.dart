@@ -1,11 +1,8 @@
-import 'package:chewie/chewie.dart';
 import 'package:comic_nyaa/library/mio/core/mio.dart';
 import 'package:comic_nyaa/models/typed_model.dart';
 import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
-import 'package:permission_handler/permission_handler.dart';
-import 'package:video_player/video_player.dart';
 
 class ComicDetailView extends StatefulWidget {
   const ComicDetailView({Key? key, required this.model}) : super(key: key);
@@ -23,8 +20,6 @@ class ComicDetailViewState extends State<ComicDetailView> {
   TypedModel? _model;
   List<TypedModel>? _children;
 
-  VideoPlayerController? _controller;
-  ChewieController? _chewieController;
 
   void getChildren() async {
     try {
