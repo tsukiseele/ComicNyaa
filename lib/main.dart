@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_displaymode/flutter_displaymode.dart';
 
 
-import 'views/pages/home_page_view.dart';
+import 'views/main_view.dart';
 
 void main() async {
   runApp(const ComicNyaa());

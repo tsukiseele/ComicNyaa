@@ -1,7 +1,10 @@
+import 'package:comic_nyaa/app/global.dart';
 import 'package:comic_nyaa/library/mio/core/mio.dart';
 import 'package:comic_nyaa/models/typed_model.dart';
+import 'package:dio/dio.dart';
 import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
 
@@ -51,6 +54,23 @@ class ImageDetailViewState extends State<ImageDetailView> {
     return '';
   }
 
+  getFilename(String url) {
+    // final i = url.lastIndexOf('/')
+    // final end = url.substring(start)
+    final match = RegExp(r'[\s\S^\/]*\/([\s\S^\/].*?\.\w+)(\?[\s\S^\/]*)?$').allMatches(url);
+    if (match.isNotEmpty && match.first.groupCount > 0) {
+      final filename = match.first.group(1);
+      print('MATCH: $filename');
+      return filename!;
+    }
+    throw Exception('无法从URL中解析文件名：$url');
+  }
+  onDownload(String url) async {
+    final savePath = (await Config.downloadDir).concatPath(getFilename(url));
+    print('SAVE PATH: $savePath');
+    Dio().download(url, savePath);
+  }
+
   @override
   void initState() {
     getChildren();
@@ -60,26 +80,22 @@ class ImageDetailViewState extends State<ImageDetailView> {
 
   @override
   Widget build(BuildContext context) {
-    // return Scaffold(
-    //     appBar: AppBar(
-    //       title: Text(widget.title),
-    //     ),
-    //     body:
     return Stack(children: [
       _children != null
           ? PhotoViewGallery.builder(
               scrollPhysics: const BouncingScrollPhysics(),
               builder: (BuildContext context, int index) {
                 return PhotoViewGalleryPageOptions(
-                  imageProvider:
-                      ExtendedImage.network(getUrl(_children?[index]), handleLoadingProgress: true, loadStateChanged: (status) {
-                    // status.loadingProgress.cumulativeBytesLoaded
-                    print('PROGRESS: ${status.loadingProgress}');
-                    return null;
-                  }).image,
-                  initialScale: PhotoViewComputedScale.contained * 0.8,
-                  // heroAttributes: PhotoViewHeroAttributes(tag: _children?[index].id),
-                );
+                    imageProvider: ExtendedImage.network(getUrl(_children?[index])).image,
+                    initialScale: PhotoViewComputedScale.contained * 0.8,
+                    onTapUp: (context, detail, value) {
+                      final url =getUrl(_children?[index]);
+                      Fluttertoast.showToast(msg: '下载已添加：${url}');
+                      onDownload(url);
+                    },
+                    onTapDown: (context, detail, value) {}
+                    // heroAttributes: PhotoViewHeroAttributes(tag: _children?[index].id),
+                    );
               },
               itemCount: _children?.length,
               loadingBuilder: (context, event) => Center(
@@ -93,16 +109,16 @@ class ImageDetailViewState extends State<ImageDetailView> {
             )
           : const Center(child: CircularProgressIndicator()),
       Positioned(
-        top: 0,
-        left: 0,
-        right: 0,
-        height: kToolbarHeight + 48,
+          top: 0,
+          left: 0,
+          right: 0,
+          height: kToolbarHeight + 48,
           child: AppBar(
             // backgroundColor: const Color.fromRGBO(255, 255, 255, .6),
             // foregroundColor: Colors.teal,
             // toolbarHeight: 48,
-        title: Text(widget.title),
-      ))
+            title: Text(widget.title),
+          ))
     ]);
   }
 }
