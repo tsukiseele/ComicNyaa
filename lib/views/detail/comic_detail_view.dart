@@ -1,7 +1,6 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:chewie/chewie.dart';
 import 'package:comic_nyaa/library/mio/core/mio.dart';
-import 'package:comic_nyaa/model/typed_model.dart';
+import 'package:comic_nyaa/models/typed_model.dart';
 import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
@@ -20,10 +19,9 @@ class ComicDetailView extends StatefulWidget {
 }
 
 class ComicDetailViewState extends State<ComicDetailView> {
-  final title = '';
-  TypedModel? _models;
+  final Map<int, double> _heightCache = {};
+  TypedModel? _model;
   List<TypedModel>? _children;
-  final Map<int, double> _heights = {};
 
   VideoPlayerController? _controller;
   ChewieController? _chewieController;
@@ -36,8 +34,8 @@ class ComicDetailViewState extends State<ComicDetailView> {
       final models = TypedModel.fromJson(dynamicResult);
       print('UUUUUU: ${getUrl(models)}');
       setState(() {
-        _models = models; //TypedModel.fromJson(dynamicResult);
-        _children = _models?.children;
+        _model = models; //TypedModel.fromJson(dynamicResult);
+        _children = _model?.children;
       });
 
       setState(() {});
@@ -97,26 +95,21 @@ class ComicDetailViewState extends State<ComicDetailView> {
                                             // width: ScreenUtil.instance.setWidth(400),
                                             // height: ScreenUtil.instance.setWidth(400),
                                             // width: _heights[index],
-                                            height: _heights[index],
+                                            height: _heightCache[index],
                                             fit: BoxFit.cover,
                                             cache: true,
                                             handleLoadingProgress: true,
+                                    gaplessPlayback: true,
                                             // border: Border.all(color: Colors.red, width: 1.0),
                                             // shape: boxShape,
                                             borderRadius: const BorderRadius.all(Radius.circular(4.0)),
                                             //cancelToken: cancellationToken,
                                             afterPaintImage: (Canvas canvas, Rect rect, image, Paint paint) {
-                                              // print('PAINT IMAGE HEIGHT: ${image.height}');
-                                              // print('PAINT RECT HEIGHT: ${rect.height}');
-                                              if (_heights[index] == null) {
-                                                _heights[index] = rect.height;
+                                              if (_heightCache[index] == null) {
+                                                _heightCache[index] = rect.height;
                                               }
                                             },
                                         ),
-                                        // CachedNetworkImage(
-                                        //   placeholder: (context, url) => const CircularProgressIndicator(),
-                                        //   imageUrl: getUrl(_children?[index]),
-                                        // ),
                                         Container(
                                           padding: const EdgeInsets.all(8.0),
                                           child: Text(_children?[index].title ?? ''),

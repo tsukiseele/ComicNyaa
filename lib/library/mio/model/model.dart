@@ -1,8 +1,9 @@
 import './site.dart';
 
-abstract class Model<T> {
+class Model<T> {
 
   String? type;
+  // List<String>? sources;
   List<T>? children;// 需要实现类序列化
   String? $children;
   Site? $site; // 不可序列化

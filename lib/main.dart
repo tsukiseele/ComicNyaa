@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:collection/collection.dart';
 import 'package:comic_nyaa/views/detail/comic_detail_view.dart';
 import 'package:comic_nyaa/views/detail/image_detail_view.dart';
@@ -16,8 +15,10 @@ import 'package:archive/archive_io.dart';
 
 import 'package:comic_nyaa/library/mio/model/site.dart';
 import 'package:comic_nyaa/library/mio/core/mio.dart';
-import 'package:comic_nyaa/model/typed_model.dart';
+import 'package:comic_nyaa/models/typed_model.dart';
 import 'package:comic_nyaa/views/detail/video_detail_view.dart';
+
+import 'models/typed_model.dart';
 
 String concatPath(dirname, filename) {
   return '$dirname${Platform.pathSeparator}$filename';
@@ -28,7 +29,7 @@ Future<List<Site>> getRules() async {
   final ruleDir = await Directory(concatPath(appDir.path, 'rules')).create(recursive: true);
   final savePath = concatPath(ruleDir.path, 'rules.zip');
   print('savePath: $savePath');
-  // await Dio().download('https://hlo.li/static/rules.zip', savePath);
+  await Dio().download('https://hlo.li/static/rules.zip', savePath);
   // 读取规则
   final bytes = File(savePath).readAsBytesSync();
   final archive = ZipDecoder().decodeBytes(bytes);
@@ -84,7 +85,7 @@ class MainView extends StatefulWidget {
 
 class _MainViewState extends State<MainView> {
   List<TypedModel> _models = [];
-  final Map<int, double> _heights = {};
+  final Map<int, double> _heightCache = {};
   static const List<String> _kOptions = <String>[
     'aardvark',
     'bobcat',
@@ -94,8 +95,9 @@ class _MainViewState extends State<MainView> {
   void _getImagesData() async {
     final sites = await getRules();
     sites.forEachIndexed((i, element) => print('$i: ${element.name}'));
-    final site = sites[9];
+    final site = sites[28];
     final result = await getGallery(site);
+    _heightCache.clear();
     setState(() {
       _models = result;
     });
@@ -161,15 +163,18 @@ class _MainViewState extends State<MainView> {
                           onTap: () => _jump(_models[index]),
                           child: Column(
                             children: [
-                          ExtendedImage.network(_models[index].coverUrl ?? '',
-                            height: _heights[index],
-                            afterPaintImage: (Canvas canvas, Rect rect, image, Paint paint) {
-                              // print('PAINT IMAGE HEIGHT: ${image.height}');
-                              // print('PAINT RECT HEIGHT: ${rect.height}');
-                              if (_heights[index] == null) {
-                                _heights[index] = rect.height;
-                              }
-                            },),
+                              ExtendedImage.network(
+                                _models[index].coverUrl ?? '',
+                                height: _heightCache[index],
+
+                                afterPaintImage: (Canvas canvas, Rect rect, image, Paint paint) {
+                                  // print('PAINT IMAGE HEIGHT: ${image.height}');
+                                  // print('PAINT RECT HEIGHT: ${rect.height}');
+                                  if (_heightCache[index] == null) {
+                                    _heightCache[index] = rect.height;
+                                  }
+                                },
+                              ),
                               // CachedNetworkImage(
                               //   placeholder: (context, url) => const CircularProgressIndicator(),
                               //   imageUrl: _models[index].coverUrl ?? '',
@@ -186,7 +191,7 @@ class _MainViewState extends State<MainView> {
       floatingActionButton: FloatingActionButton(
         onPressed: _getImagesData,
         tooltip: 'Increment',
-        child: const Icon(Icons.add),
+        child: const Icon(Icons.refresh),
       ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }

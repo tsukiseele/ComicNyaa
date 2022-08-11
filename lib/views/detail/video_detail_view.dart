@@ -1,6 +1,6 @@
 import 'package:chewie/chewie.dart';
 import 'package:comic_nyaa/library/mio/core/mio.dart';
-import 'package:comic_nyaa/model/typed_model.dart';
+import 'package:comic_nyaa/models/typed_model.dart';
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 
@@ -16,16 +16,12 @@ class VideoDetailView extends StatefulWidget {
 }
 
 class VideoDetailViewState extends State<VideoDetailView> {
-  final title = '';
-
-  // Map<String, dynamic>? children;
   TypedModel? model;
   VideoPlayerController? _controller;
   ChewieController? _chewieController;
 
   Future<void> play(String url) async {
     if (url == '') return;
-    print('PLAY URL: $url}');
     // 丢弃原始源
     await _controller?.dispose();
     _chewieController?.dispose();
@@ -55,8 +51,6 @@ class VideoDetailViewState extends State<VideoDetailView> {
       this.model = model;
     });
   }
-
-  // String getUrl(Map<String, dynamic>? item) {
   String getUrl(TypedModel? item) {
     if (item == null) return '';
     try {
@@ -88,14 +82,11 @@ class VideoDetailViewState extends State<VideoDetailView> {
             padding: const EdgeInsets.all(8.0),
             child: Column(children: [
               Center(
-                child: widget.model.type == 'image'
-                    ? Image.network(getUrl(model))
-                    : _controller?.value.isInitialized ?? false
-                        ? AspectRatio(
-                            aspectRatio: _controller?.value.aspectRatio ?? 16/9,
-                            // child: VideoPlayer(_controller!),
-                            child: Chewie(controller: _chewieController!))
-                        : Container(),
+                child: _controller?.value.isInitialized ?? false
+                    ? AspectRatio(
+                        aspectRatio: _controller?.value.aspectRatio ?? 16 / 9,
+                        child: Chewie(controller: _chewieController!))
+                    : Container(),
               ),
               Row(
                 children: [
