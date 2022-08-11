@@ -152,17 +152,17 @@ class Mio<T extends Model> {
         // 匹配正则内容
         final regexp = RegExp(exp?.regex ?? '');
         var groups = List.of(regexp.allMatches(context));
+        while (resultSet.length < groups.length) {
+          resultSet.add(<String, dynamic>{});
+        }
         groups.forEachIndexed((i, item) {
-          while (resultSet.length < i) {
-            resultSet.add(<String, dynamic>{});
-          }
           final match = item.groupCount > 0 ? item.group(1) : item.group(0);
           resultSet[i][k] = replaceRegex(match ?? '', exp?.capture, exp?.replacement);
         });
       // 使用选择器匹配
       } else if (exp?.selector != null) {
         selectEach(doc, exp?.selector as String, (result, index) {
-          print('RRRR: $result, IIII: $index');
+          // print('RRRR: $result, IIII: $index');
           while (resultSet.length < index + 1) {
             resultSet.add(<String, dynamic>{});
           }
@@ -260,13 +260,22 @@ class Mio<T extends Model> {
   /// @param {String} keywords 关键字
   /// @returns {String} 真实URL
   String replaceUrlTemplate(String template, int page, String? keywords) {
-    final pageMatch = List.of(REG_PAGE_TEMPLATE.allMatches(template));
-    final keywordMatch = List.of(REG_KEYWORD_TEMPLATE.allMatches(template));
-    final k = keywordMatch.length > 1 ? keywordMatch[1].input : '';
-    var p = 0;
-    p = pageMatch.length > 1 ? p + int.parse(pageMatch[1].input) : p;
-    p = pageMatch.length > 2 ? p * int.parse(pageMatch[2].input) : p;
-
-    return template.replaceAll(REG_PAGE_MATCH, p.toString()).replaceAll(REG_KEYWORD_MATCH, keywords ?? k);
+    final pageMatches = REG_PAGE_TEMPLATE.allMatches(template);
+    final keywordMatches = REG_KEYWORD_TEMPLATE.allMatches(template);
+    int p = 0;
+    String? k = '';
+    if (keywordMatches.isNotEmpty) {
+      final keywordMatch = keywordMatches.first;
+       k = keywordMatch.groupCount > 1 ? keywordMatch.group(1) : '';
+    }
+    if (pageMatches.isNotEmpty) {
+      final pageMatch = pageMatches.first;
+      print('template: [$template], page: [$page], keywords: [$keywords]');
+      print('PAGE SIZE: ${pageMatch.groupCount}, G0: [${pageMatch.group(0)}], G1: [${pageMatch.group(1)}], G2: [${pageMatch.group(2)}]');
+      final offset = pageMatch.groupCount > 1 && (pageMatch.group(1)?.isNotEmpty ?? false) ? p + int.parse(pageMatch.group(1) ?? '0') : 0;
+      final range = pageMatch.groupCount > 2 && (pageMatch.group(2)?.isNotEmpty ?? false) ? p * int.parse(pageMatch.group(2) ?? '1') : 1;
+      p = (p + offset) * range;
+    }
+    return template.replaceAll(REG_PAGE_MATCH, p.toString()).replaceAll(REG_KEYWORD_MATCH, keywords ?? k ?? '');
   }
 }

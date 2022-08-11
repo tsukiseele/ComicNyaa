@@ -23,15 +23,23 @@ class ImageDetailViewState extends State<ImageDetailView> {
   TypedModel? _model;
   List<TypedModel>? _children;
   int currentIndex = 0;
+  bool isFailed = false;
 
   void getChildren() async {
     try {
       final model = widget.model;
       print('model.\$section: ${model.$section}');
       final dynamicResult = await Mio(model.$site).parseChildrenConcurrency(model.toJson(), model.$section!.rules!);
+      print('SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS: ${model.$site?.sections?['search']?.toJson().toString()}');
       _model = TypedModel.fromJson(dynamicResult);
+      print('XXXXXXXXXXXXXXXXXXXXXXXX: $dynamicResult');
+      print('CHILDREN URL: ${getUrl(_model)}');
+      final url = getUrl(_model);
 
-      setState(() {
+      setState(() {     if (url.isEmpty) {
+        isFailed = true;
+        print('ISFAILED: ${isFailed}');
+      }
         _children = _model?.children; //TypedModel.fromJson(dynamicResult);
       });
     } catch (e) {
@@ -42,16 +50,17 @@ class ImageDetailViewState extends State<ImageDetailView> {
 
   String getUrl(TypedModel? item) {
     if (item == null) return '';
+    String url = "";
     try {
       final children = item.children != null ? item.children![0] : null;
       if (children != null) {
-        return children.sampleUrl ?? children.largerUrl ?? children.originUrl ?? '';
+        url=  children.sampleUrl ?? children.largerUrl ?? children.originUrl ?? '';
       }
-      return item.sampleUrl ?? item.largerUrl ?? item.originUrl ?? '';
+      url= item.sampleUrl ?? item.largerUrl ?? item.originUrl ?? '';
     } catch (e) {
       print('ERROR: $e');
     }
-    return '';
+    return Uri.encodeFull(url);
   }
 
   getFilename(String url) {
@@ -107,7 +116,7 @@ class ImageDetailViewState extends State<ImageDetailView> {
               // pageController: widget.pageController,
               // onPageChanged: onPageChanged,
             )
-          : const Center(child: CircularProgressIndicator()),
+          : isFailed ? const Center(child: Text('加载失败') ): const Center(child: CircularProgressIndicator()),
       Positioned(
           top: 0,
           left: 0,

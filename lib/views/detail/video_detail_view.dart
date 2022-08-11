@@ -60,7 +60,8 @@ class VideoDetailViewState extends State<VideoDetailView> {
       }
       return item.originUrl ?? item.largerUrl ?? item.sampleUrl ?? '';
     } catch (e) {
-      print('ERROR: $e');
+      rethrow;
+      // print('ERROR: $e');
     }
     return '';
   }
