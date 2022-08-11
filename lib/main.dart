@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_displaymode/flutter_displaymode.dart';
 
 
-import 'comic_nyaa.dart';
+import 'views/pages/home_page_view.dart';
 
 void main() async {
   runApp(const ComicNyaa());
@@ -12,10 +12,10 @@ void main() async {
 class ComicNyaa extends StatefulWidget {
   const ComicNyaa({Key? key}) : super(key: key);
   @override
-  State<StatefulWidget> createState() => ComicNyaaState();
+  State<StatefulWidget> createState() => _ComicNyaaState();
 }
 
-class ComicNyaaState extends State<ComicNyaa> {
+class _ComicNyaaState extends State<ComicNyaa> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(

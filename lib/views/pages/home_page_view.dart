@@ -15,8 +15,8 @@ import 'package:comic_nyaa/library/mio/core/mio.dart';
 import 'package:comic_nyaa/models/typed_model.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 
-import 'app/global.dart';
-import 'models/typed_model.dart';
+import '../../app/global.dart';
+import '../../models/typed_model.dart';
 
 Future<List<Site>> getRules() async {
   // final savePath = concatPath(ruleDir.path, 'rules.zip');
