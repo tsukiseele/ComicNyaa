@@ -33,9 +33,11 @@ class MainView extends StatefulWidget {
 class _MainViewState extends State<MainView> {
   final ScrollController _scrollController = ScrollController();
   final RefreshController _refreshController = RefreshController(initialRefresh: false);
+  final FloatingSearchBarController _floatingSearchBarController = FloatingSearchBarController();
   final Map<int, double> _heightCache = {};
   List<TypedModel> _models = [];
   List<Site> _sites = [];
+  List<String> _autosuggest = [];
   int _currentSiteId = 920;
   int _page = 1;
   String _keywords = '';
@@ -144,11 +146,13 @@ class _MainViewState extends State<MainView> {
       drawer: const Drawer(
         child: Text('Teetd'),
       ),
+      endDrawer: const Drawer(
+        child: Text('Teetddsfsf'),
+      ),
       body: Stack(
         fit: StackFit.expand,
         children: [
-          SafeArea(
-              child: Container(padding: EdgeInsets.fromLTRB(0, 48, 0, 0), child: Column(children: [
+          Container(padding: const EdgeInsets.fromLTRB(0, 0, 0, 0), child: Column(children: [
             // Container(
             //     padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
             //     child: Row(
@@ -166,6 +170,8 @@ class _MainViewState extends State<MainView> {
             //     )),
             Flexible(
               child: SmartRefresher(
+                // header: const Text(''),
+                // footer: Text(''),
                   enablePullDown: true,
                   enablePullUp: true,
                   // header: WaterDropHeader(),
@@ -197,7 +203,7 @@ class _MainViewState extends State<MainView> {
                   // onRefresh: _onRefresh,
                   // onLoading: _onLoading,
                   child: MasonryGridView.count(
-                      padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
+                      padding: const EdgeInsets.fromLTRB(8, kToolbarHeight + 48, 8, 0),
                       crossAxisCount: 3,
                       mainAxisSpacing: 8.0,
                       crossAxisSpacing: 8.0,
@@ -206,6 +212,7 @@ class _MainViewState extends State<MainView> {
                       physics: const BouncingScrollPhysics(),
                       itemBuilder: (context, index) {
                         return Material(
+                            clipBehavior: Clip.hardEdge,
                             elevation: 2.0,
                             borderRadius: const BorderRadius.all(Radius.circular(4.0)),
                             child: InkWell(
@@ -228,7 +235,7 @@ class _MainViewState extends State<MainView> {
                       })),
             ),
             // _isNext ? const Text('Loading...') : Container()
-          ]))),
+          ])),
 
           // buildMap(),
           // buildBottomNavigationBar(),
@@ -249,17 +256,25 @@ class _MainViewState extends State<MainView> {
     final isPortrait = MediaQuery.of(context).orientation == Orientation.portrait;
 
     return FloatingSearchBar(
+      controller: _floatingSearchBarController,
+
+      automaticallyImplyDrawerHamburger: false,
       hint: 'Search...',
       scrollPadding: const EdgeInsets.only(top: 16, bottom: 56),
-      transitionDuration: const Duration(milliseconds: 800),
+      transitionDuration: const Duration(milliseconds: 500),
       transitionCurve: Curves.easeInOut,
-      physics: const BouncingScrollPhysics(),
+      // physics: const BouncingScrollPhysics(),
       axisAlignment: isPortrait ? 0.0 : -1.0,
       openAxisAlignment: 0.0,
       width: isPortrait ? 600 : 500,
       debounceDelay: const Duration(milliseconds: 500),
-      onQueryChanged: (query) {
-        // Call your model, bloc, controller here.
+      onQueryChanged: (query) async {
+        final value = await Dio().get('https://danbooru.donmai.us/autocomplete.json?search[query]=$query&search[type]=tag_query&limit=10');
+        final result = List<Map<String, dynamic>>.from(value.data);
+        setState(() {
+          _autosuggest = result.map((item) => item['value'] as String).toList();
+          print('_autosuggest: $_autosuggest');
+        });
       },
       // Specify a custom transition to be used for
       // animating between opened and closed stated.
@@ -268,7 +283,7 @@ class _MainViewState extends State<MainView> {
         FloatingSearchBarAction(
           showIfOpened: false,
           child: CircularButton(
-            icon: const Icon(Icons.place),
+            icon: const Icon(Icons.discount),
             onPressed: () {},
           ),
         ),
@@ -276,16 +291,31 @@ class _MainViewState extends State<MainView> {
           showIfClosed: false,
         ),
       ],
+      onSubmitted: (query) {
+
+        _onSearch(query);
+        _floatingSearchBarController.close();
+      },
       builder: (context, transition) {
         return ClipRRect(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(4),
           child: Material(
             color: Colors.white,
             elevation: 4.0,
             child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: Colors.accents.map((color) {
-                return Container(height: 112, color: color);
+              // mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: _autosuggest.map((query) {
+                return Material(child: InkWell(
+                onTap: () {
+                  _onSearch(query);
+                  _floatingSearchBarController.close();
+                },
+                child: Container(
+                    padding: const EdgeInsets.all(8),
+                    height: 48,
+                    decoration: const BoxDecoration(border: Border(bottom: BorderSide(color: Colors.white12))),
+                    child: Center(child: Text(query, textAlign: TextAlign.center, )) )));
               }).toList(),
             ),
           ),

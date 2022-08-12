@@ -262,7 +262,7 @@ class Mio<T extends Model> {
   String replaceUrlTemplate(String template, int page, String? keywords) {
     final pageMatches = REG_PAGE_TEMPLATE.allMatches(template);
     final keywordMatches = REG_KEYWORD_TEMPLATE.allMatches(template);
-    int p = 0;
+    int p = page;
     String? k = '';
     if (keywordMatches.isNotEmpty) {
       final keywordMatch = keywordMatches.first;
@@ -272,9 +272,11 @@ class Mio<T extends Model> {
       final pageMatch = pageMatches.first;
       print('template: [$template], page: [$page], keywords: [$keywords]');
       print('PAGE SIZE: ${pageMatch.groupCount}, G0: [${pageMatch.group(0)}], G1: [${pageMatch.group(1)}], G2: [${pageMatch.group(2)}]');
-      final offset = pageMatch.groupCount > 1 && (pageMatch.group(1)?.isNotEmpty ?? false) ? p + int.parse(pageMatch.group(1) ?? '0') : 0;
-      final range = pageMatch.groupCount > 2 && (pageMatch.group(2)?.isNotEmpty ?? false) ? p * int.parse(pageMatch.group(2) ?? '1') : 1;
+      final offset = pageMatch.groupCount > 0 && (pageMatch.group(1)?.isNotEmpty ?? false) ? p + int.parse(pageMatch.group(1) ?? '0') : 0;
+      final range = pageMatch.groupCount > 1 && (pageMatch.group(2)?.isNotEmpty ?? false) ? p * int.parse(pageMatch.group(2) ?? '1') : 1;
       p = (p + offset) * range;
+
+      print('FINAL PAGE: [$p] offset: [$offset], range: [$range]');
     }
     return template.replaceAll(REG_PAGE_MATCH, p.toString()).replaceAll(REG_KEYWORD_MATCH, keywords ?? k ?? '');
   }
