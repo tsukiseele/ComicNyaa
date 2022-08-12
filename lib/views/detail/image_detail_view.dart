@@ -1,6 +1,7 @@
 import 'package:comic_nyaa/app/global.dart';
 import 'package:comic_nyaa/library/mio/core/mio.dart';
 import 'package:comic_nyaa/models/typed_model.dart';
+import 'package:comic_nyaa/utils/uri_extensions.dart';
 import 'package:dio/dio.dart';
 import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
@@ -62,21 +63,9 @@ class ImageDetailViewState extends State<ImageDetailView> {
     return Uri.encodeFull(url);
   }
 
-  getFilename(String url) {
-    // final i = url.lastIndexOf('/')
-    // final end = url.substring(start)
-    final match = RegExp(r'[\s\S^\/]*\/([\s\S^\/].*?\.\w+)(\?[\s\S^\/]*)?$').allMatches(url);
-    if (match.isNotEmpty && match.first.groupCount > 0) {
-      final filename = match.first.group(1);
-      print('MATCH: $filename');
-      return filename!;
-    }
-    throw Exception('无法从URL中解析文件名：$url');
-  }
-
   onDownload(String url) async {
-    String savePath = (await Config.downloadDir).concatPath(getFilename(url)).path;
-    // final savePath = (await Config.downloadDir).concatPath('rules').concatPath('dl.png').path;
+    // String savePath = (await Config.downloadDir).concatPath(getFilename(url)).path;
+    String savePath = (await Config.downloadDir).concatPath(Uri.parse(url).filename()).path;
     print('SAVE PATH: $savePath');
     Dio().download(url, savePath);
   }
@@ -84,7 +73,6 @@ class ImageDetailViewState extends State<ImageDetailView> {
   @override
   void initState() {
     getChildren();
-
     super.initState();
   }
 
@@ -105,7 +93,7 @@ class ImageDetailViewState extends State<ImageDetailView> {
                     onTapUp: (context, detail, value) {
                       final url = getUrl(_children?[index]);
                       Fluttertoast.showToast(msg: '下载已添加：${url}');
-                      onDownload(url);
+                      // onDownload(url);
                     },
                     onTapDown: (context, detail, value) {}
                     // heroAttributes: PhotoViewHeroAttributes(tag: _children?[index].id),

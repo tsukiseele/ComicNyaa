@@ -16,6 +16,7 @@ import 'package:comic_nyaa/library/mio/model/site.dart';
 import 'package:comic_nyaa/library/mio/core/mio.dart';
 import 'package:comic_nyaa/models/typed_model.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:material_floating_search_bar/material_floating_search_bar.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 
 import '../app/global.dart';
@@ -69,7 +70,7 @@ class _MainViewState extends State<MainView> {
   }
 
   Future<List<TypedModel>> _onSearch(String keywords) async {
-    _isRefresh  = true;
+    _isRefresh = true;
     setState(() {
       _models.clear();
       _heightCache.clear();
@@ -135,97 +136,161 @@ class _MainViewState extends State<MainView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title),
+      // This is handled by the search bar itself.
+      resizeToAvoidBottomInset: false,
+      // appBar: AppBar(
+      //   title: Text(widget.title),
+      // ),
+      drawer: const Drawer(
+        child: Text('Teetd'),
       ),
-      body: Column(children: [
-        Container(
-            padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
-            child: Row(
-              children: [
-                DropdownButton(
-                    value: _currentSiteId,
-                    items: _sites.map((e) => DropdownMenuItem<int>(value: e.id, child: Text(e.name ?? 'unknown'))).toList(),
-                    onChanged: (int? value) {
-                      print('SELECT ${value}');
-                      setState(() => _currentSiteId = value!);
-                    }),
-                // DropdownButtonFormField(items: items, onChanged: onChanged)
-                ElevatedButton(onPressed: () => _onSearch(''), child: const Text('搜索'))
-              ],
-            )),
-        Flexible(
-            child: SmartRefresher(
-              enablePullDown: true,
-              enablePullUp: true,
-              // header: WaterDropHeader(),
-              // footer: CustomFooter(
-              //   builder: (BuildContext context,LoadStatus mode){
-              //     Widget body ;
-              //     if(mode==LoadStatus.idle){
-              //       body =  Text("pull up load");
-              //     }
-              //     else if(mode==LoadStatus.loading){
-              //       body =  CupertinoActivityIndicator();
-              //     }
-              //     else if(mode == LoadStatus.failed){
-              //       body = Text("Load Failed!Click retry!");
-              //     }
-              //     else if(mode == LoadStatus.canLoading){
-              //       body = Text("release to load more");
-              //     }
-              //     else{
-              //       body = Text("No more Data");
-              //     }
-              //     return Container(
-              //       height: 55.0,
-              //       child: Center(child:body),
-              //     );
-              //   },
-              // ),
-              controller: _refreshController,
-              // onRefresh: _onRefresh,
-              // onLoading: _onLoading,
-              child: MasonryGridView.count(
-                  padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
-                  crossAxisCount: 3,
-                  mainAxisSpacing: 8.0,
-                  crossAxisSpacing: 8.0,
-                  itemCount: _models.length,
-                  controller: _scrollController,
-                  physics: const BouncingScrollPhysics(),
-                  itemBuilder: (context, index) {
-                    return Material(
-                        elevation: 2.0,
-                        borderRadius: const BorderRadius.all(Radius.circular(4.0)),
-                        child: InkWell(
-                            onTap: () => _jump(_models[index]),
-                            child: Column(
-                              children: [
-                                ExtendedImage.network(
-                                  _models[index].coverUrl ?? '',
-                                  height: _heightCache[index],
-                                  afterPaintImage: (canvas, rect, image, paint) {
-                                    if (_heightCache[index] == null) _heightCache[index] = rect.height;
-                                  },
-                                ),
-                                Container(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Text(_models[index].title ?? ''),
-                                )
-                              ],
-                            )));
-                  })
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          SafeArea(
+              child: Container(padding: EdgeInsets.fromLTRB(0, 48, 0, 0), child: Column(children: [
+            // Container(
+            //     padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
+            //     child: Row(
+            //       children: [
+            //         DropdownButton(
+            //             value: _currentSiteId,
+            //             items: _sites.map((e) => DropdownMenuItem<int>(value: e.id, child: Text(e.name ?? 'unknown'))).toList(),
+            //             onChanged: (int? value) {
+            //               print('SELECT ${value}');
+            //               setState(() => _currentSiteId = value!);
+            //             }),
+            //         // DropdownButtonFormField(items: items, onChanged: onChanged)
+            //         ElevatedButton(onPressed: () => _onSearch(''), child: const Text('搜索'))
+            //       ],
+            //     )),
+            Flexible(
+              child: SmartRefresher(
+                  enablePullDown: true,
+                  enablePullUp: true,
+                  // header: WaterDropHeader(),
+                  // footer: CustomFooter(
+                  //   builder: (BuildContext context,LoadStatus mode){
+                  //     Widget body ;
+                  //     if(mode==LoadStatus.idle){
+                  //       body =  Text("pull up load");
+                  //     }
+                  //     else if(mode==LoadStatus.loading){
+                  //       body =  CupertinoActivityIndicator();
+                  //     }
+                  //     else if(mode == LoadStatus.failed){
+                  //       body = Text("Load Failed!Click retry!");
+                  //     }
+                  //     else if(mode == LoadStatus.canLoading){
+                  //       body = Text("release to load more");
+                  //     }
+                  //     else{
+                  //       body = Text("No more Data");
+                  //     }
+                  //     return Container(
+                  //       height: 55.0,
+                  //       child: Center(child:body),
+                  //     );
+                  //   },
+                  // ),
+                  controller: _refreshController,
+                  // onRefresh: _onRefresh,
+                  // onLoading: _onLoading,
+                  child: MasonryGridView.count(
+                      padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
+                      crossAxisCount: 3,
+                      mainAxisSpacing: 8.0,
+                      crossAxisSpacing: 8.0,
+                      itemCount: _models.length,
+                      controller: _scrollController,
+                      physics: const BouncingScrollPhysics(),
+                      itemBuilder: (context, index) {
+                        return Material(
+                            elevation: 2.0,
+                            borderRadius: const BorderRadius.all(Radius.circular(4.0)),
+                            child: InkWell(
+                                onTap: () => _jump(_models[index]),
+                                child: Column(
+                                  children: [
+                                    ExtendedImage.network(
+                                      _models[index].coverUrl ?? '',
+                                      height: _heightCache[index],
+                                      afterPaintImage: (canvas, rect, image, paint) {
+                                        if (_heightCache[index] == null) _heightCache[index] = rect.height;
+                                      },
+                                    ),
+                                    Container(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Text(_models[index].title ?? ''),
+                                    )
+                                  ],
+                                )));
+                      })),
             ),
-        ),
-        _isNext ? const Text('Loading...'): Container()
-      ]),
+            // _isNext ? const Text('Loading...') : Container()
+          ]))),
+
+          // buildMap(),
+          // buildBottomNavigationBar(),
+          buildFloatingSearchBar(),
+        ],
+      ),
+      // );
       // ]),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _getNext(),
         tooltip: 'Increment',
         child: const Icon(Icons.refresh),
       ),
+    );
+  }
+
+  Widget buildFloatingSearchBar() {
+    final isPortrait = MediaQuery.of(context).orientation == Orientation.portrait;
+
+    return FloatingSearchBar(
+      hint: 'Search...',
+      scrollPadding: const EdgeInsets.only(top: 16, bottom: 56),
+      transitionDuration: const Duration(milliseconds: 800),
+      transitionCurve: Curves.easeInOut,
+      physics: const BouncingScrollPhysics(),
+      axisAlignment: isPortrait ? 0.0 : -1.0,
+      openAxisAlignment: 0.0,
+      width: isPortrait ? 600 : 500,
+      debounceDelay: const Duration(milliseconds: 500),
+      onQueryChanged: (query) {
+        // Call your model, bloc, controller here.
+      },
+      // Specify a custom transition to be used for
+      // animating between opened and closed stated.
+      transition: CircularFloatingSearchBarTransition(),
+      actions: [
+        FloatingSearchBarAction(
+          showIfOpened: false,
+          child: CircularButton(
+            icon: const Icon(Icons.place),
+            onPressed: () {},
+          ),
+        ),
+        FloatingSearchBarAction.searchToClear(
+          showIfClosed: false,
+        ),
+      ],
+      builder: (context, transition) {
+        return ClipRRect(
+          borderRadius: BorderRadius.circular(8),
+          child: Material(
+            color: Colors.white,
+            elevation: 4.0,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: Colors.accents.map((color) {
+                return Container(height: 112, color: color);
+              }).toList(),
+            ),
+          ),
+        );
+      },
     );
   }
 }
