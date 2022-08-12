@@ -14,6 +14,8 @@ extension ExtendedPath on Directory {
 class Config {
   Config._();
 
+  static const downloadDirectoryName = 'ComicNyaa';
+  static const rulesDirectoryName = 'rules';
   static Directory? _appDir;
   static Directory? _ruleDir;
   static Directory? _downloadDir;
@@ -24,13 +26,13 @@ class Config {
   }
 
   static Future<Directory> get ruleDir async {
-    _ruleDir = _ruleDir ?? (await appDir).concatPath('rules');
+    _ruleDir = _ruleDir ?? (await appDir).concatPath(rulesDirectoryName);
     await _ruleDir?.create(recursive: true);
     return _ruleDir!;
   }
 
   static Future<Directory> get downloadDir async {
-    _downloadDir = _downloadDir ?? await getDownloadPath();
+    _downloadDir = _downloadDir ?? (await getDownloadPath())?.concatPath(downloadDirectoryName);
     await _downloadDir?.create(recursive: true);
     return _downloadDir!;
   }

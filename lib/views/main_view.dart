@@ -16,6 +16,7 @@ import 'package:comic_nyaa/library/mio/model/site.dart';
 import 'package:comic_nyaa/library/mio/core/mio.dart';
 import 'package:comic_nyaa/models/typed_model.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:pull_to_refresh/pull_to_refresh.dart';
 
 import '../app/global.dart';
 import '../models/typed_model.dart';
@@ -30,6 +31,7 @@ class MainView extends StatefulWidget {
 
 class _MainViewState extends State<MainView> {
   final ScrollController _scrollController = ScrollController();
+  final RefreshController _refreshController = RefreshController(initialRefresh: false);
   final Map<int, double> _heightCache = {};
   List<TypedModel> _models = [];
   List<Site> _sites = [];
@@ -37,6 +39,8 @@ class _MainViewState extends State<MainView> {
   int _page = 1;
   String _keywords = '';
   bool _isLoading = false;
+  bool _isNext = false;
+  bool _isRefresh = false;
 
   Future<List<TypedModel>> _getModels() async {
     _isLoading = true;
@@ -49,7 +53,6 @@ class _MainViewState extends State<MainView> {
       return images;
     } catch (e) {
       rethrow;
-      // print('LOAD ERROR: $e');
     } finally {
       _isLoading = false;
     }
@@ -57,13 +60,16 @@ class _MainViewState extends State<MainView> {
   }
 
   Future<List<TypedModel>> _getNext() async {
+    _isNext = true;
     ++_page;
     final models = await _getModels();
+    _isNext = false;
     setState(() => _models.addAll(models));
     return models;
   }
 
   Future<List<TypedModel>> _onSearch(String keywords) async {
+    _isRefresh  = true;
     setState(() {
       _models.clear();
       _heightCache.clear();
@@ -71,6 +77,7 @@ class _MainViewState extends State<MainView> {
     _page = 1;
     _keywords = keywords;
     final models = await _getModels();
+    _isRefresh = false;
     setState(() => _models = models);
     return models;
   }
@@ -82,7 +89,7 @@ class _MainViewState extends State<MainView> {
   }
 
   Future<void> _initialize() async {
-    _updateSubscribe();
+    await _updateSubscribe();
 
     final sites = await RuleLoader.getRules(await Config.ruleDir);
     sites.forEachIndexed((i, element) => print('$i: [${element.id}]${element.name}'));
@@ -148,43 +155,77 @@ class _MainViewState extends State<MainView> {
               ],
             )),
         Flexible(
-            child: MasonryGridView.count(
-                padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
-                crossAxisCount: 3,
-                mainAxisSpacing: 8.0,
-                crossAxisSpacing: 8.0,
-                itemCount: _models.length,
-                controller: _scrollController,
-                physics: const BouncingScrollPhysics(),
-                itemBuilder: (context, index) {
-                  return Material(
-                      elevation: 2.0,
-                      borderRadius: const BorderRadius.all(Radius.circular(4.0)),
-                      child: InkWell(
-                          onTap: () => _jump(_models[index]),
-                          child: Column(
-                            children: [
-                              ExtendedImage.network(
-                                _models[index].coverUrl ?? '',
-                                height: _heightCache[index],
-                                afterPaintImage: (canvas, rect, image, paint) {
-                                  if (_heightCache[index] == null) _heightCache[index] = rect.height;
-                                },
-                              ),
-                              Container(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Text(_models[index].title ?? ''),
-                              )
-                            ],
-                          )));
-                }))
+            child: SmartRefresher(
+              enablePullDown: true,
+              enablePullUp: true,
+              // header: WaterDropHeader(),
+              // footer: CustomFooter(
+              //   builder: (BuildContext context,LoadStatus mode){
+              //     Widget body ;
+              //     if(mode==LoadStatus.idle){
+              //       body =  Text("pull up load");
+              //     }
+              //     else if(mode==LoadStatus.loading){
+              //       body =  CupertinoActivityIndicator();
+              //     }
+              //     else if(mode == LoadStatus.failed){
+              //       body = Text("Load Failed!Click retry!");
+              //     }
+              //     else if(mode == LoadStatus.canLoading){
+              //       body = Text("release to load more");
+              //     }
+              //     else{
+              //       body = Text("No more Data");
+              //     }
+              //     return Container(
+              //       height: 55.0,
+              //       child: Center(child:body),
+              //     );
+              //   },
+              // ),
+              controller: _refreshController,
+              // onRefresh: _onRefresh,
+              // onLoading: _onLoading,
+              child: MasonryGridView.count(
+                  padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
+                  crossAxisCount: 3,
+                  mainAxisSpacing: 8.0,
+                  crossAxisSpacing: 8.0,
+                  itemCount: _models.length,
+                  controller: _scrollController,
+                  physics: const BouncingScrollPhysics(),
+                  itemBuilder: (context, index) {
+                    return Material(
+                        elevation: 2.0,
+                        borderRadius: const BorderRadius.all(Radius.circular(4.0)),
+                        child: InkWell(
+                            onTap: () => _jump(_models[index]),
+                            child: Column(
+                              children: [
+                                ExtendedImage.network(
+                                  _models[index].coverUrl ?? '',
+                                  height: _heightCache[index],
+                                  afterPaintImage: (canvas, rect, image, paint) {
+                                    if (_heightCache[index] == null) _heightCache[index] = rect.height;
+                                  },
+                                ),
+                                Container(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Text(_models[index].title ?? ''),
+                                )
+                              ],
+                            )));
+                  })
+            ),
+        ),
+        _isNext ? const Text('Loading...'): Container()
       ]),
       // ]),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _getNext(),
         tooltip: 'Increment',
         child: const Icon(Icons.refresh),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+      ),
     );
   }
 }

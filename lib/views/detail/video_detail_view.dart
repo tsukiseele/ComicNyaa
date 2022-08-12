@@ -61,9 +61,7 @@ class VideoDetailViewState extends State<VideoDetailView> {
       return item.originUrl ?? item.largerUrl ?? item.sampleUrl ?? '';
     } catch (e) {
       rethrow;
-      // print('ERROR: $e');
     }
-    return '';
   }
 
   @override
@@ -122,7 +120,6 @@ class VideoDetailViewState extends State<VideoDetailView> {
 
   @override
   void dispose() {
-    // TODO: implement dispose
     _controller?.dispose();
     _chewieController?.dispose();
     super.dispose();
