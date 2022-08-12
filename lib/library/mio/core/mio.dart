@@ -3,6 +3,7 @@ import 'package:collection/collection.dart';
 import 'package:dio/dio.dart';
 import 'package:html/parser.dart';
 import 'package:html/dom.dart';
+import '../../../utils/http.dart';
 import '../model/model.dart';
 import '../model/site.dart';
 
@@ -183,7 +184,7 @@ class Mio<T extends Model> {
   /// @param {Object} options 操作
   /// @returns {Promise<String>} 响应文本
   Future<String> requestText(String url, {dynamic headers}) async {
-    final response = await Dio().get(url, options: Options(responseType: ResponseType.plain, sendTimeout: 10000));
+    final response = await Http.get(url, options: Options(responseType: ResponseType.plain, sendTimeout: 10000));
     final html = response.data.toString();
     return html;
   }
@@ -261,7 +262,7 @@ class Mio<T extends Model> {
   /// @returns {String} 真实URL
   String replaceUrlTemplate(String template, int page, String? keywords) {
     final pageMatches = REG_PAGE_TEMPLATE.allMatches(template);
-    final keywordMatches = REG_KEYWORD_TEMPLATE.allMatches(template);
+    final keywordMatches  = REG_KEYWORD_TEMPLATE.allMatches(template);
     int p = page;
     String? k = '';
     if (keywordMatches.isNotEmpty) {

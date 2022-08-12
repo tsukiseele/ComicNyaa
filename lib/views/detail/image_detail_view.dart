@@ -6,6 +6,7 @@ import 'package:dio/dio.dart';
 import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:material_floating_search_bar/material_floating_search_bar.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
 
@@ -93,7 +94,7 @@ class ImageDetailViewState extends State<ImageDetailView> {
                     onTapUp: (context, detail, value) {
                       final url = getUrl(_children?[index]);
                       Fluttertoast.showToast(msg: '下载已添加：${url}');
-                      // onDownload(url);
+                      onDownload(url);
                     },
                     onTapDown: (context, detail, value) {}
                     // heroAttributes: PhotoViewHeroAttributes(tag: _children?[index].id),
