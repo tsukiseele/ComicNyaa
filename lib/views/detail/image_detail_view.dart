@@ -152,17 +152,5 @@ class ImageDetailViewState extends State<ImageDetailView> {
     //       : isFailed
     //           ? const Center(child: Text('加载失败'))
     //           : const Center(child: CircularProgressIndicator()),
-    //   Positioned(
-    //       top: 0,
-    //       left: 0,
-    //       right: 0,
-    //       height: kToolbarHeight + 48,
-    //       child: AppBar(
-    //         // backgroundColor: const Color.fromRGBO(255, 255, 255, .6),
-    //         // foregroundColor: Colors.teal,
-    //         // toolbarHeight: 48,
-    //         title: Text(widget.title),
-    //       ))
-    // ]);
   }
 }

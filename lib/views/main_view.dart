@@ -35,11 +35,12 @@ class MainView extends StatefulWidget {
   State<MainView> createState() => _MainViewState();
 }
 
-class _MainViewState extends State<MainView> {
+class _MainViewState extends State<MainView> with TickerProviderStateMixin {
   final globalKey = GlobalKey<ScaffoldState>();
   final ScrollController _scrollController = ScrollController();
   final RefreshController _refreshController = RefreshController(initialRefresh: false);
   final FloatingSearchBarController _floatingSearchBarController = FloatingSearchBarController();
+  late final TabController _tabController = TabController(length: 3, vsync: this, initialIndex: 0);
   final Map<int, double> _heightCache = {};
   DateTime? currentBackPressTime = DateTime.now();
   List<TypedModel> _models = [];
@@ -51,6 +52,8 @@ class _MainViewState extends State<MainView> {
   bool _isLoading = false;
   bool _isNext = false;
   bool _isRefresh = false;
+  int _lastScrollPosition = 0;
+  int _lastScrollTime = 0;
 
   Future<List<TypedModel>> _getModels() async {
     if (_isLoading) return [];
@@ -118,11 +121,26 @@ class _MainViewState extends State<MainView> {
     });
     _refreshController.requestRefresh();
     _scrollController.addListener(() {
-      if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent) {
-        if (!_isLoading) {
-          _getNext();
+      // print('DDDDDDDDDDDD: ${_lastScrollTime}, ${DateTime.now().millisecondsSinceEpoch }');
+      if (DateTime.now().millisecondsSinceEpoch - _lastScrollTime > 200) {
+        if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent) {
+          if (!_isLoading) {
+            _getNext();
+          }
         }
+        print('POSTITION: ${_lastScrollPosition} >>> ${_scrollController.position.pixels}');
+        if (_scrollController.position.pixels > _lastScrollPosition) {
+          _lastScrollPosition = _scrollController.position.pixels.toInt();
+          _floatingSearchBarController.isVisible ? _floatingSearchBarController.hide() : null;
+        } else {
+          _lastScrollPosition = _scrollController.position.pixels.toInt();
+          _floatingSearchBarController.isHidden ? _floatingSearchBarController.show() : null;
+        }
+        _lastScrollTime = DateTime.now().millisecondsSinceEpoch;
       }
+
+      // if (_scrollController.position.pixels > 0) {
+      // }
     });
   }
 
@@ -155,6 +173,14 @@ class _MainViewState extends State<MainView> {
   }
 
   Future<bool> onWillPop() {
+    if (globalKey.currentState?.isDrawerOpen == true) {
+      globalKey.currentState?.closeDrawer();
+      return Future.value(false);
+    }
+    if (globalKey.currentState?.isEndDrawerOpen == true) {
+      globalKey.currentState?.closeEndDrawer();
+      return Future.value(false);
+    }
     DateTime now = DateTime.now();
     if (currentBackPressTime == null || now.difference(currentBackPressTime!) > const Duration(seconds: 2)) {
       currentBackPressTime = now;
@@ -359,21 +385,6 @@ class _MainViewState extends State<MainView> {
                                         )));
                               })),
                     ),
-                    NavigationBar(
-                        height: 48,
-                        destinations: ['AAA', 'BBB']
-                            .map((item) => Material(
-                                color: Colors.teal,
-                                // elevation: 8,
-                                child: Center(
-                                    child: InkWell(
-                                  child: Text(
-                                    item,
-                                    style: TextStyle(color: Colors.white),
-                                  ),
-                                  onTap: () {},
-                                ))))
-                            .toList())
                   ])),
               // buildMap(),
               // buildBottomNavigationBar(),
@@ -382,10 +393,38 @@ class _MainViewState extends State<MainView> {
           )),
       // );
       // ]),
+      bottomNavigationBar: BottomAppBar(
+        color: Colors.white,
+        shape: const CircularNotchedRectangle(), // 底部导航栏打一个圆形的洞
+        child: TabBar(
+          controller: _tabController,
+          tabs: const <Widget>[
+            Tab(
+              icon: Icon(
+                Icons.cloud_outlined,
+                color: Colors.teal,
+              ),
+            ),
+            Tab(
+              icon: Icon(
+                Icons.beach_access_sharp,
+                color: Colors.teal,
+              ),
+            ),
+            Tab(
+              icon: Icon(
+                Icons.brightness_5_sharp,
+                color: Colors.teal,
+              ),
+            ),
+          ],
+        ),
+      ),
+      // floatingActionButtonLocation:  FloatingActionButtonLocation.endDocked,
       floatingActionButton: FloatingActionButton(
         onPressed: () => globalKey.currentState?.openEndDrawer(),
         tooltip: 'Increment',
-        child: const Icon(Icons.refresh),
+        child: const Icon(Icons.arrow_back),
       ),
     );
   }
@@ -399,8 +438,9 @@ class _MainViewState extends State<MainView> {
       automaticallyImplyDrawerHamburger: false,
       automaticallyImplyBackButton: false,
       hint: 'Search...',
-      scrollPadding: const EdgeInsets.only(top: 16, bottom: 56),
-      transitionDuration: const Duration(milliseconds: 500),
+      scrollPadding: const EdgeInsets.only(top: 8, bottom: 8),
+      // implicitDuration: const Duration(milliseconds: 250),
+      transitionDuration: const Duration(milliseconds: 300),
       transitionCurve: Curves.easeInOut,
       // physics: const BouncingScrollPhysics(),
       axisAlignment: isPortrait ? 0.0 : -1.0,
