@@ -59,7 +59,7 @@ class ImageDetailViewState extends State<ImageDetailView> {
       }
       url = item.sampleUrl ?? item.largerUrl ?? item.originUrl ?? '';
     } catch (e) {
-      rethrow;
+      Fluttertoast.showToast(msg: 'ERROR: $e');
     }
     return Uri.encodeFull(url);
   }

@@ -1,9 +1,11 @@
 import 'dart:async';
+import 'package:comic_nyaa/utils/http.dart';
 import 'package:dio/dio.dart';
+import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_displaymode/flutter_displaymode.dart';
 
-
+import 'library/mio/core/mio.dart';
 import 'views/main_view.dart';
 
 void main() async {
@@ -12,6 +14,7 @@ void main() async {
 
 class ComicNyaa extends StatefulWidget {
   const ComicNyaa({Key? key}) : super(key: key);
+
   @override
   State<StatefulWidget> createState() => _ComicNyaaState();
 }
@@ -22,14 +25,23 @@ class _ComicNyaaState extends State<ComicNyaa> {
     return MaterialApp(
       title: 'ComicNyaa',
       theme: ThemeData(
+        fontFamily: 'ComicNeueBold',
         primarySwatch: Colors.teal,
       ),
       home: const MainView(title: 'Home'),
     );
   }
+
   @override
   void initState() {
+    // 初始化显示模式
     setOptimalDisplayMode();
+    // 初始化Mio
+    Mio.setRequest((url, {Map<String, String>? headers}) async {
+      final response = await Http.client()
+          .get(url, options: Options(responseType: ResponseType.plain, headers: headers));
+      return response.data.toString();
+    });
     super.initState();
   }
 
@@ -42,6 +54,7 @@ class _ComicNyaaState extends State<ComicNyaa> {
       ..sort((DisplayMode a, DisplayMode b) => b.refreshRate.compareTo(a.refreshRate));
 
     final DisplayMode mostOptimalMode = sameResolution.isNotEmpty ? sameResolution.first : active;
+
     /// This setting is per session.
     /// Please ensure this was placed with `initState` of your root widget.
     await FlutterDisplayMode.setPreferredMode(mostOptimalMode);

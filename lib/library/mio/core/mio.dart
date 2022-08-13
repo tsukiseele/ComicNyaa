@@ -23,6 +23,11 @@ class Mio<T extends Model> {
   Site? site;
   int page = 1;
   String? keywords;
+  static Future<String> Function(String url, {Map<String, String>? headers})? _request;
+
+  static void setRequest(Future<String> Function(String url, {Map<String, String>? headers})? request) {
+    _request = request;
+  }
 
   Mio(this.site);
 
@@ -183,10 +188,13 @@ class Mio<T extends Model> {
   /// @param {String} url 链接
   /// @param {Object} options 操作
   /// @returns {Promise<String>} 响应文本
-  Future<String> requestText(String url, {dynamic headers}) async {
-    final response = await Http.get(url, options: Options(responseType: ResponseType.plain, sendTimeout: 10000));
-    final html = response.data.toString();
-    return html;
+  Future<String> requestText(String url, {Map<String, String>? headers}) async {
+    print('RRRRRRRRRRRRRREQ: $url');
+    if (_request == null) {
+      final response = await Dio().get(url, options: Options(responseType: ResponseType.plain, sendTimeout: 10000, headers: headers));
+      return response.data.toString();
+    }
+    return await _request!(url, headers: headers);
   }
 
   /// 获取当前板块

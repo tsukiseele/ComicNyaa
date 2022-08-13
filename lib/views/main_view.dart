@@ -5,6 +5,7 @@ import 'dart:math';
 import 'package:archive/archive.dart';
 import 'package:collection/collection.dart';
 import 'package:comic_nyaa/library/mio/core/mio_loader.dart';
+import 'package:comic_nyaa/utils/http.dart';
 import 'package:comic_nyaa/views/detail/comic_detail_view.dart';
 import 'package:comic_nyaa/views/detail/image_detail_view.dart';
 import 'package:comic_nyaa/views/detail/video_detail_view.dart';
@@ -16,7 +17,9 @@ import 'package:flutter/material.dart';
 import 'package:comic_nyaa/library/mio/model/site.dart';
 import 'package:comic_nyaa/library/mio/core/mio.dart';
 import 'package:comic_nyaa/models/typed_model.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:material_floating_search_bar/material_floating_search_bar.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 
@@ -37,6 +40,7 @@ class _MainViewState extends State<MainView> {
   final RefreshController _refreshController = RefreshController(initialRefresh: false);
   final FloatingSearchBarController _floatingSearchBarController = FloatingSearchBarController();
   final Map<int, double> _heightCache = {};
+  DateTime? currentBackPressTime = DateTime.now();
   List<TypedModel> _models = [];
   List<Site> _sites = [];
   List<String> _autosuggest = [];
@@ -48,6 +52,7 @@ class _MainViewState extends State<MainView> {
   bool _isRefresh = false;
 
   Future<List<TypedModel>> _getModels() async {
+    if (_isLoading) return [];
     _isLoading = true;
     try {
       final results = await (Mio(_sites.firstWhere((site) => site.id == _currentSiteId, orElse: () => _sites[0]))
@@ -57,7 +62,8 @@ class _MainViewState extends State<MainView> {
       final images = List.of(results.map((item) => TypedModel.fromJson(item)));
       return images;
     } catch (e) {
-      rethrow;
+      // rethrow;
+      Fluttertoast.showToast(msg: 'ERROR: $e');
     } finally {
       _isLoading = false;
     }
@@ -67,8 +73,11 @@ class _MainViewState extends State<MainView> {
   Future<List<TypedModel>> _getNext() async {
     _isNext = true;
     ++_page;
+
     final models = await _getModels();
+    if (models.isEmpty) --_page;
     _isNext = false;
+    _refreshController.loadComplete();
     setState(() => _models.addAll(models));
     return models;
   }
@@ -83,35 +92,30 @@ class _MainViewState extends State<MainView> {
     _keywords = keywords;
     final models = await _getModels();
     _isRefresh = false;
-    _refreshController.loadComplete();
+    _refreshController.refreshCompleted();
     setState(() => _models = models);
     return models;
   }
 
   _onRefresh() async {
     await _onSearch(_keywords);
-    setState(() {
-      _refreshController.refreshCompleted();
-    });
   }
 
   Future<void> _updateSubscribe() async {
     final savePath = (await Config.ruleDir).concatPath('rules.zip').path;
     print('savePath: $savePath');
-    await Dio().download('https://hlo.li/static/rules.zip', savePath);
+    await Http.client().download('https://hlo.li/static/rules.zip', savePath);
   }
 
   Future<void> _initialize() async {
-    await _updateSubscribe();
-
+    // await _updateSubscribe();
     final sites = await RuleLoader.getRules(await Config.ruleDir);
     sites.forEachIndexed((i, element) => print('$i: [${element.id}]${element.name}'));
     setState(() {
       _sites = sites;
       _currentSiteId = _currentSiteId < 0 ? _sites[0].id! : _currentSiteId;
     });
-    final models = await _getModels();
-    setState(() => _models = models);
+    _refreshController.requestRefresh();
     _scrollController.addListener(() {
       if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent) {
         if (!_isLoading) {
@@ -139,10 +143,101 @@ class _MainViewState extends State<MainView> {
     }
   }
 
+  Site get _currentSite {
+    return _sites.firstWhere((site) => site.id == _currentSiteId);
+  }
+
   @override
   void initState() {
     _initialize();
     super.initState();
+  }
+
+  Future<bool> onWillPop() {
+    DateTime now = DateTime.now();
+    if (currentBackPressTime == null || now.difference(currentBackPressTime!) > const Duration(seconds: 2)) {
+      currentBackPressTime = now;
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('再按一次退出')));
+      return Future.value(false);
+    }
+    return Future.value(true);
+  }
+
+  Widget buildDrawer() {
+    return Drawer(
+        child: ListView(padding: EdgeInsets.zero, children: [
+      Stack(children: [
+        ExtendedImage.network('https://cdn.jsdelivr.net/gh/nyarray/LoliHost/images/94d6d0e7be187770e5d538539d95a12a.jpeg',
+            fit: BoxFit.cover),
+        Positioned.fill(
+          child: Container(
+              decoration: BoxDecoration(
+                  color: Colors.white,
+                  gradient: LinearGradient(begin: FractionalOffset.topCenter, end: FractionalOffset.bottomCenter, colors: [
+                    Colors.grey.withOpacity(0.0),
+                    Colors.black45,
+                  ], stops: const [
+                    0.0,
+                    1.0
+                  ])),
+              padding: const EdgeInsets.all(8),
+              alignment: Alignment.bottomLeft,
+              child: const Text('ポトフちゃんとワトラちゃんがめっちゃかわいいです！', style: TextStyle(color: Colors.white, fontSize: 18))),
+        ),
+      ]),
+      ListTile(title: const Text('主页'), onTap: () {}, iconColor: Colors.teal, leading: const Icon(Icons.home)),
+      ListTile(title: const Text('订阅'), onTap: () {}, iconColor: Colors.teal, leading: const Icon(Icons.collections_bookmark)),
+      ListTile(title: const Text('下载'), onTap: () {}, iconColor: Colors.teal, leading: const Icon(Icons.download)),
+      ListTile(title: const Text('设置'), onTap: () {}, iconColor: Colors.teal, leading: const Icon(Icons.settings))
+    ]));
+  }
+
+  Widget buildEndDrawer() {
+    return Drawer(
+        child: Material(
+            child: Column(children: [
+      ExtendedImage.network('https://cdn.jsdelivr.net/gh/nyarray/LoliHost/images/7c4f1d7ea2dadd3ca835b9b2b9219681.webp'),
+      Flexible(
+          child: ListView.builder(
+              padding: const EdgeInsets.only(top: 8),
+              itemCount: _sites.length,
+              itemBuilder: (ctx, index) {
+                return Material(
+                    // elevation: _currentSiteId == _sites[index].id ? 4 : 0,
+                    child: InkWell(
+                        onTap: () {
+                          _currentSiteId = _sites[index].id!;
+                          _refreshController.requestRefresh();
+                          globalKey.currentState?.closeEndDrawer();
+                        },
+                        child: Container(
+                            height: 40,
+                            decoration: BoxDecoration(
+                              color: _currentSiteId == _sites[index].id ? const Color.fromRGBO(0, 127, 127, .12) : null,
+                            ),
+                            alignment: Alignment.centerLeft,
+                            padding: const EdgeInsets.only(left: 8),
+                            child: Row(
+                              children: [
+                                SizedBox(
+                                    width: 32,
+                                    height: 32,
+                                    child: ExtendedImage.network(
+                                      _sites[index].icon ?? '',
+                                      fit: BoxFit.cover,
+                                    )),
+                                Container(
+                                    padding: const EdgeInsets.only(left: 8),
+                                    child: Text(
+                                      style: TextStyle(
+                                          fontSize: 18, color: _currentSiteId == _sites[index].id ? Colors.teal : null),
+                                      _sites[index].name ?? '',
+                                      textAlign: TextAlign.start,
+                                    ))
+                              ],
+                            ))));
+              })),
+    ])));
   }
 
   @override
@@ -150,134 +245,131 @@ class _MainViewState extends State<MainView> {
     return Scaffold(
       key: globalKey,
       resizeToAvoidBottomInset: false,
-      drawer: const Drawer(
-        child: Text('Teetd'),
-      ),
-      endDrawer: Drawer(
-          child: Material(
-              child: Column(children: [
-        ExtendedImage.network('https://cdn.jsdelivr.net/gh/nyarray/LoliHost/images/7c4f1d7ea2dadd3ca835b9b2b9219681.webp'),
-        Flexible(
-            child: ListView.builder(
-                itemCount: _sites.length,
-                itemBuilder: (ctx, index) {
-                  return Material(
-                      elevation: _currentSiteId == _sites[index].id ? 4 : 0,
-                      child: InkWell(
-                          onTap: () {
-                            _currentSiteId = _sites[index].id!;
-                            _onRefresh();
-                            _refreshController.requestRefresh();
-                            globalKey.currentState?.closeEndDrawer();
-                          },
-                          child: Container(
-                              decoration: BoxDecoration(
-                                color: _currentSiteId == _sites[index].id ? const Color.fromRGBO(0, 127, 127, .12) : null,
-                              ),
-                              // border: Border(bottom: BorderSide(color: const Color.fromRGBO(0, 127, 127, .12)))),
-                              // height: 40,
-                              alignment: Alignment.centerLeft,
-                              padding: const EdgeInsets.only(left: 8),
-                              child: Row(
-                                children: [
-                                  SizedBox(
-                                      width: 32,
-                                      height: 32,
-                                      child: ExtendedImage.network(
-                                        _sites[index].icon ?? '',
-                                        fit: BoxFit.cover,
-                                      )),
-                                  Container(
-                                      padding: EdgeInsets.only(left: 8),
-                                      child: Text(
-                                        _sites[index].name ?? '',
-                                        textAlign: TextAlign.start,
-                                      ))
-                                ],
-                              ))));
-                })),
-      ]))),
-      body: Stack(
-        fit: StackFit.expand,
-        children: [
-          Container(
-              padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
-              child: Column(children: [
-                Flexible(
-                  child: SmartRefresher(
-                      enablePullDown: true,
-                      enablePullUp: true,
-                      header: const WaterDropMaterialHeader(
-                        distance: 32,
-                        offset: 96,
-                      ),
-                      // footer: CustomFooter(
-                      //   builder: (BuildContext context,LoadStatus mode){
-                      //     Widget body ;
-                      //     if(mode==LoadStatus.idle){
-                      //       body =  Text("pull up load");
-                      //     }
-                      //     else if(mode==LoadStatus.loading){
-                      //       body =  CupertinoActivityIndicator();
-                      //     }
-                      //     else if(mode == LoadStatus.failed){
-                      //       body = Text("Load Failed!Click retry!");
-                      //     }
-                      //     else if(mode == LoadStatus.canLoading){
-                      //       body = Text("release to load more");
-                      //     }
-                      //     else{
-                      //       body = Text("No more Data");
-                      //     }
-                      //     return Container(
-                      //       height: 55.0,
-                      //       child: Center(child:body),
-                      //     );
-                      //   },
-                      // ),
-                      controller: _refreshController,
-                      onRefresh: () => _onRefresh(),
-                      // onLoading: _onLoading,
-                      child: MasonryGridView.count(
-                          padding: const EdgeInsets.fromLTRB(8, kToolbarHeight + 48, 8, 0),
-                          crossAxisCount: 3,
-                          mainAxisSpacing: 8.0,
-                          crossAxisSpacing: 8.0,
-                          itemCount: _models.length,
-                          controller: _scrollController,
-                          physics: const BouncingScrollPhysics(),
-                          itemBuilder: (context, index) {
-                            return Material(
-                                clipBehavior: Clip.hardEdge,
-                                elevation: 2.0,
-                                borderRadius: const BorderRadius.all(Radius.circular(4.0)),
-                                child: InkWell(
-                                    onTap: () => _jump(_models[index]),
-                                    child: Column(
-                                      children: [
-                                        ExtendedImage.network(
-                                          _models[index].coverUrl ?? '',
-                                          height: _heightCache[index],
-                                          afterPaintImage: (canvas, rect, image, paint) {
-                                            if (_heightCache[index] == null) _heightCache[index] = rect.height;
-                                          },
-                                        ),
-                                        Container(
-                                          padding: const EdgeInsets.all(8.0),
-                                          child: Text(_models[index].title ?? ''),
-                                        )
-                                      ],
-                                    )));
-                          })),
-                ),
-                // _isNext ? const Text('Loading...') : Container()
-              ])),
+      drawerEdgeDragWidth: 96,
+      drawerEnableOpenDragGesture: true,
+      endDrawerEnableOpenDragGesture: true,
+      drawer: buildDrawer(),
+      endDrawer: buildEndDrawer(),
+      body: WillPopScope(
+          onWillPop: onWillPop,
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              Container(
+                  padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
+                  child: Column(children: [
+                    Flexible(
+                      child: SmartRefresher(
+                          enablePullDown: true,
+                          enablePullUp: true,
+                          header: const WaterDropMaterialHeader(
+                            distance: 48,
+                            offset: 96,
+                          ),
+                          // footer: CustomFooter(
+                          //   builder: (BuildContext context,LoadStatus mode){
+                          //     Widget body ;
+                          //     if(mode==LoadStatus.idle){
+                          //       body =  Text("pull up load");
+                          //     }
+                          //     else if(mode==LoadStatus.loading){
+                          //       body =  CupertinoActivityIndicator();
+                          //     }
+                          //     else if(mode == LoadStatus.failed){
+                          //       body = Text("Load Failed!Click retry!");
+                          //     }
+                          //     else if(mode == LoadStatus.canLoading){
+                          //       body = Text("release to load more");
+                          //     }
+                          //     else{
+                          //       body = Text("No more Data");
+                          //     }
+                          //     return Container(
+                          //       height: 55.0,
+                          //       child: Center(child:body),
+                          //     );
+                          //   },
+                          // ),
+                          controller: _refreshController,
+                          onRefresh: () => _onRefresh(),
+                          // onLoading: _onLoading,
+                          child: MasonryGridView.count(
+                              padding: const EdgeInsets.fromLTRB(8, kToolbarHeight + 48, 8, 0),
+                              crossAxisCount: 3,
+                              mainAxisSpacing: 8.0,
+                              crossAxisSpacing: 8.0,
+                              itemCount: _models.length,
+                              controller: _scrollController,
+                              physics: const BouncingScrollPhysics(),
+                              itemBuilder: (context, index) {
+                                return Material(
+                                    clipBehavior: Clip.hardEdge,
+                                    elevation: 2,
+                                    borderRadius: const BorderRadius.all(Radius.circular(4.0)),
+                                    child: InkWell(
+                                        onTap: () => _jump(_models[index]),
+                                        child: Column(
+                                          children: [
+                                            ExtendedImage.network(
+                                              _models[index].coverUrl ?? '',
+                                              height: _heightCache[index],
+                                              afterPaintImage: (canvas, rect, image, paint) {
+                                                if (_heightCache[index] == null) _heightCache[index] = rect.height;
+                                              },
+                                              timeRetry: const Duration(milliseconds: 1000),
+                                              fit: BoxFit.cover,
+                                              headers: _currentSite.headers,
+                                              loadStateChanged: (status) {
+                                                switch (status.extendedImageLoadState) {
+                                                  case LoadState.failed:
+                                                    return Container(
+                                                        decoration: const BoxDecoration(color: Colors.white),
+                                                        height: 96,
+                                                        width: double.infinity,
+                                                        child: const Icon(
+                                                          Icons.close,
+                                                          size: 40,
+                                                          color: Colors.black,
+                                                        ));
+                                                  case LoadState.loading:
+                                                    return Container(
+                                                        decoration: const BoxDecoration(color: Colors.teal),
+                                                        height: 192,
+                                                        child: const SpinKitFoldingCube(
+                                                          color: Colors.white,
+                                                          size: 40.0,
+                                                        ));
+                                                  case LoadState.completed:
+                                                    break;
+                                                }
+                                              },
+                                            ),
+                                            Container(
+                                              padding: const EdgeInsets.all(8.0),
+                                              child: Text(_models[index].title ?? ''),
+                                            )
+                                          ],
+                                        )));
+                              })),
+                    ),
+                    NavigationBar(
+                      height: 48,
+                        destinations: ['AAA', 'BBB'].map((item) =>
+                            Material(
+                              color: Colors.teal,
+                                // elevation: 8,
+                                child: Center(child:
+                                InkWell(child: Text(item, style: TextStyle(color: Colors.white),), onTap: () {},)
 
-          // buildMap(),
-          // buildBottomNavigationBar(),
-          buildFloatingSearchBar(),
-        ],
-      ),
+                            ) )).toList()
+                    )
+
+                  ])),
+              // buildMap(),
+              // buildBottomNavigationBar(),
+              buildFloatingSearchBar(),
+            ],
+          )),
       // );
       // ]),
       floatingActionButton: FloatingActionButton(
@@ -295,6 +387,7 @@ class _MainViewState extends State<MainView> {
       controller: _floatingSearchBarController,
       clearQueryOnClose: false,
       automaticallyImplyDrawerHamburger: false,
+      automaticallyImplyBackButton: false,
       hint: 'Search...',
       scrollPadding: const EdgeInsets.only(top: 16, bottom: 56),
       transitionDuration: const Duration(milliseconds: 500),
@@ -319,6 +412,7 @@ class _MainViewState extends State<MainView> {
       transition: CircularFloatingSearchBarTransition(),
       leadingActions: [
         FloatingSearchBarAction.hamburgerToBack(),
+        // FloatingSearchBarAction.back()
       ],
       actions: [
         FloatingSearchBarAction(
@@ -336,7 +430,8 @@ class _MainViewState extends State<MainView> {
         ),
       ],
       onSubmitted: (query) {
-        _onSearch(query);
+        _keywords = query;
+        _refreshController.requestRefresh();
         _floatingSearchBarController.close();
       },
       builder: (context, transition) {
@@ -352,7 +447,8 @@ class _MainViewState extends State<MainView> {
                 return Material(
                     child: InkWell(
                         onTap: () {
-                          _onSearch(query);
+                          _keywords = query;
+                          _refreshController.requestRefresh();
                           _floatingSearchBarController.query = query;
                           _floatingSearchBarController.close();
                         },
@@ -363,7 +459,7 @@ class _MainViewState extends State<MainView> {
                             decoration: const BoxDecoration(border: Border(bottom: BorderSide(color: Colors.black12))),
                             child: Text(
                               query,
-                              textAlign: TextAlign.center,
+                              style: const TextStyle(fontSize: 18),
                             ))));
               }).toList(),
             ),
