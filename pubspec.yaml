@@ -96,15 +96,5 @@ flutter:
         - asset: assets/fonts/ComicNeue-BoldItalic.ttf
           style: italic
           weight: 300
-    - family: Athiti
-      fonts:
-        - asset: assets/fonts/Athiti-Regular.ttf
-        - asset: assets/fonts/Athiti-Regular.ttf
-          style: italic
-    - family: UbuntuCondensed
-      fonts:
-        - asset: assets/fonts/UbuntuCondensed-Regular.ttf
-        - asset: assets/fonts/UbuntuCondensed-Regular.ttf
-          style: italic
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/custom-fonts/#from-packages

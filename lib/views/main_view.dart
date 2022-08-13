@@ -129,10 +129,13 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
           }
         }
         print('POSTITION: ${_lastScrollPosition} >>> ${_scrollController.position.pixels}');
-        if (_scrollController.position.pixels > _lastScrollPosition) {
+        if (_scrollController.position.pixels < 64) {
+          _floatingSearchBarController.isHidden ? _floatingSearchBarController.show() : null;
+        } else
+        if (_scrollController.position.pixels > _lastScrollPosition + 16) {
           _lastScrollPosition = _scrollController.position.pixels.toInt();
           _floatingSearchBarController.isVisible ? _floatingSearchBarController.hide() : null;
-        } else {
+        } else if (_scrollController.position.pixels < _lastScrollPosition - 16) {
           _lastScrollPosition = _scrollController.position.pixels.toInt();
           _floatingSearchBarController.isHidden ? _floatingSearchBarController.show() : null;
         }
