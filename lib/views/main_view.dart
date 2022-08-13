@@ -9,6 +9,7 @@ import 'package:comic_nyaa/utils/http.dart';
 import 'package:comic_nyaa/views/detail/comic_detail_view.dart';
 import 'package:comic_nyaa/views/detail/image_detail_view.dart';
 import 'package:comic_nyaa/views/detail/video_detail_view.dart';
+import 'package:comic_nyaa/views/subscribe_view.dart';
 import 'package:dio/dio.dart';
 import 'package:extended_image/extended_image.dart';
 import 'package:flutter/cupertino.dart';
@@ -186,7 +187,13 @@ class _MainViewState extends State<MainView> {
         ),
       ]),
       ListTile(title: const Text('主页'), onTap: () {}, iconColor: Colors.teal, leading: const Icon(Icons.home)),
-      ListTile(title: const Text('订阅'), onTap: () {}, iconColor: Colors.teal, leading: const Icon(Icons.collections_bookmark)),
+      ListTile(
+          title: const Text('订阅'),
+          onTap: () {
+            Navigator.push(context, MaterialPageRoute(builder: (ctx) => const SubscribeView()));
+          },
+          iconColor: Colors.teal,
+          leading: const Icon(Icons.collections_bookmark)),
       ListTile(title: const Text('下载'), onTap: () {}, iconColor: Colors.teal, leading: const Icon(Icons.download)),
       ListTile(title: const Text('设置'), onTap: () {}, iconColor: Colors.teal, leading: const Icon(Icons.settings))
     ]));
@@ -245,7 +252,7 @@ class _MainViewState extends State<MainView> {
     return Scaffold(
       key: globalKey,
       resizeToAvoidBottomInset: false,
-      drawerEdgeDragWidth: 96,
+      drawerEdgeDragWidth: 128,
       drawerEnableOpenDragGesture: true,
       endDrawerEnableOpenDragGesture: true,
       drawer: buildDrawer(),
@@ -333,10 +340,10 @@ class _MainViewState extends State<MainView> {
                                                         ));
                                                   case LoadState.loading:
                                                     return Container(
-                                                        decoration: const BoxDecoration(color: Colors.teal),
+                                                        decoration: const BoxDecoration(color: Colors.white),
                                                         height: 192,
                                                         child: const SpinKitFoldingCube(
-                                                          color: Colors.white,
+                                                          color: Colors.teal,
                                                           size: 40.0,
                                                         ));
                                                   case LoadState.completed:
@@ -353,17 +360,20 @@ class _MainViewState extends State<MainView> {
                               })),
                     ),
                     NavigationBar(
-                      height: 48,
-                        destinations: ['AAA', 'BBB'].map((item) =>
-                            Material(
-                              color: Colors.teal,
+                        height: 48,
+                        destinations: ['AAA', 'BBB']
+                            .map((item) => Material(
+                                color: Colors.teal,
                                 // elevation: 8,
-                                child: Center(child:
-                                InkWell(child: Text(item, style: TextStyle(color: Colors.white),), onTap: () {},)
-
-                            ) )).toList()
-                    )
-
+                                child: Center(
+                                    child: InkWell(
+                                  child: Text(
+                                    item,
+                                    style: TextStyle(color: Colors.white),
+                                  ),
+                                  onTap: () {},
+                                ))))
+                            .toList())
                   ])),
               // buildMap(),
               // buildBottomNavigationBar(),
