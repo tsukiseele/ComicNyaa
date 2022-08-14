@@ -82,7 +82,6 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
 
   Future<List<TypedModel>> _getNext() async {
     ++_page;
-
     final models = await _getModels();
     if (models.isEmpty) {
       --_page;
@@ -361,7 +360,9 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
                                               afterPaintImage: (canvas, rect, image, paint) {
                                                 if (_heightCache[index] == null) _heightCache[index] = rect.height;
                                               },
+                                              timeLimit: const Duration(milliseconds: 6000),
                                               timeRetry: const Duration(milliseconds: 1000),
+                                              retries: 5,
                                               fit: BoxFit.cover,
                                               headers: _currentSite.headers,
                                               loadStateChanged: (status) {
