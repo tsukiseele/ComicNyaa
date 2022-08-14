@@ -1,7 +1,9 @@
 import 'package:comic_nyaa/library/mio/core/mio.dart';
 import 'package:comic_nyaa/models/typed_model.dart';
+import 'package:comic_nyaa/views/detail/image_detail_view.dart';
 import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 
 class ComicDetailView extends StatefulWidget {
@@ -19,7 +21,6 @@ class ComicDetailViewState extends State<ComicDetailView> {
   final Map<int, double> _heightCache = {};
   TypedModel? _model;
   List<TypedModel>? _children;
-
 
   void getChildren() async {
     try {
@@ -83,27 +84,57 @@ class ComicDetailViewState extends State<ComicDetailView> {
                                 elevation: 2.0,
                                 borderRadius: const BorderRadius.all(Radius.circular(4.0)),
                                 child: InkWell(
-                                    onTap: () {},
+                                    onTap: () {
+                                      Navigator.push(context,
+                                          MaterialPageRoute(builder: (ctx) => ImageDetailView(model: _children![index])));
+                                    },
                                     child: Column(
                                       children: [
-                                        ExtendedImage.network(getUrl(_children?[index]),
-                                            // width: ScreenUtil.instance.setWidth(400),
-                                            // height: ScreenUtil.instance.setWidth(400),
-                                            // width: _heights[index],
-                                            height: _heightCache[index],
-                                            fit: BoxFit.cover,
-                                            cache: true,
-                                            handleLoadingProgress: true,
-                                    gaplessPlayback: true,
-                                            // border: Border.all(color: Colors.red, width: 1.0),
-                                            // shape: boxShape,
-                                            borderRadius: const BorderRadius.all(Radius.circular(4.0)),
-                                            //cancelToken: cancellationToken,
-                                            afterPaintImage: (Canvas canvas, Rect rect, image, Paint paint) {
-                                              if (_heightCache[index] == null) {
-                                                _heightCache[index] = rect.height;
-                                              }
-                                            },
+                                        ExtendedImage.network(
+                                          getUrl(_children?[index]),
+                                          // width: ScreenUtil.instance.setWidth(400),
+                                          // height: ScreenUtil.instance.setWidth(400),
+                                          // width: _heights[index],
+                                          height: _heightCache[index],
+                                          fit: BoxFit.cover,
+                                          cache: true,
+                                          handleLoadingProgress: true,
+                                          gaplessPlayback: true,
+                                          timeRetry: const Duration(milliseconds: 1000),
+                                          // border: Border.all(color: Colors.red, width: 1.0),
+                                          // shape: boxShape,
+                                          borderRadius: const BorderRadius.all(Radius.circular(4.0)),
+                                          //cancelToken: cancellationToken,
+                                          afterPaintImage: (Canvas canvas, Rect rect, image, Paint paint) {
+                                            if (_heightCache[index] == null) {
+                                              _heightCache[index] = rect.height;
+                                            }
+                                          },
+                                          loadStateChanged: (status) {
+                                            switch (status.extendedImageLoadState) {
+                                              case LoadState.failed:
+                                                return Container(
+                                                    decoration: const BoxDecoration(color: Colors.white),
+                                                    height: 96,
+                                                    width: double.infinity,
+                                                    child: const Icon(
+                                                      Icons.close,
+                                                      size: 40,
+                                                      color: Colors.black,
+                                                    ));
+                                              case LoadState.loading:
+                                                return Container(
+                                                    decoration: const BoxDecoration(color: Colors.white),
+                                                    height: 192,
+                                                    child: const SpinKitFoldingCube(
+                                                      color: Colors.teal,
+                                                      size: 40.0,
+                                                    ));
+                                              case LoadState.completed:
+                                                break;
+                                            }
+                                            return null;
+                                          },
                                         ),
                                         Container(
                                           padding: const EdgeInsets.all(8.0),
@@ -112,7 +143,7 @@ class ComicDetailViewState extends State<ComicDetailView> {
                                       ],
                                     )));
                           })
-                      : Container()),
+                      : const Center(child: SpinKitWave(color: Colors.teal))),
             ])));
   }
 }

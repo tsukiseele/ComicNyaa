@@ -5,6 +5,7 @@ import 'package:comic_nyaa/utils/uri_extensions.dart';
 import 'package:dio/dio.dart';
 import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:material_floating_search_bar/material_floating_search_bar.dart';
 import 'package:photo_view/photo_view.dart';
@@ -24,20 +25,28 @@ class ImageDetailView extends StatefulWidget {
 class ImageDetailViewState extends State<ImageDetailView> {
   TypedModel? _model;
   List<TypedModel>? _children;
+  List<String> _images = [];
   int currentIndex = 0;
   bool isFailed = false;
 
-  void getChildren() async {
+  void loadImage() async {
+    print('MODELLLLLLLLLLLLL: ${widget.model}');
     try {
       final model = widget.model;
+      var url = getUrl(model);
+
+      print('UUUUUUUUUUUUUUUUUUUUUURL: $url');
+      if (url.isNotEmpty) return setState(() => _images.add(url));
       print('model.\$section: ${model.$section}');
       final dynamicResult = await Mio(model.$site).parseChildrenConcurrency(model.toJson(), model.$section!.rules!);
       // print('SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS: ${model.$site?.sections?['search']?.toJson().toString()}');
       _model = TypedModel.fromJson(dynamicResult);
       // print('XXXXXXXXXXXXXXXXXXXXXXXX: $dynamicResult');
       // print('CHILDREN URL: ${getUrl(_model)}');
-      final url = getUrl(_model);
-
+      // url = getUrl(_model);
+      if (_model?.children != null) {
+        _images = _model!.children?.map((e) => getUrl(e)).toList() ?? [];
+      }
       setState(() {
         isFailed = url.isEmpty;
         // print('ISFAILED: ${isFailed}');
@@ -56,8 +65,10 @@ class ImageDetailViewState extends State<ImageDetailView> {
       final children = item.children != null ? item.children![0] : null;
       if (children != null) {
         url = children.sampleUrl ?? children.largerUrl ?? children.originUrl ?? '';
+        return url;
       }
       url = item.sampleUrl ?? item.largerUrl ?? item.originUrl ?? '';
+
     } catch (e) {
       Fluttertoast.showToast(msg: 'ERROR: $e');
     }
@@ -65,15 +76,14 @@ class ImageDetailViewState extends State<ImageDetailView> {
   }
 
   onDownload(String url) async {
-    // String savePath = (await Config.downloadDir).concatPath(getFilename(url)).path;
-    String savePath = (await Config.downloadDir).concatPath(Uri.parse(url).filename()).path;
-    print('SAVE PATH: $savePath');
-    Dio().download(url, savePath);
+    String savePath = (await Config.downloadDir).join(Uri.parse(url).filename()).path;
+    Fluttertoast.showToast(msg: '下载已添加：$savePath');
+    await Dio().download(url, savePath);
   }
 
   @override
   void initState() {
-    getChildren();
+    loadImage();
     super.initState();
   }
 
@@ -83,24 +93,23 @@ class ImageDetailViewState extends State<ImageDetailView> {
       appBar: AppBar(
         title: Text(widget.title),
       ),
-      body: _children != null
+      body: _images.isNotEmpty
           ? Center(
               child: PhotoViewGallery.builder(
               scrollPhysics: const BouncingScrollPhysics(),
               builder: (BuildContext context, int index) {
                 return PhotoViewGalleryPageOptions(
-                    imageProvider: ExtendedImage.network(getUrl(_children?[index])).image,
+                    imageProvider: ExtendedImage.network(_images[index]).image,
                     initialScale: PhotoViewComputedScale.contained * 1,
                     onTapUp: (context, detail, value) {
-                      final url = getUrl(_children?[index]);
-                      Fluttertoast.showToast(msg: '下载已添加：${url}');
+                      final url = _images[index];
                       onDownload(url);
                     },
                     onTapDown: (context, detail, value) {}
                     // heroAttributes: PhotoViewHeroAttributes(tag: _children?[index].id),
                     );
               },
-              itemCount: _children?.length,
+              itemCount: _images.length,
               loadingBuilder: (context, event) => Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -119,7 +128,7 @@ class ImageDetailViewState extends State<ImageDetailView> {
             ))
           : isFailed
               ? const Center(child: Text('加载失败'))
-              : const Center(child: CircularProgressIndicator()),
+              : const Center(child: SpinKitWave(color: Colors.teal)),
     );
 
     //     return Stack(children: [

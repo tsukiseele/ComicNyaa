@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:comic_nyaa/utils/http.dart';
 import 'package:dio/dio.dart';
 import 'package:extended_image/extended_image.dart';
@@ -37,10 +38,24 @@ class _ComicNyaaState extends State<ComicNyaa> {
     // 初始化显示模式
     setOptimalDisplayMode();
     // 初始化Mio
-    Mio.setRequest((url, {Map<String, String>? headers}) async {
+    Mio.setCustomRequest((url, {Map<String, String>? headers}) async {
       final response = await Http.client()
           .get(url, options: Options(responseType: ResponseType.plain, headers: headers));
       return response.data.toString();
+
+      // HttpClient client = new HttpClient();
+      // client.getUrl(Uri.parse("http://www.example.com/"))
+      //     .then((HttpClientRequest request) {
+      //   // Optionally set up headers...
+      //   // Optionally write to the request object...
+      //   // Then call close.
+      //   ...
+      //   return request.close();
+      // })
+      //     .then((HttpClientResponse response) {
+      //   // Process the response.
+      //   ...
+      // });
     });
     super.initState();
   }

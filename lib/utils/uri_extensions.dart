@@ -1,13 +1,13 @@
 extension UriExtension on Uri {
+  String decodeComponentDeep() {
+    String uri = toString();
+    while (uri.contains('%25')) {
+      uri = Uri.decodeComponent(uri);
+    }
+    return Uri.decodeComponent(uri);
+  }
 
-   String filename() {
-    // final match = RegExp(r'[\s\S^\/]*\/([\s\S^\/].*?\.\w+)(\?[\s\S^\/]*)?$').allMatches(url);
-    // if (match.isNotEmpty && match.first.groupCount > 0) {
-    //   final filename = match.first.group(1);
-    //   print('MATCH: $filename');
-    //   return filename!;
-    // }
-    // throw Exception('无法从URL中解析文件名：$url');
-    return toString().split("/").last.split('?').first;
+  String filename() {
+    return Uri.parse(toString().split("/").last.split('?').first).decodeComponentDeep();
   }
 }

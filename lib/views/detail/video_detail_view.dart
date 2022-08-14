@@ -2,6 +2,7 @@ import 'package:chewie/chewie.dart';
 import 'package:comic_nyaa/library/mio/core/mio.dart';
 import 'package:comic_nyaa/models/typed_model.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:video_player/video_player.dart';
 
 class VideoDetailView extends StatefulWidget {
@@ -78,44 +79,46 @@ class VideoDetailViewState extends State<VideoDetailView> {
           title: Text(widget.title),
         ),
         body: Container(
+          alignment: Alignment.center,
             padding: const EdgeInsets.all(8.0),
-            child: Column(children: [
+            child:
               Center(
-                child: _controller?.value.isInitialized ?? false
+                child: Column(children: [_controller?.value.isInitialized ?? false
                     ? AspectRatio(
                         aspectRatio: _controller?.value.aspectRatio ?? 16 / 9,
                         child: Chewie(controller: _chewieController!))
-                    : Container(),
+                    : const Center(child: SpinKitWave(color: Colors.teal)),
+                  Row(
+                    children: [
+                      Offstage(
+                          offstage: model?.originUrl == null,
+                          child: ElevatedButton(
+                              onPressed: () {
+                                play(model!.originUrl!);
+                                // _controller?.value.isPlaying ?? false ? _controller?.pause() : _controller?.play();
+                              },
+                              child: const Text('高解析度'))),
+                      Offstage(
+                          offstage: model?.largerUrl == null,
+                          child: ElevatedButton(
+                              onPressed: () {
+                                play(model!.largerUrl!);
+                                // _controller?.value.isPlaying ?? false ? _controller?.pause() : _controller?.play();
+                              },
+                              child: const Text('中解析度'))),
+                      Offstage(
+                          offstage: model?.sampleUrl == null,
+                          child: ElevatedButton(
+                              onPressed: () {
+                                play(model!.sampleUrl!);
+                                // _controller?.value.isPlaying ?? false ? _controller?.pause() : _controller?.play();
+                              },
+                              child: const Text('低解析度'))),
+                    ],
+                  ),
+                ]
               ),
-              Row(
-                children: [
-                  Offstage(
-                      offstage: model?.originUrl == null,
-                      child: ElevatedButton(
-                          onPressed: () {
-                            play(model!.originUrl!);
-                            // _controller?.value.isPlaying ?? false ? _controller?.pause() : _controller?.play();
-                          },
-                          child: const Text('高解析度'))),
-                  Offstage(
-                      offstage: model?.largerUrl == null,
-                      child: ElevatedButton(
-                          onPressed: () {
-                            play(model!.largerUrl!);
-                            // _controller?.value.isPlaying ?? false ? _controller?.pause() : _controller?.play();
-                          },
-                          child: const Text('中解析度'))),
-                  Offstage(
-                      offstage: model?.sampleUrl == null,
-                      child: ElevatedButton(
-                          onPressed: () {
-                            play(model!.sampleUrl!);
-                            // _controller?.value.isPlaying ?? false ? _controller?.pause() : _controller?.play();
-                          },
-                          child: const Text('低解析度'))),
-                ],
-              ),
-            ])));
+              )));
   }
 
   @override

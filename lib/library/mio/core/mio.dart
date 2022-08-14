@@ -25,7 +25,7 @@ class Mio<T extends Model> {
   String? keywords;
   static Future<String> Function(String url, {Map<String, String>? headers})? _request;
 
-  static void setRequest(Future<String> Function(String url, {Map<String, String>? headers})? request) {
+  static void setCustomRequest(Future<String> Function(String url, {Map<String, String>? headers})? request) {
     _request = request;
   }
 

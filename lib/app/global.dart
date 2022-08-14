@@ -3,10 +3,10 @@ import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 
 extension ExtendedPath on Directory {
-  Directory concatDir(Directory child) {
-    return concatPath(child.path);
+  Directory joinDir(Directory child) {
+    return join(child.path);
   }
-  Directory concatPath(String child) {
+  Directory join(String child) {
     return Directory('$path${Platform.pathSeparator}$child');
   }
 }
@@ -26,13 +26,13 @@ class Config {
   }
 
   static Future<Directory> get ruleDir async {
-    _ruleDir = _ruleDir ?? (await appDir).concatPath(rulesDirectoryName);
+    _ruleDir = _ruleDir ?? (await appDir).join(rulesDirectoryName);
     await _ruleDir?.create(recursive: true);
     return _ruleDir!;
   }
 
   static Future<Directory> get downloadDir async {
-    _downloadDir = _downloadDir ?? (await getDownloadPath())?.concatPath(downloadDirectoryName);
+    _downloadDir = _downloadDir ?? (await getDownloadPath())?.join(downloadDirectoryName);
     await _downloadDir?.create(recursive: true);
     return _downloadDir!;
   }

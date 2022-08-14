@@ -50,8 +50,8 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
   int _page = 1;
   String _keywords = '';
   bool _isLoading = false;
-  bool _isNext = false;
   bool _isRefresh = false;
+  bool _isNotMore = false;
   int _lastScrollPosition = 0;
   int _lastScrollTime = 0;
 
@@ -64,6 +64,11 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
             ..setKeywords(_keywords))
           .parseSite();
       final images = List.of(results.map((item) => TypedModel.fromJson(item)));
+      print('IMAGES LENGTH: $images');
+      if (images.isEmpty) {
+        // _isNotMore = true;
+        Fluttertoast.showToast(msg: '已经到底了');
+      }
       return images;
     } catch (e) {
       // rethrow;
@@ -75,18 +80,22 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
   }
 
   Future<List<TypedModel>> _getNext() async {
-    _isNext = true;
     ++_page;
 
     final models = await _getModels();
-    if (models.isEmpty) --_page;
-    _isNext = false;
-    _refreshController.loadComplete();
-    setState(() => _models.addAll(models));
-    return models;
+    if (models.isEmpty) {
+      --_page;
+      // if (_isNotMore) return [];
+    }
+      _refreshController.loadComplete();
+      setState(() => _models.addAll(models));
+      return models;
   }
 
   Future<List<TypedModel>> _onSearch(String keywords) async {
+    // _refreshController.footerMode?.setValueWithNoNotify(LoadStatus.idle);
+    // _isNotMore = false;
+    
     _isRefresh = true;
     setState(() {
       _models.clear();
@@ -106,7 +115,7 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
   }
 
   Future<void> _updateSubscribe() async {
-    final savePath = (await Config.ruleDir).concatPath('rules.zip').path;
+    final savePath = (await Config.ruleDir).join('rules.zip').path;
     print('savePath: $savePath');
     await Http.client().download('https://hlo.li/static/rules.zip', savePath);
   }
@@ -140,9 +149,6 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
         }
         _lastScrollTime = DateTime.now().millisecondsSinceEpoch;
       }
-
-      // if (_scrollController.position.pixels > 0) {
-      // }
     });
   }
 
@@ -302,9 +308,12 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
                             offset: 96,
                           ),
                           // footer: CustomFooter(
-                          //   builder: (BuildContext context,LoadStatus mode){
+                          //   builder: ( context, mode){
                           //     Widget body ;
-                          //     if(mode==LoadStatus.idle){
+                          //     if (_isEnd) {
+                          //       body = Text("No more Data");
+                          //     }
+                          //     else if(mode==LoadStatus.idle){
                           //       body =  Text("pull up load");
                           //     }
                           //     else if(mode==LoadStatus.loading){
@@ -377,6 +386,7 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
                                                   case LoadState.completed:
                                                     break;
                                                 }
+                                                return null;
                                               },
                                             ),
                                             Container(
