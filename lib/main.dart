@@ -43,11 +43,11 @@ class _ComicNyaaState extends State<ComicNyaa> {
     // 初始化显示模式
     setOptimalDisplayMode();
     // 初始化Mio
-    client.maxConnectionsPerHost = 5;
+    client.maxConnectionsPerHost = 3;
     Mio.setCustomRequest((url, {Map<String, String>? headers}) async {
-      // final response = await Http.client()
-      //     .get(url, options: Options(responseType: ResponseType.plain, headers: headers));
-      // return response.data.toString();
+    //   final response = await Http.client()
+    //       .get(url, options: Options(responseType: ResponseType.plain, headers: headers));
+    //   return response.data.toString();
       HttpClientRequest request = await client.getUrl(Uri.parse(url));//.then((HttpClientRequest request) {
         headers?.forEach((key, value) => request.headers.add(key, value));
       HttpClientResponse response =  await  request.close();

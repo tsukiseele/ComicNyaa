@@ -101,7 +101,7 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
 
     _isRefresh = true;
     setState(() {
-      _models.clear();
+      _models = [];
       _heightCache.clear();
     });
     _page = 1;
@@ -301,7 +301,7 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
     return Scaffold(
       key: globalKey,
       resizeToAvoidBottomInset: false,
-      drawerEdgeDragWidth: 128,
+      drawerEdgeDragWidth: 64,
       drawerEnableOpenDragGesture: true,
       endDrawerEnableOpenDragGesture: true,
       drawer: buildDrawer(),
@@ -370,9 +370,16 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
                                         child: Column(
                                           children: [
                                             CachedNetworkImage(
+                                              // imageBuilder: (ctx, image) {
+                                              //   return Container(child: Image(image: image));
+                                              // },
                                               imageUrl: _models[index].coverUrl ?? '',
-                                              fadeInDuration: const Duration(milliseconds: 250),
-                                              fadeOutDuration: const Duration(milliseconds: 250),
+                                              // fadeInDuration: const Duration(milliseconds: 200),
+                                              // fadeOutDuration: const Duration(milliseconds: 100),
+                                              fadeInDuration: const Duration(milliseconds: 200),
+                                              fadeOutDuration: const Duration(milliseconds: 200),
+                                              // fadeInCurve: Curves.easeOutBack,
+                                              // fadeOutCurve: Curves.easeOutBack,
                                               fit: BoxFit.cover,
                                               errorWidget: (ctx, url, error) => const AspectRatio(
                                                   aspectRatio: 1,
@@ -381,15 +388,18 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
                                                     size: 64,
                                                     // color: Colors.redAccent,
                                                   )),
-                                              placeholder: (ctx, text) => Shimmer.fromColors(
-                                                  baseColor: const Color.fromRGBO(240, 240, 240, 1),
-                                                  highlightColor: Colors.white,
-                                                  child: AspectRatio(
-                                                    aspectRatio: 0.75,
-                                                    child: Container(
-                                                      decoration: const BoxDecoration(color: Colors.white),
-                                                    ),
-                                                  )),
+                                              placeholder: (ctx, text) =>
+                                                  // Shimmer.fromColors(
+                                                  // baseColor: const Color.fromRGBO(240, 240, 240, 1),
+                                                  // highlightColor: Colors.white,
+                                                  // child:
+                                                  const AspectRatio(
+                                                    aspectRatio: 0.66,
+                                                  child: SpinKitDoubleBounce(color: Colors.teal)),
+                                                    // child: Container(
+                                                    //   decoration: const BoxDecoration(color: Colors.white),
+                                                    // ),
+                                                  // )),
                                               httpHeaders: _currentSite.headers,
                                             ),
                                             Container(

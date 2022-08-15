@@ -25,8 +25,7 @@ class ComicDetailViewState extends State<ComicDetailView> {
   final ScrollController _scrollController = ScrollController();
   final Map<int, double> _heightCache = {};
   StreamSubscription<List<Map<String, dynamic>>>? stream;
-  TypedModel? _model;
-  final List<TypedModel> _children = [];
+   List<TypedModel> _children = [];
   int _lastScrollTime = 0;
   int streamIndex = 0;
 void initialized() {
@@ -53,6 +52,7 @@ void initialized() {
     print('PPPPPPPPPPPPPPAUSEEEEEEEEEEEEEE:::::::::: $list}');
     _getNext(list);
   });
+  stream?.pause();
 }
   _getNext(List<Map<String, dynamic>> data) async {
     try {
@@ -66,6 +66,24 @@ void initialized() {
     }
     return data;
   }
+  void getChildren() async {
+    try {
+      final model = widget.model;
+      print('model.\$section: ${model.$section}');
+      final dynamicResult = await Mio(model.$site).parseChildrenConcurrency(model.toJson(), model.$section!.rules!);
+      final models = TypedModel.fromJson(dynamicResult);
+      print('UUUUUU: ${models}');
+      setState(() {
+        _children = model.children ?? [model];
+      });
+      print('CHILDLENGTH: $_children');
+    } catch (e) {
+      print('ERROR: ${e.toString()}');
+    }
+    // return data;;
+  }
+
+
 
   String getUrl(TypedModel? item) {
     if (item == null) return '';
@@ -84,7 +102,9 @@ void initialized() {
   @override
   void initState() {
     initialized();
-    super.initState();
+    // getChildren();
+    super.initState()
+    ;
   }
 
   @override
@@ -104,7 +124,7 @@ void initialized() {
                           crossAxisCount: 3,
                           mainAxisSpacing: 8.0,
                           crossAxisSpacing: 8.0,
-                          itemCount: _children?.length,
+                          itemCount: _children.length,
                           itemBuilder: (context, index) {
                             return Material(
                                 elevation: 2.0,
@@ -112,15 +132,16 @@ void initialized() {
                                 child: InkWell(
                                     onTap: () {
                                       Navigator.push(context,
-                                          MaterialPageRoute(builder: (ctx) => ImageDetailView(models: _children!, index: index,)));
+                                          MaterialPageRoute(builder: (ctx) => ImageDetailView(models: _children, index: index,)));
                                     },
                                     child: Column(
                                       children: [
 
                                         CachedNetworkImage(
-                                          imageUrl: getUrl(_children?[index]),
+                                          imageUrl: getUrl(_children[index]),
                                           httpHeaders: widget.model.$site?.headers,
                                           height: 160,
+                                          fit: BoxFit.cover,
                                           placeholder: (ctx, text) => Shimmer.fromColors(
                                               baseColor: const Color.fromRGBO(240, 240, 240, 1),
                                               highlightColor: Colors.white,
