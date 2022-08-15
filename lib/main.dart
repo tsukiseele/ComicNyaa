@@ -1,11 +1,13 @@
 import 'dart:async';
 import 'dart:io';
+import 'package:comic_nyaa/library/mio/core/mio_loader.dart';
 import 'package:comic_nyaa/utils/http.dart';
 import 'package:dio/dio.dart';
 import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_displaymode/flutter_displaymode.dart';
 
+import 'app/global.dart';
 import 'library/mio/core/mio.dart';
 import 'views/main_view.dart';
 

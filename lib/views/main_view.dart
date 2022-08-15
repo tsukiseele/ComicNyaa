@@ -116,15 +116,9 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
     await _onSearch(_keywords);
   }
 
-  Future<void> _updateSubscribe() async {
-    final savePath = (await Config.ruleDir).join('rules.zip').path;
-    print('savePath: $savePath');
-    await Http.client().download('https://hlo.li/static/rules.zip', savePath);
-  }
-
   Future<void> _initialize() async {
-    // await _updateSubscribe();
-    final sites = await RuleLoader.getRules(await Config.ruleDir);
+    await _checkUpdate();
+    final sites = await RuleLoader.loadFromDirectory(await Config.ruleDir);
     sites.forEachIndexed((i, element) => print('$i: [${element.id}]${element.name}'));
     setState(() {
       _sites = sites;
@@ -174,6 +168,20 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
 
   Site get _currentSite {
     return _sites.firstWhere((site) => site.id == _currentSiteId);
+  }
+
+  _checkUpdate() async {
+    final ruleDir = (await Config.ruleDir);
+    await RuleLoader.loadFromDirectory(ruleDir);
+    if (RuleLoader.sites.isEmpty) {
+      await _updateSubscribe(ruleDir);
+    }
+  }
+
+  Future<void> _updateSubscribe(Directory dir) async {
+    final savePath = dir.join('rules.zip').path;
+    await Http.client().download('https://hlo.li/static/rules.zip', savePath);
+    await RuleLoader.loadFromDirectory(dir);
   }
 
   @override
@@ -359,66 +367,17 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
                                           children: [
                                             CachedNetworkImage(
                                               imageUrl: _models[index].coverUrl ?? '',
-                                              placeholder: (ctx, text) =>
-                                                //   SizedBox(
-                                                // width: double.infinity,
-                                                // child:
-                                            Shimmer.fromColors(
-                                                    baseColor: const Color.fromRGBO(224, 224, 224, 1),
-                                                    highlightColor: Colors.white,
-                                                    child:
-                                          AspectRatio(
-                                                      aspectRatio: 0.8,
-                                                      child: Container(
-                                                          decoration: const BoxDecoration(color: Colors.teal),
-                                                          // height: 192,
-                                                          // child: const SpinKitFoldingCube(
-                                                          //   color: Colors.teal,
-                                                          //   size: 40.0,
-                                                          // )
-                                          ),
-                                                    )),
-                                              // ),
-                                              // placeholder:
+                                              placeholder: (ctx, text) => Shimmer.fromColors(
+                                                  baseColor: const Color.fromRGBO(240, 240, 240, 1),
+                                                  highlightColor: Colors.white,
+                                                  child: AspectRatio(
+                                                    aspectRatio: 0.8,
+                                                    child: Container(
+                                                      decoration: const BoxDecoration(color: Colors.white),
+                                                    ),
+                                                  )),
                                               httpHeaders: _currentSite.headers,
                                             ),
-                                            // ExtendedImage.network(
-                                            //   _models[index].coverUrl ?? '',
-                                            //   height: _heightCache[index],
-                                            //   afterPaintImage: (canvas, rect, image, paint) {
-                                            //     if (_heightCache[index] == null) _heightCache[index] = rect.height;
-                                            //   },
-                                            //   timeLimit: const Duration(milliseconds: 6000),
-                                            //   timeRetry: const Duration(milliseconds: 1000),
-                                            //   retries: 5,
-                                            //   fit: BoxFit.cover,
-                                            //   headers: _currentSite.headers,
-                                            //   loadStateChanged: (status) {
-                                            //     switch (status.extendedImageLoadState) {
-                                            //       case LoadState.failed:
-                                            //         return Container(
-                                            //             decoration: const BoxDecoration(color: Colors.white),
-                                            //             height: 96,
-                                            //             width: double.infinity,
-                                            //             child: const Icon(
-                                            //               Icons.close,
-                                            //               size: 40,
-                                            //               color: Colors.black,
-                                            //             ));
-                                            //       case LoadState.loading:
-                                            //         return Container(
-                                            //             decoration: const BoxDecoration(color: Colors.white),
-                                            //             height: 192,
-                                            //             child: const SpinKitFoldingCube(
-                                            //               color: Colors.teal,
-                                            //               size: 40.0,
-                                            //             ));
-                                            //       case LoadState.completed:
-                                            //         break;
-                                            //     }
-                                            //     return null;
-                                            //   },
-                                            // ),
                                             Container(
                                               padding: const EdgeInsets.all(8.0),
                                               child: Text(
@@ -438,33 +397,33 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
           )),
       // );
       // ]),
-      bottomNavigationBar: BottomAppBar(
-        color: Colors.white,
-        shape: const CircularNotchedRectangle(), // 底部导航栏打一个圆形的洞
-        child: TabBar(
-          controller: _tabController,
-          tabs: const <Widget>[
-            Tab(
-              icon: Icon(
-                Icons.cloud_outlined,
-                color: Colors.teal,
-              ),
-            ),
-            Tab(
-              icon: Icon(
-                Icons.beach_access_sharp,
-                color: Colors.teal,
-              ),
-            ),
-            Tab(
-              icon: Icon(
-                Icons.brightness_5_sharp,
-                color: Colors.teal,
-              ),
-            ),
-          ],
-        ),
-      ),
+      // bottomNavigationBar: BottomAppBar(
+      //   color: Colors.white,
+      //   shape: const CircularNotchedRectangle(), // 底部导航栏打一个圆形的洞
+      //   child: TabBar(
+      //     controller: _tabController,
+      //     tabs: const <Widget>[
+      //       Tab(
+      //         icon: Icon(
+      //           Icons.cloud_outlined,
+      //           color: Colors.teal,
+      //         ),
+      //       ),
+      //       Tab(
+      //         icon: Icon(
+      //           Icons.beach_access_sharp,
+      //           color: Colors.teal,
+      //         ),
+      //       ),
+      //       Tab(
+      //         icon: Icon(
+      //           Icons.brightness_5_sharp,
+      //           color: Colors.teal,
+      //         ),
+      //       ),
+      //     ],
+      //   ),
+      // ),
       // floatingActionButtonLocation:  FloatingActionButtonLocation.endDocked,
       floatingActionButton: FloatingActionButton(
         onPressed: () => globalKey.currentState?.openEndDrawer(),
