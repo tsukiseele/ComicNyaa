@@ -1,9 +1,9 @@
 import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
 import 'package:collection/collection.dart';
-import 'package:dio/dio.dart';
 import 'package:html/parser.dart';
 import 'package:html/dom.dart';
-import '../../../utils/http.dart';
 import '../model/model.dart';
 import '../model/site.dart';
 
@@ -23,9 +23,18 @@ class Mio<T extends Model> {
   Site? site;
   int page = 1;
   String? keywords;
-  static Future<String> Function(String url, {Map<String, String>? headers})? _request;
+  static Future<String> Function(String url, {Map<String, String>? headers}) _request =
+      (url, {Map<String, String>? headers}) async {
+    // final response = await Http.client()
+    //     .get(url, options: Options(responseType: ResponseType.plain, headers: headers));
+    // return response.data.toString();
+    HttpClientRequest request = await HttpClient().getUrl(Uri.parse(url));
+    headers?.forEach((key, value) => request.headers.add(key, value));
+    HttpClientResponse response = await request.close();
+    return await response.transform(utf8.decoder).join();
+  };
 
-  static void setCustomRequest(Future<String> Function(String url, {Map<String, String>? headers})? request) {
+  static void setCustomRequest(Future<String> Function(String url, {Map<String, String>? headers}) request) {
     _request = request;
   }
 
@@ -51,7 +60,7 @@ class Mio<T extends Model> {
   /// @return {Promise<<T extends Meta>[]>}
   Future<List<Map<String, dynamic>>> parseSection(Section section, [bool isParseChildren = false]) async {
     if (site == null) throw Exception('site cannot be empty!');
-// 复用规则，现在已经在SiteLoader中处理
+    // 复用规则
     if (section.reuse != null) {
       section.rules = site?.sections?['${section.reuse}']?.rules;
     }
@@ -106,12 +115,12 @@ class Mio<T extends Model> {
           } else {
 // 判断并继承父节点字段
 // extend && children.forEach((child, index) => (children[index] = Object.assign({}, item, child)))
-          if ($children.extend == true) {
-            // children.forEach((child) {
-            //   item.keys
-            // });
-          }
-          item['children'] != null ? item['children']?.addAll(children) : (item['children'] = children);
+            if ($children.extend == true) {
+              // children.forEach((child) {
+              //   item.keys
+              // });
+            }
+            item['children'] != null ? item['children']?.addAll(children) : (item['children'] = children);
             // break;
           }
         }
@@ -165,7 +174,7 @@ class Mio<T extends Model> {
           final match = item.groupCount > 0 ? item.group(1) : item.group(0);
           resultSet[i][k] = replaceRegex(match ?? '', exp?.capture, exp?.replacement);
         });
-      // 使用选择器匹配
+        // 使用选择器匹配
       } else if (exp?.selector != null) {
         selectEach(doc, exp?.selector as String, (result, index) {
           // print('RRRR: $result, IIII: $index');
@@ -189,12 +198,7 @@ class Mio<T extends Model> {
   /// @param {Object} options 操作
   /// @returns {Promise<String>} 响应文本
   Future<String> requestText(String url, {Map<String, String>? headers}) async {
-    print('RRRRRRRRRRRRRREQ: $url');
-    if (_request == null) {
-      final response = await Dio().get(url, options: Options(responseType: ResponseType.plain, sendTimeout: 10000, headers: headers));
-      return response.data.toString();
-    }
-    return await _request!(url, headers: headers);
+    return await _request(url, headers: headers);
   }
 
   /// 获取当前板块
@@ -270,19 +274,22 @@ class Mio<T extends Model> {
   /// @returns {String} 真实URL
   String replaceUrlTemplate(String template, int page, String? keywords) {
     final pageMatches = REG_PAGE_TEMPLATE.allMatches(template);
-    final keywordMatches  = REG_KEYWORD_TEMPLATE.allMatches(template);
+    final keywordMatches = REG_KEYWORD_TEMPLATE.allMatches(template);
     int p = page;
     String? k = '';
     if (keywordMatches.isNotEmpty) {
       final keywordMatch = keywordMatches.first;
-       k = keywordMatch.groupCount > 1 ? keywordMatch.group(1) : '';
+      k = keywordMatch.groupCount > 1 ? keywordMatch.group(1) : '';
     }
     if (pageMatches.isNotEmpty) {
       final pageMatch = pageMatches.first;
       print('template: [$template], page: [$page], keywords: [$keywords]');
-      print('PAGE SIZE: ${pageMatch.groupCount}, G0: [${pageMatch.group(0)}], G1: [${pageMatch.group(1)}], G2: [${pageMatch.group(2)}]');
-      final offset = pageMatch.groupCount > 0 && (pageMatch.group(1)?.isNotEmpty ?? false) ? int.parse(pageMatch.group(1) ?? '0') : 0;
-      final range = pageMatch.groupCount > 1 && (pageMatch.group(2)?.isNotEmpty ?? false) ? int.parse(pageMatch.group(2) ?? '1') : 1;
+      print(
+          'PAGE SIZE: ${pageMatch.groupCount}, G0: [${pageMatch.group(0)}], G1: [${pageMatch.group(1)}], G2: [${pageMatch.group(2)}]');
+      final offset =
+          pageMatch.groupCount > 0 && (pageMatch.group(1)?.isNotEmpty ?? false) ? int.parse(pageMatch.group(1) ?? '0') : 0;
+      final range =
+          pageMatch.groupCount > 1 && (pageMatch.group(2)?.isNotEmpty ?? false) ? int.parse(pageMatch.group(2) ?? '1') : 1;
       p = (p + offset) * range;
 
       print('FINAL PAGE: [$p] offset: [$offset], range: [$range]');

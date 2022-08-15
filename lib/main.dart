@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 import 'package:comic_nyaa/library/mio/core/mio_loader.dart';
 import 'package:comic_nyaa/utils/http.dart';
@@ -23,6 +24,8 @@ class ComicNyaa extends StatefulWidget {
 }
 
 class _ComicNyaaState extends State<ComicNyaa> {
+
+  final HttpClient client = HttpClient();
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -40,24 +43,15 @@ class _ComicNyaaState extends State<ComicNyaa> {
     // 初始化显示模式
     setOptimalDisplayMode();
     // 初始化Mio
+    client.maxConnectionsPerHost = 5;
     Mio.setCustomRequest((url, {Map<String, String>? headers}) async {
-      final response = await Http.client()
-          .get(url, options: Options(responseType: ResponseType.plain, headers: headers));
-      return response.data.toString();
-
-      // HttpClient client = new HttpClient();
-      // client.getUrl(Uri.parse("http://www.example.com/"))
-      //     .then((HttpClientRequest request) {
-      //   // Optionally set up headers...
-      //   // Optionally write to the request object...
-      //   // Then call close.
-      //   ...
-      //   return request.close();
-      // })
-      //     .then((HttpClientResponse response) {
-      //   // Process the response.
-      //   ...
-      // });
+      // final response = await Http.client()
+      //     .get(url, options: Options(responseType: ResponseType.plain, headers: headers));
+      // return response.data.toString();
+      HttpClientRequest request = await client.getUrl(Uri.parse(url));//.then((HttpClientRequest request) {
+        headers?.forEach((key, value) => request.headers.add(key, value));
+      HttpClientResponse response =  await  request.close();
+      return await response.transform(utf8.decoder).join();
     });
     super.initState();
   }
