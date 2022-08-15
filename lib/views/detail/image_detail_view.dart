@@ -34,13 +34,13 @@ class ImageDetailViewState extends State<ImageDetailView> {
   bool isFailed = false;
 
   void loadImage() async {
-    print('INDEX: ${widget.index}, WIDGET.MODELS: ${widget.models}');
+    // print('INDEX: ${widget.index}, WIDGET.MODELS: ${widget.models}');
     try {
       final models = widget.models;
       // 只有一条数据，且无图片源，则请求解析
       if (models.length == 1 && getUrl(models.first).isEmpty) {
         var model = models.first;
-        print('MODEL.SECTION: ${model.$section}');
+        // print('MODEL.SECTION: ${model.$section}');
         final result = await Mio(model.$site).parseChildrenConcurrency(model.toJson(), model.$section!.rules!);
         model = TypedModel.fromJson(result);
         if (model.children != null) {

@@ -27,8 +27,7 @@ class MixDetailViewState extends State<MixDetailView> {
       final dynamicResult = await Mio(model.$site).parseChildrenConcurrency(model.toJson(), model.$section!.rules!);
 
       print('data: $dynamicResult');
-      // print('URL: ${dynamicResult.['sampleUrl'] ?? dynamicResult['largerUrl'] ?? dynamicResult['originUrl']}');
-      print('UUUUUU: ${getUrl(dynamicResult)}');
+      // print('URL: ${getUrl(dynamicResult)}');
       setState(() {
         children = dynamicResult; //TypedModel.fromJson(dynamicResult);
       });

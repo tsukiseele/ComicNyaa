@@ -85,48 +85,82 @@ class Mio<T extends Model> {
   /// @param {*} item
   /// @param {*} rules
   /// @return {Promise<T extends Meta>}
-  Future<Map<String, dynamic>> parseChildrenConcurrency(Map<String, dynamic> item, Rules rules) async {
+  Future<Map<String, dynamic>> parseChildrenConcurrency(Map<String, dynamic> item, Rules rules, {Future<bool> Function(List<Map<String, dynamic>>)? callback}) async {
     if (item[r'$children'] != null && rules[r'$children'] != null) {
-      List<Map<String, dynamic>> histroy = [];
       int page = 0;
       Selector $children = rules[r'$children']!;
+      String url = item[r'$children'];
+      List<String> keys = [];
+      final isMulitPage = url.contains(REG_PAGE_MATCH);
       do {
-        final children = await parseRules(item[r'$children']!, $children.rules!, page = page++);
-// if (children && histroy && children.length && histroy.length && children.length === histroy.length && this.objectEquals(children[0], histroy[0])) break
-// if (children != null && children.length > 0 && histroy.isNotEmpty && children.length == histroy.length && this.objectEquals(children[0], histroy[0])) break;
-//
-// histroy = JSON.parse(JSON.stringify(children));
-        if (children.length == histroy.length && children.equals(histroy)) break;
-
+        final children = await parseRules(url, $children.rules!, page = page, keywords = '');
+        page++;
+        List<String> newKeys = isMulitPage ? children.map((item) => item[r'$key'].toString()).toList() : [];
+        // print('EQ: [$url] $keys == $newKeys');
+        if (isMulitPage && keys.length == newKeys.length && keys.equals(newKeys)) break;
+        keys = newKeys;
         if (children.isNotEmpty) {
-// 解析下级子节点
-          if (children.first[r'$children'] != null && rules[r'$children']?.rules != null) {
-            await Future.wait(children.map((child) => parseChildrenConcurrency(child, rules[r'$children']?.rules as Rules)));
+          // 解析下级子节点
+          final nextChildren = rules[r'$children']?.rules;
+          if (children.first[r'$children'] != null && nextChildren != null) {
+            await Future.wait(children.map((child) => parseChildrenConcurrency(child, nextChildren)));
           }
-          var ddd = $children;
-          print('XXXYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY: ${ddd.toJson().toString()}');
-// 判断是否拉平子节点，否则追加到子节点下
+          // print('SELECTOR: ${$children.toJson().toString()}');
+          // 判断是否拉平子节点，否则追加到子节点下
           if ($children.flat != null && $children.flat == true) {
             item.addAll(children.first);
-            print('YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY: ${item.toString()}');
+            // print('FLAT CHILDREN ITEM: ${item.toString()}');
             break;
-// Object.assign(item, children[0]);
-//           break;
           } else {
-// 判断并继承父节点字段
-// extend && children.forEach((child, index) => (children[index] = Object.assign({}, item, child)))
             if ($children.extend == true) {
-              // children.forEach((child) {
-              //   item.keys
-              // });
+              // 判断并继承父节点字段
+              // extend && children.forEach((child, index) => (children[index] = Object.assign({}, item, child)))
             }
             item['children'] != null ? item['children']?.addAll(children) : (item['children'] = children);
-            // break;
+            if (callback != null) {
+             await callback(children);
+            }
           }
         }
-      } while (histroy.isNotEmpty);
+      } while (isMulitPage && keys.isNotEmpty);
     }
     return item;
+  }
+
+  Stream<List<Map<String, dynamic>>> parseChildrenStream(Map<String, dynamic> item, Rules rules) async* {
+    if (item[r'$children'] != null && rules[r'$children'] != null) {
+      int page = 0;
+      Selector $children = rules[r'$children']!;
+      String url = item[r'$children'];
+      List<String> keys = [];
+      final isMulitPage = url.contains(REG_PAGE_MATCH);
+      do {
+        final children = await parseRules(url, $children.rules!, page = page, keywords = '');
+        List<String> newKeys = isMulitPage ? children.map((item) => item[r'$key'].toString()).toList() : [];
+        if (isMulitPage && keys.length == newKeys.length && keys.equals(newKeys)) break;
+        keys = newKeys;
+        page++;
+        if (children.isNotEmpty) {
+          // 解析下级子节点
+          final nextChildren = rules[r'$children']?.rules;
+          if (children.first[r'$children'] != null && nextChildren != null) {
+            await Future.wait(children.map((child) => parseChildrenConcurrency(child, nextChildren)));
+          }
+          // 判断是否拉平子节点，否则追加到子节点下
+          if ($children.flat != null && $children.flat == true) {
+            item.addAll(children.first);
+            break;
+          } else {
+            if ($children.extend == true) {
+              // 判断并继承父节点字段
+              // extend && children.forEach((child, index) => (children[index] = Object.assign({}, item, child)))
+            }
+            item['children'] != null ? item['children']?.addAll(children) : (item['children'] = children);
+            yield children;
+          }
+        }
+      } while (isMulitPage && keys.isNotEmpty);
+    }
   }
 
   bool isEmpty(Object? o) {
@@ -151,7 +185,7 @@ class Mio<T extends Model> {
     // 遍历选择器集
     for (final k in rule.keys) {
       final exp = rule[k];
-      print('EXP: regex=${exp?.regex}, selector=${exp?.selector}');
+      // print('EXP: regex=${exp?.regex}, selector=${exp?.selector}');
       // 使用正则匹配
       if (exp?.regex != null) {
         if (exp?.regex == '') return resultSet;
@@ -162,7 +196,6 @@ class Mio<T extends Model> {
           selectEach(doc, exp?.selector as String, (result) => (context = result));
         } else {
           context = doc.getElementsByTagName('html')[0].innerHtml;
-          print('CONTeXT: $context');
         }
         // 匹配正则内容
         final regexp = RegExp(exp?.regex ?? '');
@@ -178,6 +211,7 @@ class Mio<T extends Model> {
       } else if (exp?.selector != null) {
         selectEach(doc, exp?.selector as String, (result, index) {
           // print('RRRR: $result, IIII: $index');
+
           while (resultSet.length < index + 1) {
             resultSet.add(<String, dynamic>{});
           }
@@ -185,10 +219,18 @@ class Mio<T extends Model> {
           resultSet[index][k] = replaceRegex(result, exp?.capture, exp?.replacement);
         });
       }
+      // 判断合并属性
+      if (exp?.merge == true) {
+        String value = resultSet.map((e) => e[k]).join(',');
+        for (var item in resultSet) {
+          item[k] = value;
+        }
+      }
     }
-    print('RESULT SET === $resultSet');
+    // print('RESULT SET === $resultSet');
     for (var item in resultSet) {
       item['type'] = site?.type ?? 'unknown';
+
     }
     return resultSet; // resultSet;
   }
@@ -283,16 +325,17 @@ class Mio<T extends Model> {
     }
     if (pageMatches.isNotEmpty) {
       final pageMatch = pageMatches.first;
-      print('template: [$template], page: [$page], keywords: [$keywords]');
-      print(
-          'PAGE SIZE: ${pageMatch.groupCount}, G0: [${pageMatch.group(0)}], G1: [${pageMatch.group(1)}], G2: [${pageMatch.group(2)}]');
+      print('TEMPLATE: [$template], page: [$page], keywords: [$keywords]');
+      print('MATCHES: ${pageMatch.groupCount}, G0: [${pageMatch.group(0)}], G1: [${pageMatch.group(1)}], G2: [${pageMatch.group(2)}]');
       final offset =
           pageMatch.groupCount > 0 && (pageMatch.group(1)?.isNotEmpty ?? false) ? int.parse(pageMatch.group(1) ?? '0') : 0;
       final range =
           pageMatch.groupCount > 1 && (pageMatch.group(2)?.isNotEmpty ?? false) ? int.parse(pageMatch.group(2) ?? '1') : 1;
+
+      print('BEFORE FINAL PAGE: [$p] offset: [$offset], range: [$range]');
       p = (p + offset) * range;
 
-      print('FINAL PAGE: [$p] offset: [$offset], range: [$range]');
+      print('AFTER FINAL PAGE: [$p] offset: [$offset], range: [$range]');
     }
     return template.replaceAll(REG_PAGE_MATCH, p.toString()).replaceAll(REG_KEYWORD_MATCH, keywords ?? k ?? '');
   }

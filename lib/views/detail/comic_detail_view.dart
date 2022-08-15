@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:comic_nyaa/library/mio/core/mio.dart';
 import 'package:comic_nyaa/models/typed_model.dart';
@@ -20,27 +22,49 @@ class ComicDetailView extends StatefulWidget {
 }
 
 class ComicDetailViewState extends State<ComicDetailView> {
+  final ScrollController _scrollController = ScrollController();
   final Map<int, double> _heightCache = {};
+  StreamSubscription<List<Map<String, dynamic>>>? stream;
   TypedModel? _model;
-  List<TypedModel>? _children;
+  final List<TypedModel> _children = [];
+  int _lastScrollTime = 0;
+  int streamIndex = 0;
+void initialized() {
+  _scrollController.addListener(() {
+    // print('DDDDDDDDDDDD: ${_lastScrollTime}, ${DateTime.now().millisecondsSinceEpoch }');
+    // if (DateTime.now().millisecondsSinceEpoch - _lastScrollTime > 200) {
+      if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent) {
+        // if (!_isLoading) {
+        //   _getNext();
+        // }
 
-  void getChildren() async {
+        print('BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB::::::::::');
+        if (stream?.isPaused == true) {
+          stream?.resume();
+          print('resumeresumeresumeresumeresumeresumeresumeresume::::::::::');
+        }
+      }
+    //   _lastScrollTime = DateTime.now().millisecondsSinceEpoch;
+    // }
+  });
+  final model = widget.model;
+  stream = Mio(model.$site).parseChildrenStream(model.toJson(), model.$section!.rules!).listen((List<Map<String, dynamic>> list) {
+    stream?.pause();
+    print('PPPPPPPPPPPPPPAUSEEEEEEEEEEEEEE:::::::::: $list}');
+    _getNext(list);
+  });
+}
+  _getNext(List<Map<String, dynamic>> data) async {
     try {
-      final model = widget.model;
-      print('model.\$section: ${model.$section}');
-      final dynamicResult = await Mio(model.$site).parseChildrenConcurrency(model.toJson(), model.$section!.rules!);
-      final models = TypedModel.fromJson(dynamicResult);
-      print('UUUUUU: ${getUrl(models)}');
+      final models = data.map((item) => TypedModel.fromJson(item)).toList();
       setState(() {
-        _model = models; //TypedModel.fromJson(dynamicResult);
-        _children = _model?.children;
+        _children.addAll(models);
       });
-
       setState(() {});
     } catch (e) {
       print('ERROR: ${e.toString()}');
     }
-    // return data;;
+    return data;
   }
 
   String getUrl(TypedModel? item) {
@@ -59,8 +83,7 @@ class ComicDetailViewState extends State<ComicDetailView> {
 
   @override
   void initState() {
-    getChildren();
-
+    initialized();
     super.initState();
   }
 
@@ -74,8 +97,9 @@ class ComicDetailViewState extends State<ComicDetailView> {
             padding: const EdgeInsets.all(8.0),
             child: Column(children: [
               Flexible(
-                  child: _children != null
+                  child: _children.isNotEmpty
                       ? MasonryGridView.count(
+                    controller: _scrollController,
                           padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
                           crossAxisCount: 3,
                           mainAxisSpacing: 8.0,
@@ -96,7 +120,7 @@ class ComicDetailViewState extends State<ComicDetailView> {
                                         CachedNetworkImage(
                                           imageUrl: getUrl(_children?[index]),
                                           httpHeaders: widget.model.$site?.headers,
-                                          height: 128,
+                                          height: 160,
                                           placeholder: (ctx, text) => Shimmer.fromColors(
                                               baseColor: const Color.fromRGBO(240, 240, 240, 1),
                                               highlightColor: Colors.white,
@@ -160,7 +184,7 @@ class ComicDetailViewState extends State<ComicDetailView> {
                                         // ),
                                         Container(
                                           padding: const EdgeInsets.all(8.0),
-                                          child: Text(_children?[index].title ?? ''),
+                                          child: Text(_children[index].title ?? ''),
                                         )
                                       ],
                                     )));
