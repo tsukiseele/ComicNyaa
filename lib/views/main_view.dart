@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:archive/archive.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:collection/collection.dart';
 import 'package:comic_nyaa/library/mio/core/mio_loader.dart';
 import 'package:comic_nyaa/utils/http.dart';
@@ -23,6 +24,7 @@ import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:material_floating_search_bar/material_floating_search_bar.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
+import 'package:shimmer/shimmer.dart';
 
 import '../app/global.dart';
 import '../models/typed_model.dart';
@@ -87,15 +89,15 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
       --_page;
       // if (_isNotMore) return [];
     }
-      _refreshController.loadComplete();
-      setState(() => _models.addAll(models));
-      return models;
+    _refreshController.loadComplete();
+    setState(() => _models.addAll(models));
+    return models;
   }
 
   Future<List<TypedModel>> _onSearch(String keywords) async {
     // _refreshController.footerMode?.setValueWithNoNotify(LoadStatus.idle);
     // _isNotMore = false;
-    
+
     _isRefresh = true;
     setState(() {
       _models.clear();
@@ -217,9 +219,10 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
                   ])),
               padding: const EdgeInsets.all(8),
               alignment: Alignment.bottomLeft,
-              child: const Text('ポトフちゃんとワトラちゃんがめっちゃかわいいです！', style: TextStyle(color: Colors.white, fontSize: 18))),
+              child: const Text('ポトフちゃんとワトラちゃんがすごくかわいいです！', style: TextStyle(color: Colors.white, fontSize: 18))),
         ),
       ]),
+      Container(height: 8),
       ListTile(title: const Text('主页'), onTap: () {}, iconColor: Colors.teal, leading: const Icon(Icons.home)),
       ListTile(
           title: const Text('订阅'),
@@ -354,46 +357,74 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
                                         onTap: () => _jump(_models[index]),
                                         child: Column(
                                           children: [
-                                            ExtendedImage.network(
-                                              _models[index].coverUrl ?? '',
-                                              height: _heightCache[index],
-                                              afterPaintImage: (canvas, rect, image, paint) {
-                                                if (_heightCache[index] == null) _heightCache[index] = rect.height;
-                                              },
-                                              timeLimit: const Duration(milliseconds: 6000),
-                                              timeRetry: const Duration(milliseconds: 1000),
-                                              retries: 5,
-                                              fit: BoxFit.cover,
-                                              headers: _currentSite.headers,
-                                              loadStateChanged: (status) {
-                                                switch (status.extendedImageLoadState) {
-                                                  case LoadState.failed:
-                                                    return Container(
-                                                        decoration: const BoxDecoration(color: Colors.white),
-                                                        height: 96,
-                                                        width: double.infinity,
-                                                        child: const Icon(
-                                                          Icons.close,
-                                                          size: 40,
-                                                          color: Colors.black,
-                                                        ));
-                                                  case LoadState.loading:
-                                                    return Container(
-                                                        decoration: const BoxDecoration(color: Colors.white),
-                                                        height: 192,
-                                                        child: const SpinKitFoldingCube(
-                                                          color: Colors.teal,
-                                                          size: 40.0,
-                                                        ));
-                                                  case LoadState.completed:
-                                                    break;
-                                                }
-                                                return null;
-                                              },
+                                            CachedNetworkImage(
+                                              imageUrl: _models[index].coverUrl ?? '',
+                                              placeholder: (ctx, text) =>
+                                                //   SizedBox(
+                                                // width: double.infinity,
+                                                // child:
+                                            Shimmer.fromColors(
+                                                    baseColor: const Color.fromRGBO(224, 224, 224, 1),
+                                                    highlightColor: Colors.white,
+                                                    child:
+                                          AspectRatio(
+                                                      aspectRatio: 0.8,
+                                                      child: Container(
+                                                          decoration: const BoxDecoration(color: Colors.teal),
+                                                          // height: 192,
+                                                          // child: const SpinKitFoldingCube(
+                                                          //   color: Colors.teal,
+                                                          //   size: 40.0,
+                                                          // )
+                                          ),
+                                                    )),
+                                              // ),
+                                              // placeholder:
+                                              httpHeaders: _currentSite.headers,
                                             ),
+                                            // ExtendedImage.network(
+                                            //   _models[index].coverUrl ?? '',
+                                            //   height: _heightCache[index],
+                                            //   afterPaintImage: (canvas, rect, image, paint) {
+                                            //     if (_heightCache[index] == null) _heightCache[index] = rect.height;
+                                            //   },
+                                            //   timeLimit: const Duration(milliseconds: 6000),
+                                            //   timeRetry: const Duration(milliseconds: 1000),
+                                            //   retries: 5,
+                                            //   fit: BoxFit.cover,
+                                            //   headers: _currentSite.headers,
+                                            //   loadStateChanged: (status) {
+                                            //     switch (status.extendedImageLoadState) {
+                                            //       case LoadState.failed:
+                                            //         return Container(
+                                            //             decoration: const BoxDecoration(color: Colors.white),
+                                            //             height: 96,
+                                            //             width: double.infinity,
+                                            //             child: const Icon(
+                                            //               Icons.close,
+                                            //               size: 40,
+                                            //               color: Colors.black,
+                                            //             ));
+                                            //       case LoadState.loading:
+                                            //         return Container(
+                                            //             decoration: const BoxDecoration(color: Colors.white),
+                                            //             height: 192,
+                                            //             child: const SpinKitFoldingCube(
+                                            //               color: Colors.teal,
+                                            //               size: 40.0,
+                                            //             ));
+                                            //       case LoadState.completed:
+                                            //         break;
+                                            //     }
+                                            //     return null;
+                                            //   },
+                                            // ),
                                             Container(
                                               padding: const EdgeInsets.all(8.0),
-                                              child: Text(_models[index].title ?? ''),
+                                              child: Text(
+                                                _models[index].title ?? '',
+                                                maxLines: 3,
+                                              ),
                                             )
                                           ],
                                         )));
