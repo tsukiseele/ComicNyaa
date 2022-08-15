@@ -23,6 +23,7 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:material_floating_search_bar/material_floating_search_bar.dart';
+import 'package:percent_indicator/circular_percent_indicator.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:shimmer/shimmer.dart';
 
@@ -134,12 +135,12 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
           }
         }
         // print('POSTITION: $_lastScrollPosition >>> ${_scrollController.position.pixels}');
-        if (_scrollController.position.pixels < 64) {
+        if (_scrollController.position.pixels < 128) {
           _floatingSearchBarController.isHidden ? _floatingSearchBarController.show() : null;
-        } else if (_scrollController.position.pixels > _lastScrollPosition + 32) {
+        } else if (_scrollController.position.pixels > _lastScrollPosition + 64) {
           _lastScrollPosition = _scrollController.position.pixels.toInt();
           _floatingSearchBarController.isVisible ? _floatingSearchBarController.hide() : null;
-        } else if (_scrollController.position.pixels < _lastScrollPosition - 32) {
+        } else if (_scrollController.position.pixels < _lastScrollPosition - 64) {
           _lastScrollPosition = _scrollController.position.pixels.toInt();
           _floatingSearchBarController.isHidden ? _floatingSearchBarController.show() : null;
         }
@@ -152,7 +153,7 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
     Widget? target;
     switch (model.type) {
       case 'image':
-        target = ImageDetailView(model: model);
+        target = ImageDetailView(models: [model]);
         break;
       case 'video':
         target = VideoDetailView(model: model);
@@ -212,7 +213,7 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
     return Drawer(
         child: ListView(padding: EdgeInsets.zero, children: [
       Stack(children: [
-        ExtendedImage.network('https://cdn.jsdelivr.net/gh/nyarray/LoliHost/images/94d6d0e7be187770e5d538539d95a12a.jpeg',
+        CachedNetworkImage(imageUrl: 'https://cdn.jsdelivr.net/gh/nyarray/LoliHost/images/94d6d0e7be187770e5d538539d95a12a.jpeg',
             fit: BoxFit.cover),
         Positioned.fill(
           child: Container(
@@ -248,7 +249,7 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
     return Drawer(
         child: Material(
             child: Column(children: [
-      ExtendedImage.network('https://cdn.jsdelivr.net/gh/nyarray/LoliHost/images/7c4f1d7ea2dadd3ca835b9b2b9219681.webp'),
+      CachedNetworkImage(imageUrl: 'https://cdn.jsdelivr.net/gh/nyarray/LoliHost/images/7c4f1d7ea2dadd3ca835b9b2b9219681.webp'),
       Flexible(
           child: ListView.builder(
               padding: const EdgeInsets.only(top: 8),
@@ -274,15 +275,18 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
                                 SizedBox(
                                     width: 32,
                                     height: 32,
-                                    child: ExtendedImage.network(
-                                      _sites[index].icon ?? '',
+                                    child: CachedNetworkImage(
+                                      imageUrl: _sites[index].icon ?? '',
                                       fit: BoxFit.cover,
+                                      errorWidget: (ctx, url, error) => const Icon(Icons.image_not_supported, size: 32),
                                     )),
                                 Container(
                                     padding: const EdgeInsets.only(left: 8),
                                     child: Text(
                                       style: TextStyle(
-                                          fontSize: 18, color: _currentSiteId == _sites[index].id ? Colors.teal : null),
+                                        fontFamily: 'sans-serif',
+                                          fontSize: 18,
+                                          color: _currentSiteId == _sites[index].id ? Colors.teal : null),
                                       _sites[index].name ?? '',
                                       textAlign: TextAlign.start,
                                     ))
@@ -367,11 +371,21 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
                                           children: [
                                             CachedNetworkImage(
                                               imageUrl: _models[index].coverUrl ?? '',
+                                              fadeInDuration: const Duration(milliseconds: 250),
+                                              fadeOutDuration: const Duration(milliseconds: 250),
+                                              fit: BoxFit.cover,
+                                              errorWidget: (ctx, url, error) => const AspectRatio(
+                                                  aspectRatio: 1,
+                                                  child: Icon(
+                                                    Icons.image_not_supported,
+                                                    size: 64,
+                                                    // color: Colors.redAccent,
+                                                  )),
                                               placeholder: (ctx, text) => Shimmer.fromColors(
                                                   baseColor: const Color.fromRGBO(240, 240, 240, 1),
                                                   highlightColor: Colors.white,
                                                   child: AspectRatio(
-                                                    aspectRatio: 0.8,
+                                                    aspectRatio: 0.75,
                                                     child: Container(
                                                       decoration: const BoxDecoration(color: Colors.white),
                                                     ),

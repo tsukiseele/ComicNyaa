@@ -88,13 +88,15 @@ class ComicDetailViewState extends State<ComicDetailView> {
                                 child: InkWell(
                                     onTap: () {
                                       Navigator.push(context,
-                                          MaterialPageRoute(builder: (ctx) => ImageDetailView(model: _children![index])));
+                                          MaterialPageRoute(builder: (ctx) => ImageDetailView(models: _children!, index: index,)));
                                     },
                                     child: Column(
                                       children: [
 
                                         CachedNetworkImage(
                                           imageUrl: getUrl(_children?[index]),
+                                          httpHeaders: widget.model.$site?.headers,
+                                          height: 128,
                                           placeholder: (ctx, text) => Shimmer.fromColors(
                                               baseColor: const Color.fromRGBO(240, 240, 240, 1),
                                               highlightColor: Colors.white,
@@ -104,7 +106,14 @@ class ComicDetailViewState extends State<ComicDetailView> {
                                                   decoration: const BoxDecoration(color: Colors.white),
                                                 ),
                                               )),
-                                          httpHeaders: widget.model.$site?.headers,
+
+                                          errorWidget: (ctx, url, error) => const AspectRatio(
+                                              aspectRatio: 1,
+                                              child: Icon(
+                                                Icons.image_not_supported,
+                                                size: 64,
+                                                color: Colors.redAccent,
+                                              )),
                                         ),
                                         // ExtendedImage.network(
                                         //   getUrl(_children?[index]),
@@ -156,7 +165,7 @@ class ComicDetailViewState extends State<ComicDetailView> {
                                       ],
                                     )));
                           })
-                      : const Center(child: SpinKitWave(color: Colors.teal))),
+                      : const Center(child: SpinKitSpinningLines(color: Colors.teal, size: 64,))),
             ])));
   }
 }
