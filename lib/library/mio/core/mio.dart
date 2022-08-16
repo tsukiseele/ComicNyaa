@@ -158,9 +158,10 @@ class Mio<T extends Model> {
           if (children.first[r'$children'] != null && nextChildren != null) {
             await Future.wait(children.map((child) => parseChildrenConcurrency(child, nextChildren)));
           }
-          // 判断是否拉平子节点，否则追加到子节点下
+          // 判断是否拉平子节点，否则追加到子节点下，并终止获取
           if ($children.flat != null && $children.flat == true) {
             item.addAll(children.first);
+            yield [item];
             break;
           } else {
             if ($children.extend == true) {
@@ -171,7 +172,6 @@ class Mio<T extends Model> {
             print('YIDLE START =======================================');
             yield children;
             print('YIDLE END =======================================');
-
           }
         }
       } while (isMulitPage && keys.isNotEmpty);
@@ -234,11 +234,16 @@ class Mio<T extends Model> {
           resultSet[index][k] = replaceRegex(result, exp?.capture, exp?.replacement);
         });
       }
-      // 判断合并属性
+      // 处理合并属性
       if (exp?.merge == true) {
-        String value = resultSet.map((e) => e[k]).join(',');
+        List<String> values = [];
+        for (final item in resultSet) {
+          final v = item[k];
+          if (v != null && v.toString().isNotEmpty) values.add(v);
+        }
+        String value = values.join(',');
         for (var item in resultSet) {
-          item[k] = value;
+          (item[k] = value);
         }
       }
     }
@@ -280,7 +285,7 @@ class Mio<T extends Model> {
     final match = matches.first;
     var select = match.groupCount > 0 ? match.group(1)! : throw Exception('empty selecor!!');
     final func = match.groupCount > 1 ? match.group(2) : 'text';
-    final attr = match.groupCount > 2 ? match.group(3) : 'src';
+    final attr = match.groupCount > 2 ? match.group(3) : 'href';
     // 选择器语法兼容
     select = select.replaceAll(RegExp(r':eq\('), ':nth-child(');
     // 遍历元素集

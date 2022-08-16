@@ -24,10 +24,8 @@ class ComicDetailView extends StatefulWidget {
 
 class ComicDetailViewState extends State<ComicDetailView> {
   final ScrollController _scrollController = ScrollController();
-  final Map<int, double> _heightCache = {};
   StreamSubscription<List<Map<String, dynamic>>>? stream;
-  List<TypedModel> _children = [];
-  int _lastScrollTime = 0;
+  final List<TypedModel> _children = [];
   int streamIndex = 0;
 
   void initialized() {
@@ -45,12 +43,10 @@ class ComicDetailViewState extends State<ComicDetailView> {
     });
     final model = widget.model;
     stream =
-        Mio(model.$site).parseChildrenStream(model.toJson(), model.$section!.rules!).listen((List<Map<String, dynamic>> list) {
+        Mio(model.$site).parseChildrenStream(model.toJson(), model.$section!.rules!).listen((List<Map<String, dynamic>> data) {
       stream?.pause();
-      print('STREAM PAUSE :::::::::: $list}');
-      _getNext(list);
+      _getNext(data);
     });
-    // stream?.pause();
   }
 
   _getNext(List<Map<String, dynamic>> data) async {
@@ -59,25 +55,11 @@ class ComicDetailViewState extends State<ComicDetailView> {
       setState(() {
         _children.addAll(models);
       });
-      setState(() {});
     } catch (e) {
+      Fluttertoast.showToast(msg: 'ERROR: ${e.toString()}');
       print('ERROR: ${e.toString()}');
     }
     return data;
-  }
-
-  void getChildren() async {
-    try {
-      final model = widget.model;
-      final dynamicResult = await Mio(model.$site).parseChildrenConcurrency(model.toJson(), model.$section!.rules!);
-      final models = TypedModel.fromJson(dynamicResult);
-      setState(() {
-        _children = models.children ?? [models];
-      });
-      print('CHILD_LENGTH: ${_children.length}');
-    } catch (e) {
-      Fluttertoast.showToast(msg: 'ERROR: ${e.toString()}');
-    }
   }
 
   String getUrl(TypedModel? item) {
@@ -97,7 +79,6 @@ class ComicDetailViewState extends State<ComicDetailView> {
   @override
   void initState() {
     initialized();
-    // getChildren();
     super.initState();
   }
 

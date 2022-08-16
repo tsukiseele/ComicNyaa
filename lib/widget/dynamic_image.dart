@@ -1,6 +1,8 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/src/foundation/key.dart';
 
-class DynamicImage extends CachedNetworkImage {
-  DynamicImage({required super.imageUrl});
-
+extension DynamicImage on CachedNetworkImage {
+  network(imageUrl) {
+    return CachedNetworkImage(imageUrl: imageUrl)
+  }
 }

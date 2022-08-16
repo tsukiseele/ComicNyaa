@@ -3,6 +3,7 @@ import 'package:collection/collection.dart';
 import 'package:comic_nyaa/app/global.dart';
 import 'package:comic_nyaa/library/mio/core/mio.dart';
 import 'package:comic_nyaa/models/typed_model.dart';
+import 'package:comic_nyaa/utils/num_extensions.dart';
 import 'package:comic_nyaa/utils/uri_extensions.dart';
 import 'package:dio/dio.dart';
 import 'package:extended_image/extended_image.dart';
@@ -13,6 +14,8 @@ import 'package:material_floating_search_bar/material_floating_search_bar.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
+
+import '../../library/mio/model/site.dart';
 
 class ImageDetailView extends StatefulWidget {
   const ImageDetailView({Key? key, required this.models, this.index = 0}) : super(key: key);
@@ -30,6 +33,7 @@ class ImageDetailViewState extends State<ImageDetailView> {
   final PageController _pageController = PageController();
   List<TypedModel>? _models;
   List<String> _images = [];
+  Site? _site;
   int currentIndex = 0;
   bool isFailed = false;
 
@@ -37,6 +41,7 @@ class ImageDetailViewState extends State<ImageDetailView> {
     // print('INDEX: ${widget.index}, WIDGET.MODELS: ${widget.models}');
     try {
       final models = widget.models;
+      _site = models.isNotEmpty ? models[0].$site : null;
       // 只有一条数据，且无图片源，则请求解析
       if (models.length == 1 && getUrl(models.first).isEmpty) {
         var model = models.first;
@@ -56,7 +61,7 @@ class ImageDetailViewState extends State<ImageDetailView> {
         isFailed = _images.length > currentIndex ? _images[currentIndex].isNotEmpty : true;
       });
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if(_pageController.hasClients){
+        if(_pageController.hasClients && _images.isNotEmpty && widget.index < _images.length){
           _pageController.jumpToPage(widget.index);
         }
       });
@@ -68,6 +73,7 @@ class ImageDetailViewState extends State<ImageDetailView> {
   _updateModels(List<TypedModel> models) {
     _models = models;
     _images = models.map((model) => getUrl(model)).toList();
+    print('HEADERS ================== ${_models?[0].$site?.headers}');
   }
 
   String getUrl(TypedModel? item) {
@@ -98,6 +104,14 @@ class ImageDetailViewState extends State<ImageDetailView> {
     super.initState();
   }
 
+  String _getProgressText(int current, int total) {
+    if (total > 0) {
+      return '${(current / total * 100).toInt()}%';
+    } else {
+      return current.readableFileSize();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -111,10 +125,11 @@ class ImageDetailViewState extends State<ImageDetailView> {
                 scrollPhysics: const BouncingScrollPhysics(),
                 builder: (BuildContext context, int index) {
                   return PhotoViewGalleryPageOptions(
-                      imageProvider: ExtendedImage.network(
-                        _images[index],
-                        headers: _models?[index].$site?.headers,
-                      ).image,
+                      // imageProvider: ExtendedImage.network(
+                      //   _images[index],
+                      //   headers: _models?[index].$site?.headers,
+                      // ).image,
+                    imageProvider: CachedNetworkImageProvider( _images[index], headers: _site?.headers),
                       initialScale: PhotoViewComputedScale.contained * 1,
                       onTapUp: (context, detail, value) {
                         final url = _images[index];
@@ -128,16 +143,16 @@ class ImageDetailViewState extends State<ImageDetailView> {
                 loadingBuilder: (context, event) => Container(
                   alignment: Alignment.center,
                   child: CircularPercentIndicator(
-                    radius: 56,
-                    lineWidth: 12,
+                    radius: 48,
+                    lineWidth: 8,
                     progressColor: Colors.teal,
                     animation: true,
                     animateFromLastPercent: true,
                     circularStrokeCap: CircularStrokeCap.round,
-                    percent: event == null ? 0 : event.cumulativeBytesLoaded / (event.expectedTotalBytes ?? -1),
-                    center: Text(
-                      '${(event == null ? 0 : event.cumulativeBytesLoaded / (event.expectedTotalBytes ?? -1) * 100).toInt()}%',
-                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20.0),
+                    percent: event == null || event.expectedTotalBytes == null ? 0 : event.cumulativeBytesLoaded / event.expectedTotalBytes!,
+                    center: Text(event == null ? 'Loading...' :
+                      _getProgressText(event.cumulativeBytesLoaded, event.expectedTotalBytes ?? 0),
+                      style: TextStyle(fontSize: event == null ? 16 : 18),
                     ),
                     footer: Container(
                         margin: const EdgeInsets.only(top: 8),
