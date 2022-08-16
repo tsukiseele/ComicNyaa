@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
@@ -213,7 +214,8 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
     return Drawer(
         child: ListView(padding: EdgeInsets.zero, children: [
       Stack(children: [
-        CachedNetworkImage(imageUrl: 'https://cdn.jsdelivr.net/gh/nyarray/LoliHost/images/94d6d0e7be187770e5d538539d95a12a.jpeg',
+        CachedNetworkImage(
+            imageUrl: 'https://cdn.jsdelivr.net/gh/nyarray/LoliHost/images/94d6d0e7be187770e5d538539d95a12a.jpeg',
             fit: BoxFit.cover),
         Positioned.fill(
           child: Container(
@@ -284,7 +286,7 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
                                     padding: const EdgeInsets.only(left: 8),
                                     child: Text(
                                       style: TextStyle(
-                                        fontFamily: 'sans-serif',
+                                          fontFamily: 'sans-serif',
                                           fontSize: 18,
                                           color: _currentSiteId == _sites[index].id ? Colors.teal : null),
                                       _sites[index].name ?? '',
@@ -294,6 +296,12 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
                             ))));
               })),
     ])));
+  }
+
+  Future<ImageInfo> getImageInfo(ImageProvider image) async {
+    final c = Completer<ImageInfo>();
+    image.resolve(const ImageConfiguration()).addListener(ImageStreamListener((ImageInfo i, bool _) => c.complete(i)));
+    return c.future;
   }
 
   @override
@@ -369,39 +377,53 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
                                         onTap: () => _jump(_models[index]),
                                         child: Column(
                                           children: [
-                                            CachedNetworkImage(
-                                              // imageBuilder: (ctx, image) {
-                                              //   return Container(child: Image(image: image));
-                                              // },
-                                              imageUrl: _models[index].coverUrl ?? '',
-                                              // fadeInDuration: const Duration(milliseconds: 200),
-                                              // fadeOutDuration: const Duration(milliseconds: 100),
-                                              fadeInDuration: const Duration(milliseconds: 200),
-                                              fadeOutDuration: const Duration(milliseconds: 200),
-                                              // fadeInCurve: Curves.easeOutBack,
-                                              // fadeOutCurve: Curves.easeOutBack,
-                                              fit: BoxFit.cover,
-                                              errorWidget: (ctx, url, error) => const AspectRatio(
-                                                  aspectRatio: 1,
-                                                  child: Icon(
-                                                    Icons.image_not_supported,
-                                                    size: 64,
-                                                    // color: Colors.redAccent,
-                                                  )),
-                                              placeholder: (ctx, text) =>
-                                                  // Shimmer.fromColors(
-                                                  // baseColor: const Color.fromRGBO(240, 240, 240, 1),
-                                                  // highlightColor: Colors.white,
-                                                  // child:
-                                                  const AspectRatio(
-                                                    aspectRatio: 0.66,
-                                                  child: SpinKitDoubleBounce(color: Colors.teal)),
-                                                    // child: Container(
-                                                    //   decoration: const BoxDecoration(color: Colors.white),
-                                                    // ),
-                                                  // )),
-                                              httpHeaders: _currentSite.headers,
-                                            ),
+                                            AspectRatio(
+                                                aspectRatio: _heightCache[index] ?? .66,
+                                                child: CachedNetworkImage(
+                                                  imageBuilder: (ctx, image) {
+                                                    // Completer<Size> completer = Completer<Size>();
+                                                    // image
+                                                    //     .resolve(const ImageConfiguration())
+                                                    //     .addListener(ImageStreamListener((imageInfo, synchronousCall) {
+                                                    //   final img = imageInfo.image;
+                                                    //   Size size = Size(img.width.toDouble(), img.height.toDouble());
+                                                    //   completer.complete(size);
+
+                                                    //   _heightCache[index] = size.height;
+                                                    //   // completer.complete(imageInfo.image
+                                                    // }));
+                                                    // completer.future;
+                                                    if (_heightCache[index] == null) {
+                                                      getImageInfo(image).then((value) {
+                                                        print('AAAAAAAAACCCCCEEEEEEEEE: $value, HEIGHT: $_heightCache');
+                                                        setState(() {
+                                                          _heightCache[index] =
+                                                              value.image.width.toDouble() / value.image.height.toDouble();
+                                                        });
+                                                      });
+                                                    }
+                                                    //                 .addListener((ImageInfo info, bool _) {
+                                                    //                   completer.complete(info.image)
+                                                    // });
+                                                    // }
+                                                    //   return Image(image: image);
+                                                    return Image(image: image); //  Image(image: image);
+                                                  },
+                                                  // height: _heightCache[index] ?? 160,
+                                                  imageUrl: _models[index].coverUrl ?? '',
+                                                  fadeInDuration: const Duration(milliseconds: 200),
+                                                  fadeOutDuration: const Duration(milliseconds: 200),
+                                                  fit: BoxFit.cover,
+                                                  errorWidget: (ctx, url, error) => const AspectRatio(
+                                                      aspectRatio: 1,
+                                                      child: Icon(
+                                                        Icons.image_not_supported,
+                                                        size: 64,
+                                                      )),
+                                                  placeholder: (ctx, text) => const AspectRatio(
+                                                      aspectRatio: 0.66, child: SpinKitDoubleBounce(color: Colors.teal)),
+                                                  httpHeaders: _currentSite.headers,
+                                                )),
                                             Container(
                                               padding: const EdgeInsets.all(8.0),
                                               child: Text(
