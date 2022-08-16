@@ -8,6 +8,7 @@ import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:shimmer/shimmer.dart';
 
 class ComicDetailView extends StatefulWidget {
@@ -25,35 +26,33 @@ class ComicDetailViewState extends State<ComicDetailView> {
   final ScrollController _scrollController = ScrollController();
   final Map<int, double> _heightCache = {};
   StreamSubscription<List<Map<String, dynamic>>>? stream;
-   List<TypedModel> _children = [];
+  List<TypedModel> _children = [];
   int _lastScrollTime = 0;
   int streamIndex = 0;
-void initialized() {
-  _scrollController.addListener(() {
-    // print('DDDDDDDDDDDD: ${_lastScrollTime}, ${DateTime.now().millisecondsSinceEpoch }');
-    // if (DateTime.now().millisecondsSinceEpoch - _lastScrollTime > 200) {
-      if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent) {
-        // if (!_isLoading) {
-        //   _getNext();
-        // }
 
-        print('BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB::::::::::');
-        if (stream?.isPaused == true) {
+  void initialized() {
+    _scrollController.addListener(() {
+      const offset = 32;
+      if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent) {
+        print(
+            'SCROLL POSITION: ${_scrollController.position.pixels} >= ${_scrollController.position.maxScrollExtent - offset}');
+        while (stream?.isPaused == true) {
+          print('STREAM RESUME >>>>>>>>>>>>>>>>>> ');
+
           stream?.resume();
-          print('resumeresumeresumeresumeresumeresumeresumeresume::::::::::');
         }
       }
-    //   _lastScrollTime = DateTime.now().millisecondsSinceEpoch;
-    // }
-  });
-  final model = widget.model;
-  stream = Mio(model.$site).parseChildrenStream(model.toJson(), model.$section!.rules!).listen((List<Map<String, dynamic>> list) {
-    stream?.pause();
-    print('PPPPPPPPPPPPPPAUSEEEEEEEEEEEEEE:::::::::: $list}');
-    _getNext(list);
-  });
-  stream?.pause();
-}
+    });
+    final model = widget.model;
+    stream =
+        Mio(model.$site).parseChildrenStream(model.toJson(), model.$section!.rules!).listen((List<Map<String, dynamic>> list) {
+      stream?.pause();
+      print('STREAM PAUSE :::::::::: $list}');
+      _getNext(list);
+    });
+    // stream?.pause();
+  }
+
   _getNext(List<Map<String, dynamic>> data) async {
     try {
       final models = data.map((item) => TypedModel.fromJson(item)).toList();
@@ -66,24 +65,20 @@ void initialized() {
     }
     return data;
   }
+
   void getChildren() async {
     try {
       final model = widget.model;
-      print('model.\$section: ${model.$section}');
       final dynamicResult = await Mio(model.$site).parseChildrenConcurrency(model.toJson(), model.$section!.rules!);
       final models = TypedModel.fromJson(dynamicResult);
-      print('UUUUUU: ${models}');
       setState(() {
-        _children = model.children ?? [model];
+        _children = models.children ?? [models];
       });
-      print('CHILDLENGTH: $_children');
+      print('CHILD_LENGTH: ${_children.length}');
     } catch (e) {
-      print('ERROR: ${e.toString()}');
+      Fluttertoast.showToast(msg: 'ERROR: ${e.toString()}');
     }
-    // return data;;
   }
-
-
 
   String getUrl(TypedModel? item) {
     if (item == null) return '';
@@ -103,8 +98,7 @@ void initialized() {
   void initState() {
     initialized();
     // getChildren();
-    super.initState()
-    ;
+    super.initState();
   }
 
   @override
@@ -119,7 +113,7 @@ void initialized() {
               Flexible(
                   child: _children.isNotEmpty
                       ? MasonryGridView.count(
-                    controller: _scrollController,
+                          controller: _scrollController,
                           padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
                           crossAxisCount: 3,
                           mainAxisSpacing: 8.0,
@@ -131,12 +125,16 @@ void initialized() {
                                 borderRadius: const BorderRadius.all(Radius.circular(4.0)),
                                 child: InkWell(
                                     onTap: () {
-                                      Navigator.push(context,
-                                          MaterialPageRoute(builder: (ctx) => ImageDetailView(models: _children, index: index,)));
+                                      Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                              builder: (ctx) => ImageDetailView(
+                                                    models: _children,
+                                                    index: index,
+                                                  )));
                                     },
                                     child: Column(
                                       children: [
-
                                         CachedNetworkImage(
                                           imageUrl: getUrl(_children[index]),
                                           httpHeaders: widget.model.$site?.headers,
@@ -151,7 +149,6 @@ void initialized() {
                                                   decoration: const BoxDecoration(color: Colors.white),
                                                 ),
                                               )),
-
                                           errorWidget: (ctx, url, error) => const AspectRatio(
                                               aspectRatio: 1,
                                               child: Icon(
@@ -210,7 +207,17 @@ void initialized() {
                                       ],
                                     )));
                           })
-                      : const Center(child: SpinKitSpinningLines(color: Colors.teal, size: 64,))),
+                      : const Center(
+                          child: SpinKitSpinningLines(
+                          color: Colors.teal,
+                          size: 64,
+                        ))),
             ])));
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    stream?.cancel();
   }
 }

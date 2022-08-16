@@ -20,7 +20,7 @@ class TypedModel extends Model<TypedModel> {
     if (json['children'] != null) {
 
       var children = <TypedModel>[];
-      print('CHILDREN: ${json['children'].runtimeType.toString()}, LENGTH: ${json['children'].length}');
+      // print('CHILDREN: ${json['children'].runtimeType.toString()}, LENGTH: ${json['children'].length}');
       // children = json['children']?.map((item) => TypedModel.fromJson(item));
       json['children'].forEach((item) {
         // print('ITEM: $item');

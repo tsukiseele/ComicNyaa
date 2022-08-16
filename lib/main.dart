@@ -50,6 +50,7 @@ class _ComicNyaaState extends State<ComicNyaa> {
     //   return response.data.toString();
       HttpClientRequest request = await client.getUrl(Uri.parse(url));//.then((HttpClientRequest request) {
         headers?.forEach((key, value) => request.headers.add(key, value));
+        request.headers.add('user-agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36');
       HttpClientResponse response =  await  request.close();
       return await response.transform(utf8.decoder).join();
     });

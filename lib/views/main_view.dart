@@ -367,7 +367,7 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
                               crossAxisSpacing: 8.0,
                               itemCount: _models.length,
                               controller: _scrollController,
-                              physics: const BouncingScrollPhysics(),
+                              // physics: const BouncingScrollPhysics(),
                               itemBuilder: (context, index) {
                                 return Material(
                                     clipBehavior: Clip.hardEdge,
@@ -377,53 +377,50 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
                                         onTap: () => _jump(_models[index]),
                                         child: Column(
                                           children: [
-                                            AspectRatio(
-                                                aspectRatio: _heightCache[index] ?? .66,
-                                                child: CachedNetworkImage(
-                                                  imageBuilder: (ctx, image) {
-                                                    // Completer<Size> completer = Completer<Size>();
-                                                    // image
-                                                    //     .resolve(const ImageConfiguration())
-                                                    //     .addListener(ImageStreamListener((imageInfo, synchronousCall) {
-                                                    //   final img = imageInfo.image;
-                                                    //   Size size = Size(img.width.toDouble(), img.height.toDouble());
-                                                    //   completer.complete(size);
-
-                                                    //   _heightCache[index] = size.height;
-                                                    //   // completer.complete(imageInfo.image
-                                                    // }));
-                                                    // completer.future;
-                                                    if (_heightCache[index] == null) {
-                                                      getImageInfo(image).then((value) {
-                                                        print('AAAAAAAAACCCCCEEEEEEEEE: $value, HEIGHT: $_heightCache');
-                                                        setState(() {
-                                                          _heightCache[index] =
-                                                              value.image.width.toDouble() / value.image.height.toDouble();
-                                                        });
-                                                      });
-                                                    }
-                                                    //                 .addListener((ImageInfo info, bool _) {
-                                                    //                   completer.complete(info.image)
-                                                    // });
-                                                    // }
-                                                    //   return Image(image: image);
-                                                    return Image(image: image); //  Image(image: image);
-                                                  },
-                                                  // height: _heightCache[index] ?? 160,
-                                                  imageUrl: _models[index].coverUrl ?? '',
-                                                  fadeInDuration: const Duration(milliseconds: 200),
-                                                  fadeOutDuration: const Duration(milliseconds: 200),
-                                                  fit: BoxFit.cover,
-                                                  errorWidget: (ctx, url, error) => const AspectRatio(
-                                                      aspectRatio: 1,
-                                                      child: Icon(
-                                                        Icons.image_not_supported,
-                                                        size: 64,
-                                                      )),
-                                                  placeholder: (ctx, text) => const AspectRatio(
-                                                      aspectRatio: 0.66, child: SpinKitDoubleBounce(color: Colors.teal)),
-                                                  httpHeaders: _currentSite.headers,
+                                            // ExtendedImage.network(
+                                            //   _models[index].coverUrl ?? '',
+                                            //   headers: _currentSite.headers,
+                                            //   height: _heightCache[index] ?? 160,
+                                            //   fit: BoxFit.cover,
+                                            //   afterPaintImage: (canvas, rect, image, paint) {
+                                            //     _heightCache[index] = rect.height;
+                                            //   },
+                                            //   timeLimit: Duration(milliseconds: 5000),
+                                            //   retries: 0
+                                            //
+                                            // ),
+                                            // AspectRatio(
+                                            // aspectRatio: _heightCache[index] ?? .66,
+                                            // child:
+                                            CachedNetworkImage(
+                                            // imageBuilder: (ctx, image) {
+                                              // if (_heightCache[index] == null) {
+                                              //   getImageInfo(image).then((value) {
+                                              //     print('AAAAAAAAACCCCCEEEEEEEEE: $value, HEIGHT: $_heightCache');
+                                              //     setState(() {
+                                              //       _heightCache[index] =
+                                              //           value.image.width.toDouble() / value.image.height.toDouble();
+                                              //     });
+                                              //   });
+                                              // }
+                                            //   return Image(image: image);
+                                            // },
+                                            height: _heightCache[index] ?? 160,
+                                            imageUrl: _models[index].coverUrl ?? '',
+                                            fadeInDuration: const Duration(milliseconds: 200),
+                                            fadeOutDuration: const Duration(milliseconds: 200),
+                                            fit: BoxFit.cover,
+                                            errorWidget: (ctx, url, error) => const AspectRatio(
+                                                aspectRatio: 1,
+                                                child: Icon(
+                                                  Icons.image_not_supported,
+                                                  size: 64,
                                                 )),
+                                            placeholder: (ctx, text) => const AspectRatio(
+                                                aspectRatio: 0.66, child: SpinKitDoubleBounce(color: Colors.teal)),
+                                            httpHeaders: _currentSite.headers,
+                                            // )
+                                            ),
                                             Container(
                                               padding: const EdgeInsets.all(8.0),
                                               child: Text(

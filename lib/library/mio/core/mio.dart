@@ -127,6 +127,11 @@ class Mio<T extends Model> {
     return item;
   }
 
+  bool equalsKeys(List<String> a, List<String> b) {
+    if (a.length != b.length) return false;
+    return a.whereIndexed((index, element) => a[index] == b[index]).length == a.length;
+  }
+
   Stream<List<Map<String, dynamic>>> parseChildrenStream(Map<String, dynamic> item, Rules rules) async* {
     if (item[r'$children'] != null && rules[r'$children'] != null) {
       int page = 0;
@@ -135,11 +140,18 @@ class Mio<T extends Model> {
       List<String> keys = [];
       final isMulitPage = url.contains(REG_PAGE_MATCH);
       do {
+
+        print('PARSE CHILDREN START =======================================');
+
         final children = await parseRules(url, $children.rules!, page = page, keywords = '');
+        print('PARSE CHILDREN LENGTH ======================================= ${children.length}');
+
         List<String> newKeys = isMulitPage ? children.map((item) => item[r'$key'].toString()).toList() : [];
-        if (isMulitPage && keys.length == newKeys.length && keys.equals(newKeys)) break;
+        print('PARSE EQ ======================================= $keys === $newKeys');
+        if (isMulitPage && equalsKeys(keys, newKeys)) break;
         keys = newKeys;
         page++;
+
         if (children.isNotEmpty) {
           // 解析下级子节点
           final nextChildren = rules[r'$children']?.rules;
@@ -156,7 +168,10 @@ class Mio<T extends Model> {
               // extend && children.forEach((child, index) => (children[index] = Object.assign({}, item, child)))
             }
             item['children'] != null ? item['children']?.addAll(children) : (item['children'] = children);
+            print('YIDLE START =======================================');
             yield children;
+            print('YIDLE END =======================================');
+
           }
         }
       } while (isMulitPage && keys.isNotEmpty);
