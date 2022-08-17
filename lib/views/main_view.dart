@@ -91,6 +91,7 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
         if (isNext) _page--;
         Fluttertoast.showToast(msg: '已经到底了');
       } else {
+        print('SEND PRELOAD =====> PAGE = ${_page}');
         _preload();
       }
       return images;
@@ -104,10 +105,13 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
   }
 
   /// 获取数据
-  Future<List<TypedModel>> _getModels() async {
-    final results = await (Mio(_currentSite)
-          ..setPage(_page)
-          ..setKeywords(_keywords))
+  Future<List<TypedModel>> _getModels({Site? site, int? page, String? keywords }) async {
+    site = site ?? _currentSite;
+    page = page ?? _page;
+    keywords = keywords ?? _keywords;
+    final results = await (Mio(site)
+          ..setPage(page)
+          ..setKeywords(keywords))
         .parseSite();
     return List.of(results.map((item) => TypedModel.fromJson(item)));
   }
@@ -117,7 +121,7 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
     if (_preloadModels.isNotEmpty) return;
     final page = _page + 1;
     try {
-      _preloadModels = await _getModels();
+      _preloadModels = await _getModels(page: page);
       // 为空则返回
       if (_preloadModels.isEmpty) return;
       // 页码改变则返回

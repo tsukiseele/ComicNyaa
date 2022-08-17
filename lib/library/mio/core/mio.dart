@@ -55,9 +55,8 @@ class Mio<T extends Model> {
   }
 
   /// 解析Section对象，返回结果集
-  /// @param {Section} section 站点板块
-  /// @param {Number} deep 解析深度
-  /// @return {Promise<<T extends Meta>[]>}
+  /// @param [Section] section 站点板块
+  /// @return [bool] isParseChildren
   Future<List<Map<String, dynamic>>> parseSection(Section section, [bool isParseChildren = false]) async {
     if (site == null) throw Exception('site cannot be empty!');
     // 复用规则
