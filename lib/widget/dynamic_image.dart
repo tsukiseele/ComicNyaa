@@ -3,6 +3,6 @@ import 'package:flutter/src/foundation/key.dart';
 
 extension DynamicImage on CachedNetworkImage {
   network(imageUrl) {
-    return CachedNetworkImage(imageUrl: imageUrl)
+    return CachedNetworkImage(imageUrl: imageUrl);
   }
 }

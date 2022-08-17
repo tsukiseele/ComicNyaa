@@ -32,13 +32,13 @@ class Config {
   }
 
   static Future<Directory> get downloadDir async {
-    _downloadDir = _downloadDir ?? (await getDownloadPath())?.join(downloadDirectoryName);
+    _downloadDir = _downloadDir ?? (await _getDownloadPath())?.join(downloadDirectoryName);
     await _downloadDir?.create(recursive: true);
     return _downloadDir!;
   }
 }
 
-Future<Directory?> getDownloadPath() async {
+Future<Directory?> _getDownloadPath() async {
   Directory? directory;
   try {
     if (Platform.isIOS) {

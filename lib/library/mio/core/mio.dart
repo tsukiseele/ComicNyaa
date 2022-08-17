@@ -72,7 +72,7 @@ class Mio<T extends Model> {
     if (isParseChildren && section.rules?[r'$children'] != null) {
       await parseChildrenOfList(result, section.rules!);
     }
-    print('RESULT: $result');
+    // print('RESULT: $result');
     return result;
   }
 
@@ -140,14 +140,11 @@ class Mio<T extends Model> {
       List<String> keys = [];
       final isMulitPage = url.contains(REG_PAGE_MATCH);
       do {
-
-        print('PARSE CHILDREN START =======================================');
-
+        // print('PARSE CHILDREN START =======================================');
         final children = await parseRules(url, $children.rules!, page = page, keywords = '');
-        print('PARSE CHILDREN LENGTH ======================================= ${children.length}');
-
+        // print('PARSE CHILDREN LENGTH ======================================= ${children.length}');
         List<String> newKeys = isMulitPage ? children.map((item) => item[r'$key'].toString()).toList() : [];
-        print('PARSE EQ ======================================= $keys === $newKeys');
+        // print('PARSE EQ ======================================= $keys === $newKeys');
         if (isMulitPage && equalsKeys(keys, newKeys)) break;
         keys = newKeys;
         page++;
@@ -158,7 +155,7 @@ class Mio<T extends Model> {
           if (children.first[r'$children'] != null && nextChildren != null) {
             await Future.wait(children.map((child) => parseChildrenConcurrency(child, nextChildren)));
           }
-          // 判断是否拉平子节点，否则追加到子节点下，并终止获取
+          // 判断是否拉平子节点(并终止获取)，否则追加到子节点下，
           if ($children.flat != null && $children.flat == true) {
             item.addAll(children.first);
             yield [item];
@@ -169,9 +166,9 @@ class Mio<T extends Model> {
               // extend && children.forEach((child, index) => (children[index] = Object.assign({}, item, child)))
             }
             item['children'] != null ? item['children']?.addAll(children) : (item['children'] = children);
-            print('YIDLE START =======================================');
+            // print('YIDLE START =======================================');
             yield children;
-            print('YIDLE END =======================================');
+            // print('YIDLE END =======================================');
           }
         }
       } while (isMulitPage && keys.isNotEmpty);
@@ -345,17 +342,17 @@ class Mio<T extends Model> {
     }
     if (pageMatches.isNotEmpty) {
       final pageMatch = pageMatches.first;
-      print('TEMPLATE: [$template], page: [$page], keywords: [$keywords]');
-      print('MATCHES: ${pageMatch.groupCount}, G0: [${pageMatch.group(0)}], G1: [${pageMatch.group(1)}], G2: [${pageMatch.group(2)}]');
+      // print('TEMPLATE: [$template], page: [$page], keywords: [$keywords]');
+      // print('MATCHES: ${pageMatch.groupCount}, G0: [${pageMatch.group(0)}], G1: [${pageMatch.group(1)}], G2: [${pageMatch.group(2)}]');
       final offset =
           pageMatch.groupCount > 0 && (pageMatch.group(1)?.isNotEmpty ?? false) ? int.parse(pageMatch.group(1) ?? '0') : 0;
       final range =
           pageMatch.groupCount > 1 && (pageMatch.group(2)?.isNotEmpty ?? false) ? int.parse(pageMatch.group(2) ?? '1') : 1;
 
-      print('BEFORE FINAL PAGE: [$p] offset: [$offset], range: [$range]');
+      // print('BEFORE FINAL PAGE: [$p] offset: [$offset], range: [$range]');
       p = (p + offset) * range;
 
-      print('AFTER FINAL PAGE: [$p] offset: [$offset], range: [$range]');
+      // print('AFTER FINAL PAGE: [$p] offset: [$offset], range: [$range]');
     }
     return template.replaceAll(REG_PAGE_MATCH, p.toString()).replaceAll(REG_KEYWORD_MATCH, keywords ?? k ?? '');
   }
