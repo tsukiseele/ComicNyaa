@@ -68,7 +68,6 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
     print('LIST SIZE: ${_models.length}');
     if (_isLoading) return [];
     try {
-      // print('PRELOAD COUNT: ${_preloadModels.length}');
       // 重置状态
       if (isReset) {
         _preloadModels = [];
