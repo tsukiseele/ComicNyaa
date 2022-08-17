@@ -5,6 +5,7 @@ import 'dart:math';
 
 import 'package:archive/archive.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:carousel_slider/carousel_slider.dart';
 import 'package:collection/collection.dart';
 import 'package:comic_nyaa/library/mio/core/mio_loader.dart';
 import 'package:comic_nyaa/utils/http.dart';
@@ -13,6 +14,7 @@ import 'package:comic_nyaa/views/detail/image_detail_view.dart';
 import 'package:comic_nyaa/views/detail/video_detail_view.dart';
 import 'package:comic_nyaa/views/settings_view.dart';
 import 'package:comic_nyaa/views/subscribe_view.dart';
+import 'package:comic_nyaa/views/widget/dynamic_tab_view.dart';
 import 'package:dio/dio.dart';
 import 'package:extended_image/extended_image.dart';
 import 'package:flutter/cupertino.dart';
@@ -43,28 +45,28 @@ class MainView extends StatefulWidget {
 class _MainViewState extends State<MainView> with TickerProviderStateMixin {
   final globalKey = GlobalKey<ScaffoldState>();
   final ScrollController _scrollController = ScrollController();
-  final RefreshController _refreshController =
-      RefreshController(initialRefresh: false);
-  final FloatingSearchBarController _floatingSearchBarController =
-      FloatingSearchBarController();
-  late final TabController _tabController =
-      TabController(length: 3, vsync: this, initialIndex: 0);
+   RefreshController _refreshController = RefreshController(initialRefresh: false);
+  final FloatingSearchBarController _floatingSearchBarController = FloatingSearchBarController();
+
+  // late final TabController _tabController =
+  //     TabController(length: _tabs.length == 0 ? 1 : _tabs.length, vsync: this, initialIndex: 0);
   final Map<int, double> _heightCache = {};
   DateTime? currentBackPressTime = DateTime.now();
   List<TypedModel> _models = [];
   List<Site> _sites = [];
   List<String> _autosuggest = [];
   List<TypedModel> _preloadModels = [];
+  List<Site> _tabs = [];
+  final Map<int, RefreshController> _refreshControllerSet = {};
   int _currentSiteId = 920;
   int _page = 1;
   String _keywords = '';
   bool _isLoading = false;
   int _lastScrollPosition = 0;
-
+  int initPosition = 0;
 
   /// 加载列表
-  Future<List<TypedModel>> _load(
-      {bool isNext = false, bool isReset = false}) async {
+  Future<List<TypedModel>> _load({bool isNext = false, bool isReset = false}) async {
     print('LIST SIZE: ${_models.length}');
     if (_isLoading) return [];
     try {
@@ -104,7 +106,7 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
   }
 
   /// 获取数据
-  Future<List<TypedModel>> _getModels({Site? site, int? page, String? keywords }) async {
+  Future<List<TypedModel>> _getModels({Site? site, int? page, String? keywords}) async {
     site = site ?? _currentSite;
     page = page ?? _page;
     keywords = keywords ?? _keywords;
@@ -132,8 +134,7 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
         return;
       }
       for (var model in _preloadModels) {
-        CachedNetworkImageProvider(model.coverUrl ?? '')
-            .resolve(const ImageConfiguration());
+        CachedNetworkImageProvider(model.coverUrl ?? '').resolve(const ImageConfiguration());
       }
     } catch (e) {
       print(e);
@@ -169,37 +170,31 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
   Future<void> _initialize() async {
     await _checkUpdate();
     final sites = await RuleLoader.loadFromDirectory(await Config.ruleDir);
-    sites.forEachIndexed(
-        (i, element) => print('$i: [${element.id}]${element.name}'));
+    sites.forEachIndexed((i, element) => print('$i: [${element.id}]${element.name}'));
     setState(() {
       _sites = sites;
       _currentSiteId = _currentSiteId < 0 ? _sites[0].id! : _currentSiteId;
+      _tabs.add(_currentSite!);
+      // _refreshControllerSet.add(RefreshController(initialRefresh: false));
     });
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _refreshController.requestRefresh();
     });
     _scrollController.addListener(() {
-      if (_scrollController.position.pixels >=
-          _scrollController.position.maxScrollExtent) {
+      if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent) {
         if (!_isLoading) {
           _onNext();
         }
       }
       if (_scrollController.position.pixels < 128) {
-        _floatingSearchBarController.isHidden
-            ? _floatingSearchBarController.show()
-            : null;
+        _floatingSearchBarController.isHidden ? _floatingSearchBarController.show() : null;
       } else if (_scrollController.position.pixels > _lastScrollPosition + 64) {
         _lastScrollPosition = _scrollController.position.pixels.toInt();
-        _floatingSearchBarController.isVisible
-            ? _floatingSearchBarController.hide()
-            : null;
+        _floatingSearchBarController.isVisible ? _floatingSearchBarController.hide() : null;
       } else if (_scrollController.position.pixels < _lastScrollPosition - 64) {
         _lastScrollPosition = _scrollController.position.pixels.toInt();
-        _floatingSearchBarController.isHidden
-            ? _floatingSearchBarController.show()
-            : null;
+        _floatingSearchBarController.isHidden ? _floatingSearchBarController.show() : null;
       }
     });
   }
@@ -256,11 +251,9 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
       return Future.value(false);
     }
     DateTime now = DateTime.now();
-    if (currentBackPressTime == null ||
-        now.difference(currentBackPressTime!) > const Duration(seconds: 2)) {
+    if (currentBackPressTime == null || now.difference(currentBackPressTime!) > const Duration(seconds: 2)) {
       currentBackPressTime = now;
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('再按一次退出')));
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('再按一次退出')));
       return Future.value(false);
     }
     return Future.value(true);
@@ -271,8 +264,7 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
         child: ListView(padding: EdgeInsets.zero, children: [
       Stack(children: [
         CachedNetworkImage(
-          imageUrl:
-              'https://cdn.jsdelivr.net/gh/nyarray/LoliHost/images/94d6d0e7be187770e5d538539d95a12a.jpeg',
+          imageUrl: 'https://cdn.jsdelivr.net/gh/nyarray/LoliHost/images/94d6d0e7be187770e5d538539d95a12a.jpeg',
           fit: BoxFit.cover,
           height: 256,
         ),
@@ -280,21 +272,16 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
           child: Container(
               decoration: BoxDecoration(
                   color: Colors.white,
-                  gradient: LinearGradient(
-                      begin: FractionalOffset.topCenter,
-                      end: FractionalOffset.bottomCenter,
-                      colors: [
-                        Colors.grey.withOpacity(0.0),
-                        Colors.black45,
-                      ],
-                      stops: const [
-                        0.0,
-                        1.0
-                      ])),
+                  gradient: LinearGradient(begin: FractionalOffset.topCenter, end: FractionalOffset.bottomCenter, colors: [
+                    Colors.grey.withOpacity(0.0),
+                    Colors.black45,
+                  ], stops: const [
+                    0.0,
+                    1.0
+                  ])),
               padding: const EdgeInsets.all(8),
               alignment: Alignment.bottomLeft,
-              child: const Text('ポトフちゃんとワトラちゃんがすごくかわいいです！',
-                  style: TextStyle(color: Colors.white, fontSize: 18))),
+              child: const Text('ポトフちゃんとワトラちゃんがすごくかわいいです！', style: TextStyle(color: Colors.white, fontSize: 18))),
         ),
       ]),
       Container(height: 8),
@@ -308,21 +295,15 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
       ListTile(
           title: const Text('订阅'),
           onTap: () {
-            Navigator.push(context,
-                MaterialPageRoute(builder: (ctx) => const SubscribeView()));
+            Navigator.push(context, MaterialPageRoute(builder: (ctx) => const SubscribeView()));
           },
           iconColor: Colors.black87,
           leading: const Icon(Icons.collections_bookmark)),
-      ListTile(
-          title: const Text('下载'),
-          onTap: () {},
-          iconColor: Colors.black87,
-          leading: const Icon(Icons.download)),
+      ListTile(title: const Text('下载'), onTap: () {}, iconColor: Colors.black87, leading: const Icon(Icons.download)),
       ListTile(
           title: const Text('设置'),
           onTap: () {
-            Navigator.push(context,
-                MaterialPageRoute(builder: (ctx) => const SettingsView()));
+            Navigator.push(context, MaterialPageRoute(builder: (ctx) => const SettingsView()));
           },
           iconColor: Colors.black87,
           leading: const Icon(Icons.tune))
@@ -336,8 +317,7 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
         child: Material(
             child: Column(children: [
           CachedNetworkImage(
-            imageUrl:
-                'https://cdn.jsdelivr.net/gh/nyarray/LoliHost/images/7c4f1d7ea2dadd3ca835b9b2b9219681.webp',
+            imageUrl: 'https://cdn.jsdelivr.net/gh/nyarray/LoliHost/images/7c4f1d7ea2dadd3ca835b9b2b9219681.webp',
             fit: BoxFit.cover,
             height: 192,
           ),
@@ -351,15 +331,19 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
                         child: InkWell(
                             onTap: () {
                               _currentSiteId = _sites[index].id!;
-                              _refreshController.requestRefresh();
+                              // _refreshControllerSet[_currentSite!.id!] = RefreshController(initialRefresh: false);
+                              _tabs.add(_currentSite!);
+                              // _refreshControllerSet.add(RefreshController(initialRefresh: false));
+                              // _refreshControllerSet[index].requestRefresh();
                               globalKey.currentState?.closeEndDrawer();
+                              setState(() {
+
+                              });
                             },
                             child: Container(
                                 height: 40,
                                 decoration: BoxDecoration(
-                                  color: _currentSiteId == _sites[index].id
-                                      ? const Color.fromRGBO(0, 127, 127, .12)
-                                      : null,
+                                  color: _currentSiteId == _sites[index].id ? const Color.fromRGBO(0, 127, 127, .12) : null,
                                 ),
                                 alignment: Alignment.centerLeft,
                                 padding: const EdgeInsets.only(left: 8),
@@ -371,21 +355,15 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
                                         child: CachedNetworkImage(
                                           imageUrl: _sites[index].icon ?? '',
                                           fit: BoxFit.cover,
-                                          errorWidget: (ctx, url, error) =>
-                                              const Icon(
-                                                  Icons.image_not_supported,
-                                                  size: 32),
+                                          errorWidget: (ctx, url, error) => const Icon(Icons.image_not_supported, size: 32),
                                         )),
                                     Container(
                                         padding: const EdgeInsets.only(left: 8),
                                         child: Text(
                                           style: TextStyle(
-                                              fontFamily: 'sans-serif',
+                                              fontFamily: Config.uiFontFamily,
                                               fontSize: 18,
-                                              color: _currentSiteId ==
-                                                      _sites[index].id
-                                                  ? Colors.teal
-                                                  : null),
+                                              color: _currentSiteId == _sites[index].id ? Colors.teal : null),
                                           _sites[index].name ?? '',
                                           textAlign: TextAlign.start,
                                         ))
@@ -397,13 +375,23 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
 
   Future<ImageInfo> getImageInfo(ImageProvider image) async {
     final c = Completer<ImageInfo>();
-    image.resolve(const ImageConfiguration()).addListener(
-        ImageStreamListener((ImageInfo i, bool _) => c.complete(i)));
+    image.resolve(const ImageConfiguration()).addListener(ImageStreamListener((ImageInfo i, bool _) => c.complete(i)));
     return c.future;
   }
 
   @override
   Widget build(BuildContext context) {
+    // _refreshController = RefreshController(initialRefresh: false);
+    // final RefreshController homeRefreshController = RefreshController();
+    //
+    // void onRefresh() async {
+    //   try {
+    //     // await _homeController.getDashbaordInfo();
+    //     homeRefreshController.refreshCompleted();
+    //   } catch (e) {
+    //     homeRefreshController.refreshFailed();
+    //   }
+    // }
     return Scaffold(
       key: globalKey,
       resizeToAvoidBottomInset: false,
@@ -418,143 +406,207 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
             fit: StackFit.expand,
             children: [
               Container(
-                  padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
-                  child: Column(children: [
-                    Flexible(
-                      child: SmartRefresher(
-                          enablePullDown: true,
-                          enablePullUp: true,
-                          header: const WaterDropMaterialHeader(
-                            distance: 48,
-                            offset: 96,
+                padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
+                child: CarouselSlider(
+                  options: CarouselOptions(viewportFraction: 1, height: double.infinity, enableInfiniteScroll: false),
+                  items: _tabs.mapIndexed((index, site) {
+                    return Builder(
+                      builder: (BuildContext context) {
+                        // if (index >= _refreshControllerSet.length) {
+                        //   _refreshControllerSet.add(index)
+                        // }
+                        if (_refreshControllerSet[_currentSite!.id] == null) {
+                          _refreshControllerSet[_currentSite!.id!] = RefreshController(initialRefresh: false);
+                        }
+
+                        // final RefreshController _refreshController = RefreshController(initialRefresh: false);
+                        return  Column(children: [
+                          Flexible(
+                            child: SmartRefresher(
+                                enablePullDown: true,
+                                enablePullUp: true,
+                                header: const WaterDropMaterialHeader(
+                                  distance: 48,
+                                  offset: 96,
+                                ),
+                                controller: _refreshControllerSet[site.id]!,
+                                onRefresh: () => _onRefresh(),
+                                onLoading: () => _onNext(),
+                                // onLoading: _onLoading,
+                                child: MasonryGridView.count(
+                                    padding: const EdgeInsets.fromLTRB(8, kToolbarHeight + 48, 8, 0),
+                                    crossAxisCount: 3,
+                                    mainAxisSpacing: 8.0,
+                                    crossAxisSpacing: 8.0,
+                                    itemCount: _models.length,
+                                    controller: _scrollController,
+                                    // physics: const BouncingScrollPhysics(),
+                                    itemBuilder: (context, index) {
+                                      return Material(
+                                          clipBehavior: Clip.hardEdge,
+                                          elevation: 2,
+                                          borderRadius: const BorderRadius.all(Radius.circular(4.0)),
+                                          child: InkWell(
+                                              onTap: () => _jump(_models[index]),
+                                              child: Column(
+                                                children: [
+                                                  CachedNetworkImage(
+                                                    // height: _heightCache[index] ?? 160,
+                                                    // useOldImageOnUrlChange: true,
+                                                    // imageBuilder: (ctx, image) {
+                                                    //   return CachedNetworkImageProvider()
+                                                    // },
+                                                    imageUrl: _models[index].coverUrl ?? '',
+                                                    fadeInDuration: const Duration(milliseconds: 200),
+                                                    fadeOutDuration: const Duration(milliseconds: 200),
+                                                    fit: BoxFit.cover,
+                                                    errorWidget: (ctx, url, error) => const AspectRatio(
+                                                        aspectRatio: 1,
+                                                        child: Icon(
+                                                          Icons.image_not_supported,
+                                                          size: 64,
+                                                        )),
+                                                    placeholder: (ctx, text) => const AspectRatio(
+                                                        aspectRatio: 0.66, child: SpinKitDoubleBounce(color: Colors.teal)),
+                                                    httpHeaders: _currentSite?.headers,
+                                                    // )
+                                                  ),
+                                                  Container(
+                                                    padding: const EdgeInsets.all(8.0),
+                                                    child: Text(
+                                                      _models[index].title ?? '',
+                                                      maxLines: 3,
+                                                    ),
+                                                  )
+                                                ],
+                                              )));
+                                    })),
                           ),
-                          // footer: CustomFooter(
-                          //   builder: ( context, mode){
-                          //     Widget body ;
-                          //     if (_isEnd) {
-                          //       body = Text("No more Data");
-                          //     }
-                          //     else if(mode==LoadStatus.idle){
-                          //       body =  Text("pull up load");
-                          //     }
-                          //     else if(mode==LoadStatus.loading){
-                          //       body =  CupertinoActivityIndicator();
-                          //     }
-                          //     else if(mode == LoadStatus.failed){
-                          //       body = Text("Load Failed!Click retry!");
-                          //     }
-                          //     else if(mode == LoadStatus.canLoading){
-                          //       body = Text("release to load more");
-                          //     }
-                          //     else{
-                          //       body = Text("No more Data");
-                          //     }
-                          //     return Container(
-                          //       height: 55.0,
-                          //       child: Center(child:body),
-                          //     );
-                          //   },
-                          // ),
-                          controller: _refreshController,
-                          onRefresh: () => _onRefresh(),
-                          onLoading: () => _onNext(),
-                          // onLoading: _onLoading,
-                          child: MasonryGridView.count(
-                              padding: const EdgeInsets.fromLTRB(
-                                  8, kToolbarHeight + 48, 8, 0),
-                              crossAxisCount: 3,
-                              mainAxisSpacing: 8.0,
-                              crossAxisSpacing: 8.0,
-                              itemCount: _models.length,
-                              controller: _scrollController,
-                              // physics: const BouncingScrollPhysics(),
-                              itemBuilder: (context, index) {
-                                return Material(
-                                    clipBehavior: Clip.hardEdge,
-                                    elevation: 2,
-                                    borderRadius: const BorderRadius.all(
-                                        Radius.circular(4.0)),
-                                    child: InkWell(
-                                        onTap: () => _jump(_models[index]),
-                                        child: Column(
-                                          children: [
-                                            CachedNetworkImage(
-                                              // height: _heightCache[index] ?? 160,
-                                              useOldImageOnUrlChange: true,
-                                              // imageBuilder: (ctx, image) {
-                                              //   return CachedNetworkImageProvider()
-                                              // },
-                                              imageUrl:
-                                                  _models[index].coverUrl ?? '',
-                                              fadeInDuration: const Duration(
-                                                  milliseconds: 200),
-                                              fadeOutDuration: const Duration(
-                                                  milliseconds: 200),
-                                              fit: BoxFit.cover,
-                                              errorWidget: (ctx, url, error) =>
-                                                  const AspectRatio(
-                                                      aspectRatio: 1,
-                                                      child: Icon(
-                                                        Icons
-                                                            .image_not_supported,
-                                                        size: 64,
-                                                      )),
-                                              placeholder: (ctx, text) =>
-                                                  const AspectRatio(
-                                                      aspectRatio: 0.66,
-                                                      child:
-                                                          SpinKitDoubleBounce(
-                                                              color:
-                                                                  Colors.teal)),
-                                              httpHeaders:
-                                                  _currentSite?.headers,
-                                              // )
-                                            ),
-                                            Container(
-                                              padding:
-                                                  const EdgeInsets.all(8.0),
-                                              child: Text(
-                                                _models[index].title ?? '',
-                                                maxLines: 3,
-                                              ),
-                                            )
-                                          ],
-                                        )));
-                              })),
-                    ),
-                  ])),
+                        ]);
+                        // return Container(
+                        //     width: MediaQuery.of(context).size.width,
+                        //     margin: EdgeInsets.symmetric(horizontal: 5.0),
+                        //     decoration: BoxDecoration(
+                        //         color: Colors.amber
+                        //     ),
+                        //     child: Text('text ${site.name}', style: TextStyle(fontSize: 16.0),)
+                        // );
+                      },
+                    );
+                  }).toList(),
+                )
+
+    ),
+                //  Column(children: [
+                //   Flexible(
+                //     child: SmartRefresher(
+                //         enablePullDown: true,
+                //         enablePullUp: true,
+                //         header: const WaterDropMaterialHeader(
+                //           distance: 48,
+                //           offset: 96,
+                //         ),
+                //         controller: _refreshController,
+                //         onRefresh: () => _onRefresh(),
+                //         onLoading: () => _onNext(),
+                //         // onLoading: _onLoading,
+                //         child: MasonryGridView.count(
+                //             padding: const EdgeInsets.fromLTRB(
+                //                 8, kToolbarHeight + 48, 8, 0),
+                //             crossAxisCount: 3,
+                //             mainAxisSpacing: 8.0,
+                //             crossAxisSpacing: 8.0,
+                //             itemCount: _models.length,
+                //             controller: _scrollController,
+                //             // physics: const BouncingScrollPhysics(),
+                //             itemBuilder: (context, index) {
+                //               return Material(
+                //                   clipBehavior: Clip.hardEdge,
+                //                   elevation: 2,
+                //                   borderRadius: const BorderRadius.all(
+                //                       Radius.circular(4.0)),
+                //                   child: InkWell(
+                //                       onTap: () => _jump(_models[index]),
+                //                       child: Column(
+                //                         children: [
+                //                           CachedNetworkImage(
+                //                             // height: _heightCache[index] ?? 160,
+                //                             // useOldImageOnUrlChange: true,
+                //                             // imageBuilder: (ctx, image) {
+                //                             //   return CachedNetworkImageProvider()
+                //                             // },
+                //                             imageUrl:
+                //                                 _models[index].coverUrl ?? '',
+                //                             fadeInDuration: const Duration(
+                //                                 milliseconds: 200),
+                //                             fadeOutDuration: const Duration(
+                //                                 milliseconds: 200),
+                //                             fit: BoxFit.cover,
+                //                             errorWidget: (ctx, url, error) =>
+                //                                 const AspectRatio(
+                //                                     aspectRatio: 1,
+                //                                     child: Icon(
+                //                                       Icons
+                //                                           .image_not_supported,
+                //                                       size: 64,
+                //                                     )),
+                //                             placeholder: (ctx, text) =>
+                //                                 const AspectRatio(
+                //                                     aspectRatio: 0.66,
+                //                                     child:
+                //                                         SpinKitDoubleBounce(
+                //                                             color:
+                //                                                 Colors.teal)),
+                //                             httpHeaders:
+                //                                 _currentSite?.headers,
+                //                             // )
+                //                           ),
+                //                           Container(
+                //                             padding:
+                //                                 const EdgeInsets.all(8.0),
+                //                             child: Text(
+                //                               _models[index].title ?? '',
+                //                               maxLines: 3,
+                //                             ),
+                //                           )
+                //                         ],
+                //                       )));
+                //             })),
+                //   ),
+                // ])
               // buildMap(),
               // buildBottomNavigationBar(),
               buildFloatingSearchBar(),
             ],
           )),
       // );
-      // ]),
+      // ]),·
       // bottomNavigationBar: BottomAppBar(
       //   color: Colors.white,
       //   shape: const CircularNotchedRectangle(), // 底部导航栏打一个圆形的洞
       //   child: TabBar(
       //     controller: _tabController,
-      //     tabs: const <Widget>[
-      //       Tab(
-      //         icon: Icon(
-      //           Icons.cloud_outlined,
-      //           color: Colors.teal,
-      //         ),
-      //       ),
-      //       Tab(
-      //         icon: Icon(
-      //           Icons.beach_access_sharp,
-      //           color: Colors.teal,
-      //         ),
-      //       ),
-      //       Tab(
-      //         icon: Icon(
-      //           Icons.brightness_5_sharp,
-      //           color: Colors.teal,
-      //         ),
-      //       ),
-      //     ],
+      //     tabs: _tabs.map((tab) => Tab(icon: Icon(Icons.widgets))).toList()
+      //     // tabs: const <Widget>[
+      //     //   Tab(
+      //     //     icon: Icon(
+      //     //       Icons.cloud_outlined,
+      //     //       color: Colors.teal,
+      //     //     ),
+      //     //   ),
+      //     //   Tab(
+      //     //     icon: Icon(
+      //     //       Icons.beach_access_sharp,
+      //     //       color: Colors.teal,
+      //     //     ),
+      //     //   ),
+      //     //   Tab(
+      //     //     icon: Icon(
+      //     //       Icons.brightness_5_sharp,
+      //     //       color: Colors.teal,
+      //     //     ),
+      //     //   ),
+      //     // ],
       //   ),
       // ),
       // floatingActionButtonLocation:  FloatingActionButtonLocation.endDocked,
@@ -567,124 +619,101 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
   }
 
   Widget buildFloatingSearchBar() {
-    final isPortrait =
-        MediaQuery.of(context).orientation == Orientation.portrait;
+    final isPortrait = MediaQuery.of(context).orientation == Orientation.portrait;
 
     return FloatingSearchBar(
-      title: Text(
-        _keywords.isEmpty ? 'Search...' : _keywords,
-        style: TextStyle(
-            fontFamily: 'sans-serif',
-            fontSize: 14,
-            color: _keywords.isEmpty ? Colors.black54 : Colors.black87),
-      ),
-      controller: _floatingSearchBarController,
-      automaticallyImplyDrawerHamburger: false,
-      automaticallyImplyBackButton: false,
-      hint: 'Search...',
-      scrollPadding: const EdgeInsets.only(top: 8, bottom: 8),
-      // implicitDuration: const Duration(milliseconds: 250),
-      transitionDuration: const Duration(milliseconds: 300),
-      transitionCurve: Curves.easeInOut,
-      // physics: const BouncingScrollPhysics(),
-      axisAlignment: isPortrait ? 0.0 : -1.0,
-      openAxisAlignment: 0.0,
-      width: isPortrait ? 600 : 500,
-      debounceDelay: const Duration(milliseconds: 500),
-      // clearQueryOnClose: false,
-      hintStyle: const TextStyle(fontFamily: 'sans-serif', fontSize: 14),
-      queryStyle: const TextStyle(fontFamily: 'sans-serif', fontSize: 14),
-      onQueryChanged: (query) async {
-        final value = await Dio().get(
-            'https://danbooru.donmai.us/autocomplete.json?search[query]=$query&search[type]=tag_query&limit=10');
-        final result = List<Map<String, dynamic>>.from(value.data);
-        setState(() {
-          _autosuggest = result.map((item) => item['value'] as String).toList();
-
-          print('_autosuggest: $_autosuggest');
-        });
-      },
-
-      // Specify a custom transition to be used for
-      // animating between opened and closed stated.
-      transition: CircularFloatingSearchBarTransition(),
-      // transition: SlideFadeFloatingSearchBarTransition(),
-      leadingActions: [
-        FloatingSearchBarAction.hamburgerToBack(),
-        FloatingSearchBarAction(
-            showIfOpened: true,
-            child: CachedNetworkImage(
-                imageUrl: _currentSite?.icon ?? '',
-                errorWidget: (ctx, url, error) {
-                  return Text(
-                    _currentSite?.name?.substring(0, 1) ?? '?',
-                    style: const TextStyle(
-                        fontFamily: 'sans-serif',
-                        fontSize: 18,
-                        color: Colors.teal),
-                  );
-                })),
-      ],
-      actions: [
-        FloatingSearchBarAction(
-          showIfOpened: false,
-          child: CircularButton(
-            // icon: const Icon(CupertinoIcons.square_grid_2x2),
-            icon: const Icon(Icons.extension),
-            // icon: const Icon( CupertinoIcons.square_stack_3d_up),
-            onPressed: () {
-              globalKey.currentState?.openEndDrawer();
-            },
-          ),
+        title: Text(
+          _keywords.isEmpty ? 'Search...' : _keywords,
+          style: TextStyle(
+              fontFamily: Config.uiFontFamily, fontSize: 16, color: _keywords.isEmpty ? Colors.black26 : Colors.black87),
         ),
-        // FloatingSearchBarAction.icon(icon: Icon., onTap: onTap)
-        FloatingSearchBarAction.searchToClear(
-          showIfClosed: false,
-        ),
-      ],
-      onSubmitted: (query) {
-        _keywords = query;
-        _refreshController.requestRefresh();
-        _floatingSearchBarController.close();
-      },
-      builder: (context, transition) {
-        return
-            // ClipRRect(
-            // borderRadius: BorderRadius.circular(4),
-            // child:
-            Material(
-          color: Colors.white,
-          elevation: 4.0,
-          borderRadius: BorderRadius.circular(4),
-          child: Column(
-            // mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: _autosuggest.map((query) {
-              return Material(
-                  child: InkWell(
-                      onTap: () {
-                        _keywords = query;
-                        _refreshController.requestRefresh();
-                        _floatingSearchBarController.query = query;
-                        _floatingSearchBarController.close();
-                      },
-                      child: Container(
-                          padding: const EdgeInsets.only(left: 20),
-                          height: 48,
-                          alignment: Alignment.centerLeft,
-                          decoration: const BoxDecoration(
-                              border: Border(
-                                  bottom: BorderSide(color: Colors.black12))),
-                          child: Text(
-                            query,
-                            style: const TextStyle(
-                                fontFamily: 'sans-serif', fontSize: 14),
-                          ))));
-            }).toList(),
+        controller: _floatingSearchBarController,
+        automaticallyImplyDrawerHamburger: false,
+        automaticallyImplyBackButton: false,
+        hint: 'Search...',
+        scrollPadding: const EdgeInsets.only(top: 8, bottom: 8),
+        // implicitDuration: const Duration(milliseconds: 250),
+        transitionDuration: const Duration(milliseconds: 300),
+        transitionCurve: Curves.easeInOut,
+        // physics: const BouncingScrollPhysics(),
+        axisAlignment: isPortrait ? 0.0 : -1.0,
+        openAxisAlignment: 0.0,
+        width: isPortrait ? 600 : 500,
+        debounceDelay: const Duration(milliseconds: 500),
+        // clearQueryOnClose: false,
+        hintStyle: const TextStyle(fontFamily: Config.uiFontFamily, fontSize: 16, color: Colors.black26),
+        queryStyle: const TextStyle(fontFamily: Config.uiFontFamily, fontSize: 16),
+        onQueryChanged: (query) async {
+          final value = await Dio()
+              .get('https://danbooru.donmai.us/autocomplete.json?search[query]=$query&search[type]=tag_query&limit=10');
+          final result = List<Map<String, dynamic>>.from(value.data);
+          setState(() {
+            _autosuggest = result.map((item) => item['value'] as String).toList();
+
+            print('_autosuggest: $_autosuggest');
+          });
+        },
+
+        // Specify a custom transition to be used for
+        // animating between opened and closed stated.
+        transition: CircularFloatingSearchBarTransition(),
+        // transition: SlideFadeFloatingSearchBarTransition(),
+        leadingActions: [
+          FloatingSearchBarAction.hamburgerToBack(),
+          FloatingSearchBarAction(
+              showIfOpened: true,
+              child: CachedNetworkImage(
+                  imageUrl: _currentSite?.icon ?? '',
+                  errorWidget: (ctx, url, error) {
+                    return Text(
+                      _currentSite?.name?.substring(0, 1) ?? '?',
+                      style: const TextStyle(fontFamily: Config.uiFontFamily, fontSize: 18, color: Colors.teal),
+                    );
+                  })),
+        ],
+        actions: [
+          FloatingSearchBarAction(
+            showIfOpened: false,
+            child: CircularButton(
+              // icon: const Icon(CupertinoIcons.square_grid_2x2),
+              icon: const Icon(Icons.extension),
+              // icon: const Icon( CupertinoIcons.square_stack_3d_up),
+              onPressed: () {
+                globalKey.currentState?.openEndDrawer();
+              },
+            ),
           ),
-          // ),
-        );
-      },
-    );
+          // FloatingSearchBarAction.icon(icon: Icon., onTap: onTap)
+          FloatingSearchBarAction.searchToClear(
+            showIfClosed: false,
+          ),
+        ],
+        onSubmitted: (query) {
+          _keywords = query;
+          _refreshController.requestRefresh();
+          _floatingSearchBarController.close();
+        },
+        builder: (context, transition) => Material(
+              color: Colors.white,
+              elevation: 4.0,
+              borderRadius: BorderRadius.circular(4),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: _autosuggest
+                    .map((query) => ListTile(
+                        leading: const Icon(Icons.search),
+                        onTap: () {
+                          _keywords = query;
+                          _refreshController.requestRefresh();
+                          _floatingSearchBarController.query = query;
+                          _floatingSearchBarController.close();
+                        },
+                        title: Text(
+                          query,
+                          style: const TextStyle(fontFamily: Config.uiFontFamily, fontSize: 14),
+                        )))
+                    .toList(),
+              ),
+            ));
   }
 }
