@@ -34,32 +34,31 @@ import 'package:shimmer/shimmer.dart';
 import '../../app/global.dart';
 import '../../models/typed_model.dart';
 
+class GalleryController {
+  void Function(String keywords)? search;
+}
+
 class GalleryView extends StatefulWidget {
-  const GalleryView({Key? key, required this.site}) : super(key: key);
+  GalleryView({Key? key, required this.site}) : super(key: key);
   final Site site;
+  final GalleryController controller = GalleryController();
+
+  String keywords = '';
+
   @override
   State<GalleryView> createState() => _GalleryViewState();
 }
 
-class _GalleryViewState extends State<GalleryView> with TickerProviderStateMixin, AutomaticKeepAliveClientMixin<GalleryView>  {
-  @override
-  void dispose() {
-    // TODO: implement dispose
-    super.dispose();
-  }
+class _GalleryViewState extends State<GalleryView> with TickerProviderStateMixin, AutomaticKeepAliveClientMixin<GalleryView> {
   final globalKey = GlobalKey<ScaffoldState>();
   final ScrollController _scrollController = ScrollController();
-  final RefreshController _refreshController =
-      RefreshController(initialRefresh: false);
-  final FloatingSearchBarController _floatingSearchBarController =
-      FloatingSearchBarController();
+  final RefreshController _refreshController = RefreshController(initialRefresh: false);
+  final FloatingSearchBarController _floatingSearchBarController = FloatingSearchBarController();
   final Map<int, double> _heightCache = {};
-  DateTime? currentBackPressTime = DateTime.now();
   List<TypedModel> _models = [];
   List<Site> _sites = [];
   List<TypedModel> _preloadModels = [];
   final List<Site> _tabs = [];
-  // final Map<int, RefreshController> _refreshControllerSet = {};
   int _currentSiteId = 920;
   int _page = 1;
   String _keywords = '';
@@ -68,8 +67,7 @@ class _GalleryViewState extends State<GalleryView> with TickerProviderStateMixin
   int initPosition = 0;
 
   /// 加载列表
-  Future<List<TypedModel>> _load(
-      {bool isNext = false, bool isReset = false}) async {
+  Future<List<TypedModel>> _load({bool isNext = false, bool isReset = false}) async {
     print('LIST SIZE: ${_models.length}');
     if (_isLoading) return [];
     try {
@@ -79,8 +77,7 @@ class _GalleryViewState extends State<GalleryView> with TickerProviderStateMixin
       }
       // 试图获取预加载内容
       if (_preloadModels.isNotEmpty) {
-        print(
-            'READ PRELOAD ====================== SIZE = ${_preloadModels.length}');
+        print('READ PRELOAD ====================== SIZE = ${_preloadModels.length}');
         final models = _preloadModels;
         _page++;
         _preloadModels = [];
@@ -110,8 +107,8 @@ class _GalleryViewState extends State<GalleryView> with TickerProviderStateMixin
   }
 
   /// 获取数据
-  Future<List<TypedModel>> _getModels(
-      {Site? site, int? page, String? keywords}) async {
+  Future<List<TypedModel>> _getModels({Site? site, int? page, String? keywords}) async {
+    widget.keywords = _keywords;
     site = site ?? _currentSite;
     page = page ?? _page;
     keywords = keywords ?? _keywords;
@@ -138,8 +135,7 @@ class _GalleryViewState extends State<GalleryView> with TickerProviderStateMixin
         return;
       }
       for (var model in _preloadModels) {
-        CachedNetworkImageProvider(model.coverUrl ?? '')
-            .resolve(const ImageConfiguration());
+        CachedNetworkImageProvider(model.coverUrl ?? '').resolve(const ImageConfiguration());
       }
     } catch (e) {
       print(e);
@@ -173,11 +169,13 @@ class _GalleryViewState extends State<GalleryView> with TickerProviderStateMixin
   }
 
   Future<void> _initialize() async {
-    print('_initialize_initialize_initialize_initialize_initialize_initialize_initialize_initialize:: ');
+    widget.controller.search = (String kwds) {
+      _onSearch(kwds);
+    };
+
     await _checkUpdate();
     final sites = await RuleLoader.loadFormDirectory(await Config.ruleDir);
-    sites.forEachIndexed(
-        (i, element) => print('$i: [${element.id}]${element.name}'));
+    sites.forEachIndexed((i, element) => print('$i: [${element.id}]${element.name}'));
     setState(() {
       _sites = sites;
       _currentSiteId = _currentSiteId < 0 ? _sites[0].id! : _currentSiteId;
@@ -189,26 +187,19 @@ class _GalleryViewState extends State<GalleryView> with TickerProviderStateMixin
       _refreshController.requestRefresh();
     });
     _scrollController.addListener(() {
-      if (_scrollController.position.pixels >=
-          _scrollController.position.maxScrollExtent) {
+      if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent) {
         if (!_isLoading) {
           _onNext();
         }
       }
       if (_scrollController.position.pixels < 128) {
-        _floatingSearchBarController.isHidden
-            ? _floatingSearchBarController.show()
-            : null;
+        _floatingSearchBarController.isHidden ? _floatingSearchBarController.show() : null;
       } else if (_scrollController.position.pixels > _lastScrollPosition + 64) {
         _lastScrollPosition = _scrollController.position.pixels.toInt();
-        _floatingSearchBarController.isVisible
-            ? _floatingSearchBarController.hide()
-            : null;
+        _floatingSearchBarController.isVisible ? _floatingSearchBarController.hide() : null;
       } else if (_scrollController.position.pixels < _lastScrollPosition - 64) {
         _lastScrollPosition = _scrollController.position.pixels.toInt();
-        _floatingSearchBarController.isHidden
-            ? _floatingSearchBarController.show()
-            : null;
+        _floatingSearchBarController.isHidden ? _floatingSearchBarController.show() : null;
       }
     });
   }
@@ -258,13 +249,13 @@ class _GalleryViewState extends State<GalleryView> with TickerProviderStateMixin
 
   Future<ImageInfo> getImageInfo(ImageProvider image) async {
     final c = Completer<ImageInfo>();
-    image.resolve(const ImageConfiguration()).addListener(
-        ImageStreamListener((ImageInfo i, bool _) => c.complete(i)));
+    image.resolve(const ImageConfiguration()).addListener(ImageStreamListener((ImageInfo i, bool _) => c.complete(i)));
     return c.future;
   }
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return Column(children: [
       Flexible(
         child: SmartRefresher(
@@ -279,8 +270,7 @@ class _GalleryViewState extends State<GalleryView> with TickerProviderStateMixin
             onLoading: () => _onNext(),
             // onLoading: _onLoading,
             child: MasonryGridView.count(
-                padding:
-                    const EdgeInsets.fromLTRB(8, kToolbarHeight + 48, 8, 0),
+                padding: const EdgeInsets.fromLTRB(8, kToolbarHeight + 48, 8, 0),
                 crossAxisCount: 3,
                 mainAxisSpacing: 8.0,
                 crossAxisSpacing: 8.0,
@@ -291,30 +281,24 @@ class _GalleryViewState extends State<GalleryView> with TickerProviderStateMixin
                   return Material(
                       clipBehavior: Clip.hardEdge,
                       elevation: 2,
-                      borderRadius:
-                          const BorderRadius.all(Radius.circular(4.0)),
+                      borderRadius: const BorderRadius.all(Radius.circular(4.0)),
                       child: InkWell(
                           onTap: () => _jump(_models[index]),
                           child: Column(
                             children: [
                               CachedNetworkImage(
                                 imageUrl: _models[index].coverUrl ?? '',
-                                fadeInDuration:
-                                    const Duration(milliseconds: 200),
-                                fadeOutDuration:
-                                    const Duration(milliseconds: 200),
+                                fadeInDuration: const Duration(milliseconds: 200),
+                                fadeOutDuration: const Duration(milliseconds: 200),
                                 fit: BoxFit.cover,
-                                errorWidget: (ctx, url, error) =>
-                                    const AspectRatio(
-                                        aspectRatio: 1,
-                                        child: Icon(
-                                          Icons.image_not_supported,
-                                          size: 64,
-                                        )),
-                                placeholder: (ctx, text) => const AspectRatio(
-                                    aspectRatio: 0.66,
-                                    child: SpinKitDoubleBounce(
-                                        color: Colors.teal)),
+                                errorWidget: (ctx, url, error) => const AspectRatio(
+                                    aspectRatio: 1,
+                                    child: Icon(
+                                      Icons.image_not_supported,
+                                      size: 64,
+                                    )),
+                                placeholder: (ctx, text) =>
+                                    const AspectRatio(aspectRatio: 0.66, child: SpinKitDoubleBounce(color: Colors.teal)),
                                 httpHeaders: _currentSite?.headers,
                                 // )
                               ),
