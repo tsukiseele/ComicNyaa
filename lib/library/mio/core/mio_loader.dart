@@ -22,7 +22,7 @@ class RuleLoader {
 
 
 
-  static Future<List<Site>> loadFromDirectory(Directory dir, {String suffix = '.zip'}) async {
+  static Future<List<Site>> loadFormDirectory(Directory dir, {String suffix = '.zip'}) async {
     final sites = <Site>[];
     await for (final file in dir.list()) {
       final isAllow = file.path.endsWith(suffix);
