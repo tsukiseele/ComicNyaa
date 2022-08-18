@@ -110,6 +110,7 @@ class Selector {
   String? selector;
   String? capture;
   String? replacement;
+  bool? merge;
   bool? flat; // $children only
   bool? extend; // $children only
   Rules? rules; // $children only
@@ -121,6 +122,7 @@ class Selector {
     selector = json['selector'];
     capture = json['capture'];
     replacement = json['replacement'];
+    merge = json['merge']?.toString().parseBool();
     flat = json['flat']?.toString().parseBool();
     extend = json['extend']?.toString().parseBool();
     rules = json['rules'] != null ? Rules.fromJson(json['rules']) : null;
@@ -132,6 +134,7 @@ class Selector {
     data['selector'] = selector;
     data['capture'] = capture;
     data['replacement'] = replacement;
+    data['merge'] = merge;
     data['flat'] = flat;
     data['extend'] = extend;
     if (rules != null) {

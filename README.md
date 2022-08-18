@@ -3,6 +3,17 @@
 > A lovely comic reader.
 > 一个可爱的跨平台漫画阅读器.
 
+## Support 
+
+- Android 5.1+
+- IOS 未测试
+- Window 未来可能支持
+
+## License
+See [LICENSE](./LICENSE])
+
+
+## Usage
 
 
 ## Getting Started

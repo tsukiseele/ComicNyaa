@@ -1,6 +1,9 @@
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:collection/collection.dart';
 import 'package:comic_nyaa/app/global.dart';
 import 'package:comic_nyaa/library/mio/core/mio.dart';
 import 'package:comic_nyaa/models/typed_model.dart';
+import 'package:comic_nyaa/utils/num_extensions.dart';
 import 'package:comic_nyaa/utils/uri_extensions.dart';
 import 'package:dio/dio.dart';
 import 'package:extended_image/extended_image.dart';
@@ -8,13 +11,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:material_floating_search_bar/material_floating_search_bar.dart';
+import 'package:percent_indicator/circular_percent_indicator.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
 
+import '../../library/mio/model/site.dart';
+
 class ImageDetailView extends StatefulWidget {
-  const ImageDetailView({Key? key, required this.model}) : super(key: key);
+  const ImageDetailView({Key? key, required this.models, this.index = 0}) : super(key: key);
   final title = '画廊';
-  final TypedModel model;
+  final List<TypedModel> models;
+  final int index;
 
   @override
   State<StatefulWidget> createState() {
@@ -23,39 +30,50 @@ class ImageDetailView extends StatefulWidget {
 }
 
 class ImageDetailViewState extends State<ImageDetailView> {
-  TypedModel? _model;
-  List<TypedModel>? _children;
+  final PageController _pageController = PageController();
+  List<TypedModel>? _models;
   List<String> _images = [];
+  Site? _site;
   int currentIndex = 0;
   bool isFailed = false;
 
   void loadImage() async {
-    print('MODELLLLLLLLLLLLL: ${widget.model}');
+    // print('INDEX: ${widget.index}, WIDGET.MODELS: ${widget.models}');
     try {
-      final model = widget.model;
-      var url = getUrl(model);
-
-      print('UUUUUUUUUUUUUUUUUUUUUURL: $url');
-      if (url.isNotEmpty) return setState(() => _images.add(url));
-      print('model.\$section: ${model.$section}');
-      final dynamicResult = await Mio(model.$site).parseChildrenConcurrency(model.toJson(), model.$section!.rules!);
-      // print('SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS: ${model.$site?.sections?['search']?.toJson().toString()}');
-      _model = TypedModel.fromJson(dynamicResult);
-      // print('XXXXXXXXXXXXXXXXXXXXXXXX: $dynamicResult');
-      // print('CHILDREN URL: ${getUrl(_model)}');
-      // url = getUrl(_model);
-      if (_model?.children != null) {
-        _images = _model!.children?.map((e) => getUrl(e)).toList() ?? [];
+      final models = widget.models;
+      _site = models.isNotEmpty ? models[0].$site : null;
+      // 只有一条数据，且无图片源，则请求解析
+      if (models.length == 1 && getUrl(models.first).isEmpty) {
+        var model = models.first;
+        // print('MODEL.SECTION: ${model.$section}');
+        final result = await Mio(model.$site).parseChildrenConcurrency(model.toJson(), model.$section!.rules!);
+        model = TypedModel.fromJson(result);
+        if (model.children != null) {
+          _updateModels(model.children ?? []);
+        } else {
+          _updateModels([model]);
+        }
+      } else {
+        _updateModels(models);
       }
       setState(() {
-        isFailed = url.isEmpty;
-        // print('ISFAILED: ${isFailed}');
-        _children = _model?.children; //TypedModel.fromJson(dynamicResult);
+        currentIndex = widget.index;
+        isFailed = _images.length > currentIndex ? _images[currentIndex].isNotEmpty : true;
+      });
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if(_pageController.hasClients && _images.isNotEmpty && widget.index < _images.length){
+          _pageController.jumpToPage(widget.index);
+        }
       });
     } catch (e) {
       print('ERROR: ${e.toString()}');
     }
-    // return data;;
+  }
+
+  _updateModels(List<TypedModel> models) {
+    _models = models;
+    _images = models.map((model) => getUrl(model)).toList();
+    print('HEADERS ================== ${_models?[0].$site?.headers}');
   }
 
   String getUrl(TypedModel? item) {
@@ -68,7 +86,6 @@ class ImageDetailViewState extends State<ImageDetailView> {
         return url;
       }
       url = item.sampleUrl ?? item.largerUrl ?? item.originUrl ?? '';
-
     } catch (e) {
       Fluttertoast.showToast(msg: 'ERROR: $e');
     }
@@ -87,79 +104,80 @@ class ImageDetailViewState extends State<ImageDetailView> {
     super.initState();
   }
 
+  String _getProgressText(int current, int total) {
+    if (total > 0) {
+      return '${(current / total * 100).toInt()}%';
+    } else {
+      return current.readableFileSize();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title),
-      ),
-      body: _images.isNotEmpty
-          ? Center(
-              child: PhotoViewGallery.builder(
-              scrollPhysics: const BouncingScrollPhysics(),
-              builder: (BuildContext context, int index) {
-                return PhotoViewGalleryPageOptions(
-                    imageProvider: ExtendedImage.network(_images[index]).image,
-                    initialScale: PhotoViewComputedScale.contained * 1,
-                    onTapUp: (context, detail, value) {
-                      final url = _images[index];
-                      onDownload(url);
-                    },
-                    onTapDown: (context, detail, value) {}
-                    // heroAttributes: PhotoViewHeroAttributes(tag: _children?[index].id),
-                    );
-              },
-              itemCount: _images.length,
-              loadingBuilder: (context, event) => Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    CircularProgressIndicator(
-                      value: event == null ? 0 : event.cumulativeBytesLoaded / (event.expectedTotalBytes ?? -1),
+        appBar: AppBar(
+          title: Text(widget.title),
+        ),
+        body: _images.isNotEmpty
+            ? PhotoViewGallery.builder(
+                pageController: _pageController,
+                backgroundDecoration: const BoxDecoration(color: Colors.black87),
+                scrollPhysics: const BouncingScrollPhysics(),
+                builder: (BuildContext context, int index) {
+                  return PhotoViewGalleryPageOptions(
+                      // imageProvider: ExtendedImage.network(
+                      //   _images[index],
+                      //   headers: _models?[index].$site?.headers,
+                      // ).image,
+                    imageProvider: CachedNetworkImageProvider( _images[index], headers: _site?.headers),
+                      initialScale: PhotoViewComputedScale.contained * 1,
+                      onTapUp: (context, detail, value) {
+                        final url = _images[index];
+                        onDownload(url);
+                      },
+                      onTapDown: (context, detail, value) {}
+                      // heroAttributes: PhotoViewHeroAttributes(tag: _children?[index].id),
+                      );
+                },
+                itemCount: _images.length,
+                loadingBuilder: (context, event) => Container(
+                  alignment: Alignment.center,
+                  child: CircularPercentIndicator(
+                    radius: 48,
+                    lineWidth: 8,
+                    progressColor: Colors.teal,
+                    animation: true,
+                    animateFromLastPercent: true,
+                    circularStrokeCap: CircularStrokeCap.round,
+                    percent: event == null || event.expectedTotalBytes == null ? 0 : event.cumulativeBytesLoaded / event.expectedTotalBytes!,
+                    center: Text(event == null ? 'Loading...' :
+                      _getProgressText(event.cumulativeBytesLoaded, event.expectedTotalBytes ?? 0),
+                      style: TextStyle(fontSize: event == null ? 16 : 18),
                     ),
-                    Text('${((event?.cumulativeBytesLoaded ?? 0) / (event?.expectedTotalBytes ?? 1) * 100).toInt()}%')
-                  ],
+                    footer: Container(
+                        margin: const EdgeInsets.only(top: 8),
+                        child: const Text(
+                          "Loading...",
+                          style: TextStyle(fontFamily: '', fontSize: 16.0, color: Colors.white70),
+                        )),
+                  ),
                 ),
-              ),
-              // backgroundDecoration: widget.backgroundDecoration,
-              // pageController: widget.pageController,
-              // onPageChanged: onPageChanged,
-            ))
-          : isFailed
-              ? const Center(child: Text('加载失败'))
-              : const Center(child: SpinKitWave(color: Colors.teal)),
-    );
-
-    //     return Stack(children: [
-    //   _children != null
-    //       ? PhotoViewGallery.builder(
-    //           scrollPhysics: const BouncingScrollPhysics(),
-    //           builder: (BuildContext context, int index) {
-    //             return PhotoViewGalleryPageOptions(
-    //                 imageProvider: ExtendedImage.network(getUrl(_children?[index])).image,
-    //                 initialScale: PhotoViewComputedScale.contained * 0.8,
-    //                 onTapUp: (context, detail, value) {
-    //                   final url = getUrl(_children?[index]);
-    //                   Fluttertoast.showToast(msg: '下载已添加：${url}');
-    //                   onDownload(url);
-    //                 },
-    //                 onTapDown: (context, detail, value) {}
-    //                 // heroAttributes: PhotoViewHeroAttributes(tag: _children?[index].id),
-    //                 );
-    //           },
-    //           itemCount: _children?.length,
-    //           loadingBuilder: (context, event) => Center(
-    //             child: CircularProgressIndicator(
-    //               value: event == null ? 0 : event.cumulativeBytesLoaded / (event.expectedTotalBytes ?? -1),
-    //             ),
-    //           ),
-    //           // backgroundDecoration: widget.backgroundDecoration,
-    //           // pageController: widget.pageController,
-    //           // onPageChanged: onPageChanged,
-    //         )
-    //       : isFailed
-    //           ? const Center(child: Text('加载失败'))
-    //           : const Center(child: CircularProgressIndicator()),
+                // backgroundDecoration: widget.backgroundDecoration,
+                // pageController: widget.pageController,
+                // onPageChanged: onPageChanged,
+              )
+            : Container(
+                alignment: Alignment.center,
+                child: isFailed
+                    ? const Icon(
+                        Icons.image_not_supported,
+                        size: 64,
+                        color: Colors.redAccent,
+                      )
+                    : const SpinKitSpinningLines(
+                        color: Colors.teal,
+                        size: 96,
+                      ))
+        );
   }
 }

@@ -1,15 +1,22 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
+import 'package:comic_nyaa/library/mio/core/mio_loader.dart';
 import 'package:comic_nyaa/utils/http.dart';
 import 'package:dio/dio.dart';
 import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_displaymode/flutter_displaymode.dart';
 
+import 'app/global.dart';
 import 'library/mio/core/mio.dart';
 import 'views/main_view.dart';
 
 void main() async {
+  // LicenseRegistry.addLicense(() async* {
+  //   final license = await rootBundle.loadString('google_fonts/OFL.txt');
+  //   yield LicenseEntryWithLineBreaks(['google_fonts'], license);
+  // });
   runApp(const ComicNyaa());
 }
 
@@ -21,12 +28,14 @@ class ComicNyaa extends StatefulWidget {
 }
 
 class _ComicNyaaState extends State<ComicNyaa> {
+
+  final HttpClient client = HttpClient();
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'ComicNyaa',
       theme: ThemeData(
-        fontFamily: 'ComicNeueBold',
+        fontFamily: 'ComicNeue',
         primarySwatch: Colors.teal,
       ),
       home: const MainView(title: 'Home'),
@@ -38,24 +47,19 @@ class _ComicNyaaState extends State<ComicNyaa> {
     // 初始化显示模式
     setOptimalDisplayMode();
     // 初始化Mio
+    client.maxConnectionsPerHost = 3;
     Mio.setCustomRequest((url, {Map<String, String>? headers}) async {
+      if (headers != null) {
+        headers['user-agent'] = r'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36';
+      }
       final response = await Http.client()
           .get(url, options: Options(responseType: ResponseType.plain, headers: headers));
       return response.data.toString();
-
-      // HttpClient client = new HttpClient();
-      // client.getUrl(Uri.parse("http://www.example.com/"))
-      //     .then((HttpClientRequest request) {
-      //   // Optionally set up headers...
-      //   // Optionally write to the request object...
-      //   // Then call close.
-      //   ...
-      //   return request.close();
-      // })
-      //     .then((HttpClientResponse response) {
-      //   // Process the response.
-      //   ...
-      // });
+    //   HttpClientRequest request = await client.getUrl(Uri.parse(url));//.then((HttpClientRequest request) {
+    //     headers?.forEach((key, value) => request.headers.add(key, value));
+    //     request.headers.add('user-agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36');
+    //   HttpClientResponse response =  await  request.close();
+    //   return await response.transform(utf8.decoder).join();
     });
     super.initState();
   }
