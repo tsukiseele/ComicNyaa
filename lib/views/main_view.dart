@@ -10,6 +10,7 @@ import 'package:comic_nyaa/views/detail/image_detail_view.dart';
 import 'package:comic_nyaa/views/detail/video_detail_view.dart';
 import 'package:comic_nyaa/views/settings_view.dart';
 import 'package:comic_nyaa/views/subscribe_view.dart';
+import 'package:comic_nyaa/views/widget/dynamic_tab_view.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 
@@ -33,8 +34,9 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
   final globalKey = GlobalKey<ScaffoldState>();
   final FloatingSearchBarController _floatingSearchBarController =
       FloatingSearchBarController();
-  final CarouselController _carouselController = CarouselController();
-  final CarouselController _tabController = CarouselController();
+
+  // final CarouselController _carouselController = CarouselController();
+  // final CarouselController _tabController = CarouselController();
   DateTime? currentBackPressTime = DateTime.now();
   List<Site> _sites = [];
   List<String> _autosuggest = [];
@@ -209,8 +211,8 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
                               setState(() {
                                 _currentSiteId = _sites[index].id!;
                                 _tabs.add(_currentSite!);
-                                _carouselController
-                                    .animateToPage(_tabs.length - 1);
+                                // _carouselController
+                                //     .animateToPage(_tabs.length - 1);
                                 globalKey.currentState?.closeEndDrawer();
                               });
                             },
@@ -263,79 +265,99 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
             children: [
               Container(
                   padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
-                  child: CarouselSlider(
-                    carouselController: _carouselController,
-                    options: CarouselOptions(
-                        viewportFraction: 1,
-                        height: double.infinity,
-                        enableInfiniteScroll: false,
-                        onPageChanged: (index, reason) {
-                          setState(() => _currentTabIndex = index);
-                        }),
-                    items: _tabs.mapIndexed((index, site) {
-                      return Builder(
-                        builder: (BuildContext context) {
-                          while (_gallerys.length <= index) {
-                            _gallerys.add(GalleryView(site: site));
-                          }
-                          return _gallerys[index];
-                        },
-                      );
-                    }).toList(),
+                  child: DynamicTabView(
+                    // initPosition: _tabs.isNotEmpty ? _tabs.length - 1 : 0,
+                    onPositionChange: (int index) {
+                      setState(() => _currentTabIndex = index);
+                    },
+                    itemCount: _tabs.length,
+                    isScrollToNewTab: true,
+                    pageBuilder: (BuildContext context, int index) {
+                      while (_gallerys.length <= index) {
+                        _gallerys.add(GalleryView(site: _tabs[index]));
+                      }
+                      return _gallerys.isNotEmpty
+                          ? _gallerys[index]
+                          : Container();
+                    },
+                    onScroll: (double value) {},
+                    tabBuilder: (BuildContext context, int index) {
+                      return Text(_tabs[index].name ?? '');
+                    },
                   )),
+              // child: CarouselSlider(
+              //   carouselController: _carouselController,
+              //   options: CarouselOptions(
+              //       viewportFraction: 1,
+              //       height: double.infinity,
+              //       enableInfiniteScroll: false,
+              //       onPageChanged: (index, reason) {
+              //         setState(() => _currentTabIndex = index);
+              //       }),
+              //   items: _tabs.mapIndexed((index, site) {
+              //     return Builder(
+              //       builder: (BuildContext context) {
+              //         while (_gallerys.length <= index) {
+              //           _gallerys.add(GalleryView(site: site));
+              //         }
+              //         return _gallerys[index];
+              //       },
+              //     );
+              //   }).toList(),
+              // )),
               buildFloatingSearchBar(),
             ],
           )),
       // );
       // ]),·
-      bottomNavigationBar: BottomAppBar(
-        color: Colors.white,
-        shape: const CircularNotchedRectangle(),
-        child: Container(
-            height: 40,
-            child: CarouselSlider(
-              carouselController: _tabController,
-                options: CarouselOptions(
-
-                    viewportFraction: .3,
-                    height: double.infinity,
-                    enableInfiniteScroll: false,
-                    enlargeCenterPage: true,
-                    onPageChanged: (index, reason) {
-                      // _tabController.animateToPage(index);
-                      setState(() => _currentTabIndex = index);
-                    }),
-                items: _tabs
-                    .mapIndexed((page, tab) => Material(
-                  clipBehavior: Clip.hardEdge,
-                        color: page == _currentTabIndex ? Colors.teal : null,
-                        child: InkWell(
-                            onTap: () {
-                              _carouselController.animateToPage(page,
-                                  curve: Curves.ease);
-                              _tabController.animateToPage(page, curve: Curves.ease);
-                              // _tabController.animateToPage(index);
-                            },
-                            child: Container(
-                                padding: const EdgeInsets.only(right: 8),
-                                child: Row(children: [
-                                  SizedBox(
-                                      width: 40,
-                                      height: 40,
-                                      child: CachedNetworkImage(
-                                          imageUrl: tab.icon ?? '')),
-                                  Text(
-                                    tab.name ?? '',
-                                    style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                        color: page == _currentTabIndex
-                                            ? Colors.white70
-                                            : null),
-                                  ),
-                                ])))))
-                    .toList())),
-      ),
+      // bottomNavigationBar: BottomAppBar(
+      //   color: Colors.white,
+      //   shape: const CircularNotchedRectangle(),
+      //   child: Container(
+      //       height: 40,
+      //       child: CarouselSlider(
+      //         carouselController: _tabController,
+      //           options: CarouselOptions(
+      //
+      //               viewportFraction: .3,
+      //               height: double.infinity,
+      //               enableInfiniteScroll: false,
+      //               enlargeCenterPage: true,
+      //               onPageChanged: (index, reason) {
+      //                 // _tabController.animateToPage(index);
+      //                 setState(() => _currentTabIndex = index);
+      //               }),
+      //           items: _tabs
+      //               .mapIndexed((page, tab) => Material(
+      //             clipBehavior: Clip.hardEdge,
+      //                   color: page == _currentTabIndex ? Colors.teal : null,
+      //                   child: InkWell(
+      //                       onTap: () {
+      //                         _carouselController.animateToPage(page,
+      //                             curve: Curves.ease);
+      //                         _tabController.animateToPage(page, curve: Curves.ease);
+      //                         // _tabController.animateToPage(index);
+      //                       },
+      //                       child: Container(
+      //                           padding: const EdgeInsets.only(right: 8),
+      //                           child: Row(children: [
+      //                             SizedBox(
+      //                                 width: 40,
+      //                                 height: 40,
+      //                                 child: CachedNetworkImage(
+      //                                     imageUrl: tab.icon ?? '')),
+      //                             Text(
+      //                               tab.name ?? '',
+      //                               style: TextStyle(
+      //                                   fontSize: 16,
+      //                                   fontWeight: FontWeight.bold,
+      //                                   color: page == _currentTabIndex
+      //                                       ? Colors.white70
+      //                                       : null),
+      //                             ),
+      //                           ])))))
+      //               .toList())),
+      // ),
       // floatingActionButtonLocation:  FloatingActionButtonLocation.endDocked,
       floatingActionButton: FloatingActionButton(
         onPressed: () => _currentTab?.controller.animateTo!(0,

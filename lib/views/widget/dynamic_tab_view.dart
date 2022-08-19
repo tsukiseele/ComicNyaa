@@ -1,38 +1,45 @@
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-class CustomTabView extends StatefulWidget {
+class DynamicTabView extends StatefulWidget {
   final int itemCount;
   final IndexedWidgetBuilder tabBuilder;
   final IndexedWidgetBuilder pageBuilder;
   final Widget? stub;
   final ValueChanged<int> onPositionChange;
   final ValueChanged<double> onScroll;
-  final int initPosition;
+  final int? initPosition;
+  final bool isScrollToNewTab;
 
-  CustomTabView({
+  const DynamicTabView({
+    Key? key,
     required this.itemCount,
     required this.tabBuilder,
     required this.pageBuilder,
-     this.stub,
+    this.stub,
     required this.onPositionChange,
     required this.onScroll,
-    required this.initPosition,
-  });
+    this.initPosition,
+    this.isScrollToNewTab = false,
+  }) : super(key: key);
 
   @override
-  _CustomTabsState createState() => _CustomTabsState();
+  _DynamicTabsState createState() => _DynamicTabsState();
 }
 
-class _CustomTabsState extends State<CustomTabView> with TickerProviderStateMixin {
+class _DynamicTabsState extends State<DynamicTabView>
+    with TickerProviderStateMixin {
   TabController? controller;
   int _currentCount = 0;
   int _currentPosition = 0;
 
   @override
   void initState() {
-    _currentPosition = widget.initPosition;
+    if (widget.initPosition != null) {
+      _currentPosition = widget.initPosition!;
+    }
+
+    // _currentPosition = widget.initPosition;
     controller = TabController(
       length: widget.itemCount,
       vsync: this,
@@ -45,31 +52,32 @@ class _CustomTabsState extends State<CustomTabView> with TickerProviderStateMixi
   }
 
   @override
-  void didUpdateWidget(CustomTabView oldWidget) {
+  void didUpdateWidget(DynamicTabView oldWidget) {
     if (_currentCount != widget.itemCount) {
       controller?.animation?.removeListener(onScroll);
       controller?.removeListener(onPositionChange);
       controller?.dispose();
 
       if (widget.initPosition != null) {
-        _currentPosition = widget.initPosition;
+        _currentPosition = widget.initPosition!;
       }
 
       if (_currentPosition > widget.itemCount - 1) {
         _currentPosition = widget.itemCount - 1;
-        _currentPosition = _currentPosition < 0 ? 0 :
-        _currentPosition;
-        if (widget.onPositionChange is ValueChanged<int>) {
-          WidgetsBinding.instance.addPostFrameCallback((_){
-            if(mounted) {
-              widget.onPositionChange(_currentPosition);
-            }
-          });
-        }
+        _currentPosition = _currentPosition < 0 ? 0 : _currentPosition;
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            widget.onPositionChange(_currentPosition);
+          }
+        });
       }
 
       _currentCount = widget.itemCount;
       setState(() {
+        if (widget.isScrollToNewTab) {
+          print('CURRENTTAB COUNT: ${widget.itemCount}');
+          _currentPosition = widget.itemCount - 1;
+        }
         controller = TabController(
           length: widget.itemCount,
           vsync: this,
@@ -79,7 +87,7 @@ class _CustomTabsState extends State<CustomTabView> with TickerProviderStateMixi
         controller?.animation?.addListener(onScroll);
       });
     } else if (widget.initPosition != null) {
-      controller?.animateTo(widget.initPosition);
+      controller?.animateTo(widget.initPosition!);
     }
 
     super.didUpdateWidget(oldWidget);
@@ -100,6 +108,15 @@ class _CustomTabsState extends State<CustomTabView> with TickerProviderStateMixi
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
+        Expanded(
+          child: TabBarView(
+            controller: controller,
+            children: List.generate(
+              widget.itemCount,
+              (index) => widget.pageBuilder(context, index),
+            ),
+          ),
+        ),
         Container(
           alignment: Alignment.center,
           child: TabBar(
@@ -117,16 +134,7 @@ class _CustomTabsState extends State<CustomTabView> with TickerProviderStateMixi
             ),
             tabs: List.generate(
               widget.itemCount,
-                  (index) => widget.tabBuilder(context, index),
-            ),
-          ),
-        ),
-        Expanded(
-          child: TabBarView(
-            controller: controller,
-            children: List.generate(
-              widget.itemCount,
-                  (index) => widget.pageBuilder(context, index),
+              (index) => widget.tabBuilder(context, index),
             ),
           ),
         ),
@@ -137,9 +145,7 @@ class _CustomTabsState extends State<CustomTabView> with TickerProviderStateMixi
   onPositionChange() {
     if (!(controller?.indexIsChanging == true)) {
       _currentPosition = controller?.index ?? 0;
-      if (widget.onPositionChange is ValueChanged<int>) {
-        widget.onPositionChange(_currentPosition);
-      }
+      widget.onPositionChange(_currentPosition);
     }
   }
 
