@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:carousel_slider/carousel_slider.dart';
 import 'package:collection/collection.dart';
 import 'package:comic_nyaa/library/mio/core/mio_loader.dart';
 import 'package:comic_nyaa/utils/http.dart';
@@ -20,6 +19,7 @@ import 'package:material_floating_search_bar/material_floating_search_bar.dart';
 
 import '../app/global.dart';
 import '../models/typed_model.dart';
+import '../utils/string_extensions.dart';
 import 'pages/gallery_view.dart';
 
 class MainView extends StatefulWidget {
@@ -32,8 +32,7 @@ class MainView extends StatefulWidget {
 
 class _MainViewState extends State<MainView> with TickerProviderStateMixin {
   final globalKey = GlobalKey<ScaffoldState>();
-  final FloatingSearchBarController _floatingSearchBarController =
-      FloatingSearchBarController();
+  final FloatingSearchBarController _floatingSearchBarController = FloatingSearchBarController();
 
   // final CarouselController _carouselController = CarouselController();
   // final CarouselController _tabController = CarouselController();
@@ -114,11 +113,9 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
       return Future.value(false);
     }
     DateTime now = DateTime.now();
-    if (currentBackPressTime == null ||
-        now.difference(currentBackPressTime!) > const Duration(seconds: 2)) {
+    if (currentBackPressTime == null || now.difference(currentBackPressTime!) > const Duration(seconds: 2)) {
       currentBackPressTime = now;
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('再按一次退出')));
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('再按一次退出')));
       return Future.value(false);
     }
     return Future.value(true);
@@ -129,8 +126,7 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
         child: ListView(padding: EdgeInsets.zero, children: [
       Stack(children: [
         CachedNetworkImage(
-          imageUrl:
-              'https://cdn.jsdelivr.net/gh/nyarray/LoliHost/images/94d6d0e7be187770e5d538539d95a12a.jpeg',
+          imageUrl: 'https://cdn.jsdelivr.net/gh/nyarray/LoliHost/images/94d6d0e7be187770e5d538539d95a12a.jpeg',
           fit: BoxFit.cover,
           height: 256,
         ),
@@ -138,21 +134,16 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
           child: Container(
               decoration: BoxDecoration(
                   color: Colors.white,
-                  gradient: LinearGradient(
-                      begin: FractionalOffset.topCenter,
-                      end: FractionalOffset.bottomCenter,
-                      colors: [
-                        Colors.grey.withOpacity(0.0),
-                        Colors.black45,
-                      ],
-                      stops: const [
-                        0.0,
-                        1.0
-                      ])),
+                  gradient: LinearGradient(begin: FractionalOffset.topCenter, end: FractionalOffset.bottomCenter, colors: [
+                    Colors.grey.withOpacity(0.0),
+                    Colors.black45,
+                  ], stops: const [
+                    0.0,
+                    1.0
+                  ])),
               padding: const EdgeInsets.all(8),
               alignment: Alignment.bottomLeft,
-              child: const Text('ポトフちゃんとワトラちゃんがすごくかわいいです！',
-                  style: TextStyle(color: Colors.white, fontSize: 18))),
+              child: const Text('ポトフちゃんとワトラちゃんがすごくかわいいです！', style: TextStyle(color: Colors.white, fontSize: 18))),
         ),
       ]),
       Container(height: 8),
@@ -166,21 +157,15 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
       ListTile(
           title: const Text('订阅'),
           onTap: () {
-            Navigator.push(context,
-                MaterialPageRoute(builder: (ctx) => const SubscribeView()));
+            Navigator.push(context, MaterialPageRoute(builder: (ctx) => const SubscribeView()));
           },
           iconColor: Colors.black87,
           leading: const Icon(Icons.collections_bookmark)),
-      ListTile(
-          title: const Text('下载'),
-          onTap: () {},
-          iconColor: Colors.black87,
-          leading: const Icon(Icons.download)),
+      ListTile(title: const Text('下载'), onTap: () {}, iconColor: Colors.black87, leading: const Icon(Icons.download)),
       ListTile(
           title: const Text('设置'),
           onTap: () {
-            Navigator.push(context,
-                MaterialPageRoute(builder: (ctx) => const SettingsView()));
+            Navigator.push(context, MaterialPageRoute(builder: (ctx) => const SettingsView()));
           },
           iconColor: Colors.black87,
           leading: const Icon(Icons.tune))
@@ -194,8 +179,7 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
         child: Material(
             child: Column(children: [
           CachedNetworkImage(
-            imageUrl:
-                'https://cdn.jsdelivr.net/gh/nyarray/LoliHost/images/7c4f1d7ea2dadd3ca835b9b2b9219681.webp',
+            imageUrl: 'https://cdn.jsdelivr.net/gh/nyarray/LoliHost/images/7c4f1d7ea2dadd3ca835b9b2b9219681.webp',
             fit: BoxFit.cover,
             height: 192,
           ),
@@ -215,36 +199,46 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
                                 //     .animateToPage(_tabs.length - 1);
                                 globalKey.currentState?.closeEndDrawer();
                               });
+                              setState(() {});
                             },
                             child: ListTile(
-                                leading: SizedBox(
-                                    width: 32,
-                                    height: 32,
-                                    child: CachedNetworkImage(
-                                      imageUrl: _sites[index].icon ?? '',
-                                      fit: BoxFit.cover,
-                                      errorWidget: (ctx, url, error) =>
-                                          const Icon(Icons.image_not_supported,
-                                              size: 32),
-                                    )),
-                                title: Text(
-                                  style: TextStyle(
-                                      fontFamily: Config.uiFontFamily,
-                                      fontSize: 18,
-                                      color: _currentSiteId == _sites[index].id
-                                          ? Colors.teal
-                                          : null),
-                                  _sites[index].name ?? '',
-                                  textAlign: TextAlign.start,
-                                ))));
+                              leading: SizedBox(
+                                  width: 24,
+                                  height: 24,
+                                  child: CachedNetworkImage(
+                                    imageUrl: _sites[index].icon ?? '',
+                                    fit: BoxFit.cover,
+                                    errorWidget: (ctx, url, error) => const Icon(Icons.image_not_supported, size: 32),
+                                  )),
+                              title: Text(
+                                _sites[index].name ?? '',
+                                style: const TextStyle(
+                                  fontFamily: Config.uiFontFamily,
+                                  fontSize: 18,
+                                ),
+                                textAlign: TextAlign.start,
+                              ),
+                              subtitle: Text(
+                                _sites[index].details ?? '',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(fontSize: 14, color: Colors.black26),
+                              ),
+                              trailing: Icon(_sites[index].type == 'comic'
+                                  ? Icons.photo_library
+                                  : _sites[index].type == 'image'
+                                      ? Icons.image
+                                      : _sites[index].type == 'video'
+                                          ? Icons.video_collection
+                                          : Icons.quiz),
+                            )));
                   })),
         ])));
   }
 
   Future<ImageInfo> getImageInfo(ImageProvider image) async {
     final c = Completer<ImageInfo>();
-    image.resolve(const ImageConfiguration()).addListener(
-        ImageStreamListener((ImageInfo i, bool _) => c.complete(i)));
+    image.resolve(const ImageConfiguration()).addListener(ImageStreamListener((ImageInfo i, bool _) => c.complete(i)));
     return c.future;
   }
 
@@ -268,6 +262,7 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
                   child: DynamicTabView(
                     // initPosition: _tabs.isNotEmpty ? _tabs.length - 1 : 0,
                     onPositionChange: (int index) {
+                      print('onPositionChangeonPositionChangeonPositionChangeonPositionChangeonPositionChangeonPositionChange');
                       setState(() => _currentTabIndex = index);
                     },
                     itemCount: _tabs.length,
@@ -276,112 +271,49 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
                       while (_gallerys.length <= index) {
                         _gallerys.add(GalleryView(site: _tabs[index]));
                       }
-                      return _gallerys.isNotEmpty
-                          ? _gallerys[index]
-                          : Container();
+                      return _gallerys[index];
                     },
                     onScroll: (double value) {},
                     tabBuilder: (BuildContext context, int index) {
-                      return Text(_tabs[index].name ?? '');
+                      return Tab(
+                          iconMargin: EdgeInsets.zero,
+                          height: 48,
+                          icon: SizedBox(
+                              width: 24,
+                              height: 24,
+                              child: CachedNetworkImage(
+                                imageUrl: _tabs[index].icon ?? '',
+                                fit: BoxFit.contain,
+                              )),
+                          text: _tabs[index].name ?? '');
                     },
                   )),
-              // child: CarouselSlider(
-              //   carouselController: _carouselController,
-              //   options: CarouselOptions(
-              //       viewportFraction: 1,
-              //       height: double.infinity,
-              //       enableInfiniteScroll: false,
-              //       onPageChanged: (index, reason) {
-              //         setState(() => _currentTabIndex = index);
-              //       }),
-              //   items: _tabs.mapIndexed((index, site) {
-              //     return Builder(
-              //       builder: (BuildContext context) {
-              //         while (_gallerys.length <= index) {
-              //           _gallerys.add(GalleryView(site: site));
-              //         }
-              //         return _gallerys[index];
-              //       },
-              //     );
-              //   }).toList(),
-              // )),
               buildFloatingSearchBar(),
             ],
           )),
-      // );
-      // ]),·
-      // bottomNavigationBar: BottomAppBar(
-      //   color: Colors.white,
-      //   shape: const CircularNotchedRectangle(),
-      //   child: Container(
-      //       height: 40,
-      //       child: CarouselSlider(
-      //         carouselController: _tabController,
-      //           options: CarouselOptions(
-      //
-      //               viewportFraction: .3,
-      //               height: double.infinity,
-      //               enableInfiniteScroll: false,
-      //               enlargeCenterPage: true,
-      //               onPageChanged: (index, reason) {
-      //                 // _tabController.animateToPage(index);
-      //                 setState(() => _currentTabIndex = index);
-      //               }),
-      //           items: _tabs
-      //               .mapIndexed((page, tab) => Material(
-      //             clipBehavior: Clip.hardEdge,
-      //                   color: page == _currentTabIndex ? Colors.teal : null,
-      //                   child: InkWell(
-      //                       onTap: () {
-      //                         _carouselController.animateToPage(page,
-      //                             curve: Curves.ease);
-      //                         _tabController.animateToPage(page, curve: Curves.ease);
-      //                         // _tabController.animateToPage(index);
-      //                       },
-      //                       child: Container(
-      //                           padding: const EdgeInsets.only(right: 8),
-      //                           child: Row(children: [
-      //                             SizedBox(
-      //                                 width: 40,
-      //                                 height: 40,
-      //                                 child: CachedNetworkImage(
-      //                                     imageUrl: tab.icon ?? '')),
-      //                             Text(
-      //                               tab.name ?? '',
-      //                               style: TextStyle(
-      //                                   fontSize: 16,
-      //                                   fontWeight: FontWeight.bold,
-      //                                   color: page == _currentTabIndex
-      //                                       ? Colors.white70
-      //                                       : null),
-      //                             ),
-      //                           ])))))
-      //               .toList())),
-      // ),
-      // floatingActionButtonLocation:  FloatingActionButtonLocation.endDocked,
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _currentTab?.controller.animateTo!(0,
-            duration: const Duration(milliseconds: 1000),
-            curve: Curves.ease), //globalKey.currentState?.openEndDrawer(),
-        tooltip: 'Top',
-        child: const Icon(Icons.arrow_upward),
-      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+      floatingActionButton: Container(
+          margin: const EdgeInsets.only(bottom: 48),
+          child: FloatingActionButton(
+            onPressed: () =>
+                _currentTab?.controller.animateTo!(0, duration: const Duration(milliseconds: 1000), curve: Curves.ease),
+            //globalKey.currentState?.openEndDrawer(),
+            tooltip: 'Top',
+            child: const Icon(Icons.arrow_upward),
+          )),
     );
   }
 
   Widget buildFloatingSearchBar() {
-    final isPortrait =
-        MediaQuery.of(context).orientation == Orientation.portrait;
+    final isPortrait = MediaQuery.of(context).orientation == Orientation.portrait;
 
     return FloatingSearchBar(
         title: Text(
-          _currentTab?.controller.keywords ?? 'Search...',
+          StringUtil.value(_currentTab?.controller.keywords, 'Search...'),
           style: TextStyle(
               fontFamily: Config.uiFontFamily,
               fontSize: 16,
-              color: _currentTab?.controller.keywords == null
-                  ? Colors.black26
-                  : Colors.black87),
+              color: _currentTab?.controller.keywords == null ? Colors.black26 : Colors.black87),
         ),
         controller: _floatingSearchBarController,
         automaticallyImplyDrawerHamburger: false,
@@ -397,20 +329,14 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
         width: isPortrait ? 600 : 500,
         debounceDelay: const Duration(milliseconds: 500),
         // clearQueryOnClose: false,
-        hintStyle: const TextStyle(
-            fontFamily: Config.uiFontFamily,
-            fontSize: 16,
-            color: Colors.black26),
-        queryStyle:
-            const TextStyle(fontFamily: Config.uiFontFamily, fontSize: 16),
+        hintStyle: const TextStyle(fontFamily: Config.uiFontFamily, fontSize: 16, color: Colors.black26),
+        queryStyle: const TextStyle(fontFamily: Config.uiFontFamily, fontSize: 16),
         onQueryChanged: (query) async {
-          final value = await Dio().get(
-              'https://danbooru.donmai.us/autocomplete.json?search[query]=$query&search[type]=tag_query&limit=10');
+          final value = await Dio()
+              .get('https://danbooru.donmai.us/autocomplete.json?search[query]=$query&search[type]=tag_query&limit=10');
           final result = List<Map<String, dynamic>>.from(value.data);
           setState(() {
-            _autosuggest =
-                result.map((item) => item['value'] as String).toList();
-
+            _autosuggest = result.map((item) => item['value'] as String).toList();
             print('_autosuggest: $_autosuggest');
           });
         },
@@ -423,17 +349,17 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
           FloatingSearchBarAction.hamburgerToBack(),
           FloatingSearchBarAction(
               showIfOpened: true,
-              child: CachedNetworkImage(
-                  imageUrl: _currentTab?.site.icon ?? '',
-                  errorWidget: (ctx, url, error) {
-                    return Text(
-                      _currentSite?.name?.substring(0, 1) ?? '?',
-                      style: const TextStyle(
-                          fontFamily: Config.uiFontFamily,
-                          fontSize: 18,
-                          color: Colors.teal),
-                    );
-                  })),
+              child: SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: CachedNetworkImage(
+                      imageUrl: _currentTab?.site.icon ?? '',
+                      errorWidget: (ctx, url, error) {
+                        return Text(
+                          _currentSite?.name?.substring(0, 1) ?? '?',
+                          style: const TextStyle(fontFamily: Config.uiFontFamily, fontSize: 18, color: Colors.teal),
+                        );
+                      }))),
         ],
         actions: [
           FloatingSearchBarAction(
@@ -472,8 +398,7 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
                         },
                         title: Text(
                           query,
-                          style: const TextStyle(
-                              fontFamily: Config.uiFontFamily, fontSize: 14),
+                          style: const TextStyle(fontFamily: Config.uiFontFamily, fontSize: 14),
                         )))
                     .toList(),
               ),

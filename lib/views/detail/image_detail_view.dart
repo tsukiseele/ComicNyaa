@@ -6,7 +6,6 @@ import 'package:comic_nyaa/models/typed_model.dart';
 import 'package:comic_nyaa/utils/num_extensions.dart';
 import 'package:comic_nyaa/utils/uri_extensions.dart';
 import 'package:dio/dio.dart';
-import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:fluttertoast/fluttertoast.dart';

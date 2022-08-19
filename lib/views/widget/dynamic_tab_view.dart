@@ -24,11 +24,10 @@ class DynamicTabView extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  _DynamicTabsState createState() => _DynamicTabsState();
+  State<DynamicTabView> createState() => _DynamicTabsState();
 }
 
-class _DynamicTabsState extends State<DynamicTabView>
-    with TickerProviderStateMixin {
+class _DynamicTabsState extends State<DynamicTabView> with TickerProviderStateMixin {
   TabController? controller;
   int _currentCount = 0;
   int _currentPosition = 0;
@@ -61,23 +60,18 @@ class _DynamicTabsState extends State<DynamicTabView>
       if (widget.initPosition != null) {
         _currentPosition = widget.initPosition!;
       }
-
+      // 页面被删除时，重新获取正确的当前索引值
       if (_currentPosition > widget.itemCount - 1) {
         _currentPosition = widget.itemCount - 1;
         _currentPosition = _currentPosition < 0 ? 0 : _currentPosition;
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (mounted) {
-            widget.onPositionChange(_currentPosition);
+            controller?.animateTo(_currentPosition, duration: const Duration(milliseconds: 1), curve: Curves.ease);
           }
         });
       }
-
       _currentCount = widget.itemCount;
       setState(() {
-        if (widget.isScrollToNewTab) {
-          print('CURRENTTAB COUNT: ${widget.itemCount}');
-          _currentPosition = widget.itemCount - 1;
-        }
         controller = TabController(
           length: widget.itemCount,
           vsync: this,
@@ -85,6 +79,15 @@ class _DynamicTabsState extends State<DynamicTabView>
         );
         controller?.addListener(onPositionChange);
         controller?.animation?.addListener(onScroll);
+        // 跳转到新增的索引
+        if (widget.isScrollToNewTab) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) {
+              _currentPosition = widget.itemCount - 1;
+              controller?.animateTo(_currentPosition, duration: const Duration(milliseconds: 1), curve: Curves.ease);
+            }
+          });
+        }
       });
     } else if (widget.initPosition != null) {
       controller?.animateTo(widget.initPosition!);
@@ -124,6 +127,7 @@ class _DynamicTabsState extends State<DynamicTabView>
             controller: controller,
             labelColor: Theme.of(context).primaryColor,
             unselectedLabelColor: Theme.of(context).hintColor,
+            enableFeedback: true,
             indicator: BoxDecoration(
               border: Border(
                 bottom: BorderSide(
@@ -150,8 +154,6 @@ class _DynamicTabsState extends State<DynamicTabView>
   }
 
   onScroll() {
-    if (widget.onScroll is ValueChanged<double>) {
-      widget.onScroll(controller?.animation?.value ?? 0);
-    }
+    widget.onScroll(controller?.animation?.value ?? 0);
   }
 }

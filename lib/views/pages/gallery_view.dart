@@ -7,6 +7,7 @@ import 'package:comic_nyaa/utils/http.dart';
 import 'package:comic_nyaa/views/detail/comic_detail_view.dart';
 import 'package:comic_nyaa/views/detail/image_detail_view.dart';
 import 'package:comic_nyaa/views/detail/video_detail_view.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
 import 'package:comic_nyaa/library/mio/model/site.dart';
@@ -55,7 +56,8 @@ class _GalleryViewState extends State<GalleryView> with TickerProviderStateMixin
 
   Future<void> _initialize() async {
     widget.controller.search = (String kwds) {
-      _onSearch(kwds);
+      _keywords = kwds;
+      _refreshController.requestRefresh();
     };
 
     await _checkUpdate();
@@ -246,7 +248,8 @@ class _GalleryViewState extends State<GalleryView> with TickerProviderStateMixin
     super.build(context);
     return Column(children: [
       Flexible(
-        child: Scrollbar(child: SmartRefresher(
+        child: Scrollbar(
+            child: SmartRefresher(
             enablePullDown: true,
             enablePullUp: true,
             header: const WaterDropMaterialHeader(
@@ -256,6 +259,7 @@ class _GalleryViewState extends State<GalleryView> with TickerProviderStateMixin
             controller: _refreshController,
             onRefresh: () => _onRefresh(),
             onLoading: () => _onNext(),
+            physics: const BouncingScrollPhysics(),
             // onLoading: _onLoading,
             child: MasonryGridView.count(
                 padding: const EdgeInsets.fromLTRB(8, kToolbarHeight + 48, 8, 0),
