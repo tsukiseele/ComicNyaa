@@ -1,12 +1,14 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'package:comic_nyaa/app/constant.dart';
 import 'package:comic_nyaa/library/mio/core/mio_loader.dart';
 import 'package:comic_nyaa/utils/http.dart';
 import 'package:dio/dio.dart';
 import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_displaymode/flutter_displaymode.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
 
 import 'app/global.dart';
 import 'library/mio/core/mio.dart';
@@ -17,7 +19,10 @@ void main() async {
   //   final license = await rootBundle.loadString('google_fonts/OFL.txt');
   //   yield LicenseEntryWithLineBreaks(['google_fonts'], license);
   // });
+  WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
+  FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
   runApp(const ComicNyaa());
+  FlutterNativeSplash.remove();
 }
 
 class ComicNyaa extends StatefulWidget {
@@ -33,7 +38,7 @@ class _ComicNyaaState extends State<ComicNyaa> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'ComicNyaa',
+      title: Constant.appName,
       theme: ThemeData(
         fontFamily: 'ComicNeue',
         primarySwatch: Colors.teal,

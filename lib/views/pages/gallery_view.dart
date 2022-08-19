@@ -1,23 +1,12 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
-import 'dart:math';
-
-import 'package:archive/archive.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:carousel_slider/carousel_slider.dart';
 import 'package:collection/collection.dart';
 import 'package:comic_nyaa/library/mio/core/mio_loader.dart';
 import 'package:comic_nyaa/utils/http.dart';
 import 'package:comic_nyaa/views/detail/comic_detail_view.dart';
 import 'package:comic_nyaa/views/detail/image_detail_view.dart';
 import 'package:comic_nyaa/views/detail/video_detail_view.dart';
-import 'package:comic_nyaa/views/settings_view.dart';
-import 'package:comic_nyaa/views/subscribe_view.dart';
-import 'package:comic_nyaa/views/widget/dynamic_tab_view.dart';
-import 'package:dio/dio.dart';
-import 'package:extended_image/extended_image.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import 'package:comic_nyaa/library/mio/model/site.dart';
@@ -27,23 +16,21 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:material_floating_search_bar/material_floating_search_bar.dart';
-import 'package:percent_indicator/circular_percent_indicator.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
-import 'package:shimmer/shimmer.dart';
 
 import '../../app/global.dart';
 import '../../models/typed_model.dart';
 
 class GalleryController {
+  String keywords = '';
   void Function(String keywords)? search;
+  void Function(double offset, { required Duration duration,   required Curve curve})? animateTo;
 }
 
 class GalleryView extends StatefulWidget {
   GalleryView({Key? key, required this.site}) : super(key: key);
   final Site site;
   final GalleryController controller = GalleryController();
-
-  String keywords = '';
 
   @override
   State<GalleryView> createState() => _GalleryViewState();
@@ -66,6 +53,42 @@ class _GalleryViewState extends State<GalleryView> with TickerProviderStateMixin
   int _lastScrollPosition = 0;
   int initPosition = 0;
 
+  Future<void> _initialize() async {
+    widget.controller.search = (String kwds) {
+      _onSearch(kwds);
+    };
+
+    await _checkUpdate();
+    final sites = await RuleLoader.loadFormDirectory(await Config.ruleDir);
+    sites.forEachIndexed((i, element) => print('$i: [${element.id}]${element.name}'));
+    setState(() {
+      _sites = sites;
+      _currentSiteId = _currentSiteId < 0 ? _sites[0].id! : _currentSiteId;
+      _tabs.add(_currentSite!);
+      // _refreshControllerSet.add(RefreshController(initialRefresh: false));
+    });
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _refreshController.requestRefresh();
+      widget.controller.animateTo = _scrollController.animateTo;
+      _scrollController.addListener(() {
+        if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent) {
+          if (!_isLoading) {
+            _onNext();
+          }
+        }
+        if (_scrollController.position.pixels < 128) {
+          _floatingSearchBarController.isHidden ? _floatingSearchBarController.show() : null;
+        } else if (_scrollController.position.pixels > _lastScrollPosition + 64) {
+          _lastScrollPosition = _scrollController.position.pixels.toInt();
+          _floatingSearchBarController.isVisible ? _floatingSearchBarController.hide() : null;
+        } else if (_scrollController.position.pixels < _lastScrollPosition - 64) {
+          _lastScrollPosition = _scrollController.position.pixels.toInt();
+          _floatingSearchBarController.isHidden ? _floatingSearchBarController.show() : null;
+        }
+      });
+    });
+  }
   /// 加载列表
   Future<List<TypedModel>> _load({bool isNext = false, bool isReset = false}) async {
     print('LIST SIZE: ${_models.length}');
@@ -108,7 +131,7 @@ class _GalleryViewState extends State<GalleryView> with TickerProviderStateMixin
 
   /// 获取数据
   Future<List<TypedModel>> _getModels({Site? site, int? page, String? keywords}) async {
-    widget.keywords = _keywords;
+    widget.controller.keywords = _keywords;
     site = site ?? _currentSite;
     page = page ?? _page;
     keywords = keywords ?? _keywords;
@@ -168,41 +191,6 @@ class _GalleryViewState extends State<GalleryView> with TickerProviderStateMixin
     await _onSearch(_keywords);
   }
 
-  Future<void> _initialize() async {
-    widget.controller.search = (String kwds) {
-      _onSearch(kwds);
-    };
-
-    await _checkUpdate();
-    final sites = await RuleLoader.loadFormDirectory(await Config.ruleDir);
-    sites.forEachIndexed((i, element) => print('$i: [${element.id}]${element.name}'));
-    setState(() {
-      _sites = sites;
-      _currentSiteId = _currentSiteId < 0 ? _sites[0].id! : _currentSiteId;
-      _tabs.add(_currentSite!);
-      // _refreshControllerSet.add(RefreshController(initialRefresh: false));
-    });
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _refreshController.requestRefresh();
-    });
-    _scrollController.addListener(() {
-      if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent) {
-        if (!_isLoading) {
-          _onNext();
-        }
-      }
-      if (_scrollController.position.pixels < 128) {
-        _floatingSearchBarController.isHidden ? _floatingSearchBarController.show() : null;
-      } else if (_scrollController.position.pixels > _lastScrollPosition + 64) {
-        _lastScrollPosition = _scrollController.position.pixels.toInt();
-        _floatingSearchBarController.isVisible ? _floatingSearchBarController.hide() : null;
-      } else if (_scrollController.position.pixels < _lastScrollPosition - 64) {
-        _lastScrollPosition = _scrollController.position.pixels.toInt();
-        _floatingSearchBarController.isHidden ? _floatingSearchBarController.show() : null;
-      }
-    });
-  }
 
   void _jump(TypedModel model) {
     Widget? target;

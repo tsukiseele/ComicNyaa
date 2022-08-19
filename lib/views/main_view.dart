@@ -1,9 +1,5 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
-import 'dart:math';
-
-import 'package:archive/archive.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:collection/collection.dart';
@@ -14,22 +10,12 @@ import 'package:comic_nyaa/views/detail/image_detail_view.dart';
 import 'package:comic_nyaa/views/detail/video_detail_view.dart';
 import 'package:comic_nyaa/views/settings_view.dart';
 import 'package:comic_nyaa/views/subscribe_view.dart';
-import 'package:comic_nyaa/views/widget/dynamic_tab_view.dart';
 import 'package:dio/dio.dart';
-import 'package:extended_image/extended_image.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import 'package:comic_nyaa/library/mio/model/site.dart';
-import 'package:comic_nyaa/library/mio/core/mio.dart';
 import 'package:comic_nyaa/models/typed_model.dart';
-import 'package:flutter_spinkit/flutter_spinkit.dart';
-import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:material_floating_search_bar/material_floating_search_bar.dart';
-import 'package:percent_indicator/circular_percent_indicator.dart';
-import 'package:pull_to_refresh/pull_to_refresh.dart';
-import 'package:shimmer/shimmer.dart';
 
 import '../app/global.dart';
 import '../models/typed_model.dart';
@@ -45,8 +31,10 @@ class MainView extends StatefulWidget {
 
 class _MainViewState extends State<MainView> with TickerProviderStateMixin {
   final globalKey = GlobalKey<ScaffoldState>();
-  final FloatingSearchBarController _floatingSearchBarController = FloatingSearchBarController();
+  final FloatingSearchBarController _floatingSearchBarController =
+      FloatingSearchBarController();
   final CarouselController _carouselController = CarouselController();
+  final CarouselController _tabController = CarouselController();
   DateTime? currentBackPressTime = DateTime.now();
   List<Site> _sites = [];
   List<String> _autosuggest = [];
@@ -124,9 +112,11 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
       return Future.value(false);
     }
     DateTime now = DateTime.now();
-    if (currentBackPressTime == null || now.difference(currentBackPressTime!) > const Duration(seconds: 2)) {
+    if (currentBackPressTime == null ||
+        now.difference(currentBackPressTime!) > const Duration(seconds: 2)) {
       currentBackPressTime = now;
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('再按一次退出')));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('再按一次退出')));
       return Future.value(false);
     }
     return Future.value(true);
@@ -137,7 +127,8 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
         child: ListView(padding: EdgeInsets.zero, children: [
       Stack(children: [
         CachedNetworkImage(
-          imageUrl: 'https://cdn.jsdelivr.net/gh/nyarray/LoliHost/images/94d6d0e7be187770e5d538539d95a12a.jpeg',
+          imageUrl:
+              'https://cdn.jsdelivr.net/gh/nyarray/LoliHost/images/94d6d0e7be187770e5d538539d95a12a.jpeg',
           fit: BoxFit.cover,
           height: 256,
         ),
@@ -145,16 +136,21 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
           child: Container(
               decoration: BoxDecoration(
                   color: Colors.white,
-                  gradient: LinearGradient(begin: FractionalOffset.topCenter, end: FractionalOffset.bottomCenter, colors: [
-                    Colors.grey.withOpacity(0.0),
-                    Colors.black45,
-                  ], stops: const [
-                    0.0,
-                    1.0
-                  ])),
+                  gradient: LinearGradient(
+                      begin: FractionalOffset.topCenter,
+                      end: FractionalOffset.bottomCenter,
+                      colors: [
+                        Colors.grey.withOpacity(0.0),
+                        Colors.black45,
+                      ],
+                      stops: const [
+                        0.0,
+                        1.0
+                      ])),
               padding: const EdgeInsets.all(8),
               alignment: Alignment.bottomLeft,
-              child: const Text('ポトフちゃんとワトラちゃんがすごくかわいいです！', style: TextStyle(color: Colors.white, fontSize: 18))),
+              child: const Text('ポトフちゃんとワトラちゃんがすごくかわいいです！',
+                  style: TextStyle(color: Colors.white, fontSize: 18))),
         ),
       ]),
       Container(height: 8),
@@ -168,15 +164,21 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
       ListTile(
           title: const Text('订阅'),
           onTap: () {
-            Navigator.push(context, MaterialPageRoute(builder: (ctx) => const SubscribeView()));
+            Navigator.push(context,
+                MaterialPageRoute(builder: (ctx) => const SubscribeView()));
           },
           iconColor: Colors.black87,
           leading: const Icon(Icons.collections_bookmark)),
-      ListTile(title: const Text('下载'), onTap: () {}, iconColor: Colors.black87, leading: const Icon(Icons.download)),
+      ListTile(
+          title: const Text('下载'),
+          onTap: () {},
+          iconColor: Colors.black87,
+          leading: const Icon(Icons.download)),
       ListTile(
           title: const Text('设置'),
           onTap: () {
-            Navigator.push(context, MaterialPageRoute(builder: (ctx) => const SettingsView()));
+            Navigator.push(context,
+                MaterialPageRoute(builder: (ctx) => const SettingsView()));
           },
           iconColor: Colors.black87,
           leading: const Icon(Icons.tune))
@@ -190,7 +192,8 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
         child: Material(
             child: Column(children: [
           CachedNetworkImage(
-            imageUrl: 'https://cdn.jsdelivr.net/gh/nyarray/LoliHost/images/7c4f1d7ea2dadd3ca835b9b2b9219681.webp',
+            imageUrl:
+                'https://cdn.jsdelivr.net/gh/nyarray/LoliHost/images/7c4f1d7ea2dadd3ca835b9b2b9219681.webp',
             fit: BoxFit.cover,
             height: 192,
           ),
@@ -206,38 +209,31 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
                               setState(() {
                                 _currentSiteId = _sites[index].id!;
                                 _tabs.add(_currentSite!);
-                                _carouselController.animateToPage(_tabs.length - 1);
+                                _carouselController
+                                    .animateToPage(_tabs.length - 1);
                                 globalKey.currentState?.closeEndDrawer();
                               });
                             },
-                            child: Container(
-                                height: 40,
-                                decoration: BoxDecoration(
-                                  color: _currentSiteId == _sites[index].id ? const Color.fromRGBO(0, 127, 127, .12) : null,
-                                ),
-                                alignment: Alignment.centerLeft,
-                                padding: const EdgeInsets.only(left: 8),
-                                child: Row(
-                                  children: [
-                                    SizedBox(
-                                        width: 32,
-                                        height: 32,
-                                        child: CachedNetworkImage(
-                                          imageUrl: _sites[index].icon ?? '',
-                                          fit: BoxFit.cover,
-                                          errorWidget: (ctx, url, error) => const Icon(Icons.image_not_supported, size: 32),
-                                        )),
-                                    Container(
-                                        padding: const EdgeInsets.only(left: 8),
-                                        child: Text(
-                                          style: TextStyle(
-                                              fontFamily: Config.uiFontFamily,
-                                              fontSize: 18,
-                                              color: _currentSiteId == _sites[index].id ? Colors.teal : null),
-                                          _sites[index].name ?? '',
-                                          textAlign: TextAlign.start,
-                                        ))
-                                  ],
+                            child: ListTile(
+                                leading: SizedBox(
+                                    width: 32,
+                                    height: 32,
+                                    child: CachedNetworkImage(
+                                      imageUrl: _sites[index].icon ?? '',
+                                      fit: BoxFit.cover,
+                                      errorWidget: (ctx, url, error) =>
+                                          const Icon(Icons.image_not_supported,
+                                              size: 32),
+                                    )),
+                                title: Text(
+                                  style: TextStyle(
+                                      fontFamily: Config.uiFontFamily,
+                                      fontSize: 18,
+                                      color: _currentSiteId == _sites[index].id
+                                          ? Colors.teal
+                                          : null),
+                                  _sites[index].name ?? '',
+                                  textAlign: TextAlign.start,
                                 ))));
                   })),
         ])));
@@ -245,7 +241,8 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
 
   Future<ImageInfo> getImageInfo(ImageProvider image) async {
     final c = Completer<ImageInfo>();
-    image.resolve(const ImageConfiguration()).addListener(ImageStreamListener((ImageInfo i, bool _) => c.complete(i)));
+    image.resolve(const ImageConfiguration()).addListener(
+        ImageStreamListener((ImageInfo i, bool _) => c.complete(i)));
     return c.future;
   }
 
@@ -293,47 +290,76 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
       // ]),·
       bottomNavigationBar: BottomAppBar(
         color: Colors.white,
-        shape: const CircularNotchedRectangle(), // 底部导航栏打一个圆形的洞
-        child: Row(
-            children: _tabs
-                .mapIndexed((page, tab) => Material(
-                    color: page == _currentTabIndex ? Colors.teal : null,
-                    child: InkWell(
-                        onTap: () {
-                          _carouselController.animateToPage(page, curve: Curves.ease);
-                        },
-                        child: Container(
-                            padding: EdgeInsets.only(right: 8),
-                            child: Row(children: [
-                              SizedBox(width: 40, height: 40, child: CachedNetworkImage(imageUrl: tab.icon ?? '')),
-                              Text(
-                                tab.name ?? '',
-                                style: TextStyle(fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                    color: page == _currentTabIndex ? Colors.white70 : null),
-                              ),
-                            ])))))
-                .toList()),
+        shape: const CircularNotchedRectangle(),
+        child: Container(
+            height: 40,
+            child: CarouselSlider(
+              carouselController: _tabController,
+                options: CarouselOptions(
+
+                    viewportFraction: .3,
+                    height: double.infinity,
+                    enableInfiniteScroll: false,
+                    enlargeCenterPage: true,
+                    onPageChanged: (index, reason) {
+                      // _tabController.animateToPage(index);
+                      setState(() => _currentTabIndex = index);
+                    }),
+                items: _tabs
+                    .mapIndexed((page, tab) => Material(
+                  clipBehavior: Clip.hardEdge,
+                        color: page == _currentTabIndex ? Colors.teal : null,
+                        child: InkWell(
+                            onTap: () {
+                              _carouselController.animateToPage(page,
+                                  curve: Curves.ease);
+                              _tabController.animateToPage(page, curve: Curves.ease);
+                              // _tabController.animateToPage(index);
+                            },
+                            child: Container(
+                                padding: const EdgeInsets.only(right: 8),
+                                child: Row(children: [
+                                  SizedBox(
+                                      width: 40,
+                                      height: 40,
+                                      child: CachedNetworkImage(
+                                          imageUrl: tab.icon ?? '')),
+                                  Text(
+                                    tab.name ?? '',
+                                    style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                        color: page == _currentTabIndex
+                                            ? Colors.white70
+                                            : null),
+                                  ),
+                                ])))))
+                    .toList())),
       ),
       // floatingActionButtonLocation:  FloatingActionButtonLocation.endDocked,
       floatingActionButton: FloatingActionButton(
-        onPressed: () => globalKey.currentState?.openEndDrawer(),
-        tooltip: 'Export',
-        child: const Icon(Icons.arrow_back),
+        onPressed: () => _currentTab?.controller.animateTo!(0,
+            duration: const Duration(milliseconds: 1000),
+            curve: Curves.ease), //globalKey.currentState?.openEndDrawer(),
+        tooltip: 'Top',
+        child: const Icon(Icons.arrow_upward),
       ),
     );
   }
 
   Widget buildFloatingSearchBar() {
-    final isPortrait = MediaQuery.of(context).orientation == Orientation.portrait;
+    final isPortrait =
+        MediaQuery.of(context).orientation == Orientation.portrait;
 
     return FloatingSearchBar(
         title: Text(
-          _currentTab?.keywords ?? 'Search...',
+          _currentTab?.controller.keywords ?? 'Search...',
           style: TextStyle(
               fontFamily: Config.uiFontFamily,
               fontSize: 16,
-              color: _currentTab?.keywords == null ? Colors.black26 : Colors.black87),
+              color: _currentTab?.controller.keywords == null
+                  ? Colors.black26
+                  : Colors.black87),
         ),
         controller: _floatingSearchBarController,
         automaticallyImplyDrawerHamburger: false,
@@ -349,14 +375,19 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
         width: isPortrait ? 600 : 500,
         debounceDelay: const Duration(milliseconds: 500),
         // clearQueryOnClose: false,
-        hintStyle: const TextStyle(fontFamily: Config.uiFontFamily, fontSize: 16, color: Colors.black26),
-        queryStyle: const TextStyle(fontFamily: Config.uiFontFamily, fontSize: 16),
+        hintStyle: const TextStyle(
+            fontFamily: Config.uiFontFamily,
+            fontSize: 16,
+            color: Colors.black26),
+        queryStyle:
+            const TextStyle(fontFamily: Config.uiFontFamily, fontSize: 16),
         onQueryChanged: (query) async {
-          final value = await Dio()
-              .get('https://danbooru.donmai.us/autocomplete.json?search[query]=$query&search[type]=tag_query&limit=10');
+          final value = await Dio().get(
+              'https://danbooru.donmai.us/autocomplete.json?search[query]=$query&search[type]=tag_query&limit=10');
           final result = List<Map<String, dynamic>>.from(value.data);
           setState(() {
-            _autosuggest = result.map((item) => item['value'] as String).toList();
+            _autosuggest =
+                result.map((item) => item['value'] as String).toList();
 
             print('_autosuggest: $_autosuggest');
           });
@@ -375,7 +406,10 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
                   errorWidget: (ctx, url, error) {
                     return Text(
                       _currentSite?.name?.substring(0, 1) ?? '?',
-                      style: const TextStyle(fontFamily: Config.uiFontFamily, fontSize: 18, color: Colors.teal),
+                      style: const TextStyle(
+                          fontFamily: Config.uiFontFamily,
+                          fontSize: 18,
+                          color: Colors.teal),
                     );
                   })),
         ],
@@ -416,7 +450,8 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
                         },
                         title: Text(
                           query,
-                          style: const TextStyle(fontFamily: Config.uiFontFamily, fontSize: 14),
+                          style: const TextStyle(
+                              fontFamily: Config.uiFontFamily, fontSize: 14),
                         )))
                     .toList(),
               ),
