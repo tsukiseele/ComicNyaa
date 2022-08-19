@@ -1,7 +1,6 @@
 ## ComicNyaa
 
-> A lovely comic reader.
-> 一个可爱的漫画阅读器.
+> ポトフちゃんとワトラちゃんがすごくかわいいです！
 
 ## Support 
 
