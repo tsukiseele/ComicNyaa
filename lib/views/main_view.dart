@@ -312,85 +312,6 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
                       );
                     }).toList(),
                   )),
-              //  Column(children: [
-              //   Flexible(
-              //     child: SmartRefresher(
-              //         enablePullDown: true,
-              //         enablePullUp: true,
-              //         header: const WaterDropMaterialHeader(
-              //           distance: 48,
-              //           offset: 96,
-              //         ),
-              //         controller: _refreshController,
-              //         onRefresh: () => _onRefresh(),
-              //         onLoading: () => _onNext(),
-              //         // onLoading: _onLoading,
-              //         child: MasonryGridView.count(
-              //             padding: const EdgeInsets.fromLTRB(
-              //                 8, kToolbarHeight + 48, 8, 0),
-              //             crossAxisCount: 3,
-              //             mainAxisSpacing: 8.0,
-              //             crossAxisSpacing: 8.0,
-              //             itemCount: _models.length,
-              //             controller: _scrollController,
-              //             // physics: const BouncingScrollPhysics(),
-              //             itemBuilder: (context, index) {
-              //               return Material(
-              //                   clipBehavior: Clip.hardEdge,
-              //                   elevation: 2,
-              //                   borderRadius: const BorderRadius.all(
-              //                       Radius.circular(4.0)),
-              //                   child: InkWell(
-              //                       onTap: () => _jump(_models[index]),
-              //                       child: Column(
-              //                         children: [
-              //                           CachedNetworkImage(
-              //                             // height: _heightCache[index] ?? 160,
-              //                             // useOldImageOnUrlChange: true,
-              //                             // imageBuilder: (ctx, image) {
-              //                             //   return CachedNetworkImageProvider()
-              //                             // },
-              //                             imageUrl:
-              //                                 _models[index].coverUrl ?? '',
-              //                             fadeInDuration: const Duration(
-              //                                 milliseconds: 200),
-              //                             fadeOutDuration: const Duration(
-              //                                 milliseconds: 200),
-              //                             fit: BoxFit.cover,
-              //                             errorWidget: (ctx, url, error) =>
-              //                                 const AspectRatio(
-              //                                     aspectRatio: 1,
-              //                                     child: Icon(
-              //                                       Icons
-              //                                           .image_not_supported,
-              //                                       size: 64,
-              //                                     )),
-              //                             placeholder: (ctx, text) =>
-              //                                 const AspectRatio(
-              //                                     aspectRatio: 0.66,
-              //                                     child:
-              //                                         SpinKitDoubleBounce(
-              //                                             color:
-              //                                                 Colors.teal)),
-              //                             httpHeaders:
-              //                                 _currentSite?.headers,
-              //                             // )
-              //                           ),
-              //                           Container(
-              //                             padding:
-              //                                 const EdgeInsets.all(8.0),
-              //                             child: Text(
-              //                               _models[index].title ?? '',
-              //                               maxLines: 3,
-              //                             ),
-              //                           )
-              //                         ],
-              //                       )));
-              //             })),
-              //   ),
-              // ])
-              // buildMap(),
-              // buildBottomNavigationBar(),
               buildFloatingSearchBar(),
             ],
           )),
@@ -400,30 +321,18 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
         color: Colors.white,
         shape: const CircularNotchedRectangle(), // 底部导航栏打一个圆形的洞
         child: Row(
-          children: _tabs.mapIndexed((page, tab) => InkWell(onTap: () {
-            _carouselController.animateToPage(page);
-          },child: Row(children: [ Tab(icon: Icon(Icons.widgets)), Text(tab.name ?? '')],))).toList()
-          // tabs: const <Widget>[
-          //   Tab(
-          //     icon: Icon(
-          //       Icons.cloud_outlined,
-          //       color: Colors.teal,
-          //     ),
-          //   ),
-          //   Tab(
-          //     icon: Icon(
-          //       Icons.beach_access_sharp,
-          //       color: Colors.teal,
-          //     ),
-          //   ),
-          //   Tab(
-          //     icon: Icon(
-          //       Icons.brightness_5_sharp,
-          //       color: Colors.teal,
-          //     ),
-          //   ),
-          // ],
-        ),
+            children: _tabs
+                .mapIndexed((page, tab) => InkWell(
+                    onTap: () {
+                      _carouselController.animateToPage(page);
+                    },
+                    child: Row(
+                      children: [
+                        Tab(icon: Icon(Icons.widgets)),
+                        Text(tab.name ?? '')
+                      ],
+                    )))
+                .toList()),
       ),
       // floatingActionButtonLocation:  FloatingActionButtonLocation.endDocked,
       floatingActionButton: FloatingActionButton(

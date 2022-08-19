@@ -1,23 +1,13 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
-import 'dart:math';
 
-import 'package:archive/archive.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:carousel_slider/carousel_slider.dart';
 import 'package:collection/collection.dart';
 import 'package:comic_nyaa/library/mio/core/mio_loader.dart';
 import 'package:comic_nyaa/utils/http.dart';
 import 'package:comic_nyaa/views/detail/comic_detail_view.dart';
 import 'package:comic_nyaa/views/detail/image_detail_view.dart';
 import 'package:comic_nyaa/views/detail/video_detail_view.dart';
-import 'package:comic_nyaa/views/settings_view.dart';
-import 'package:comic_nyaa/views/subscribe_view.dart';
-import 'package:comic_nyaa/views/widget/dynamic_tab_view.dart';
-import 'package:dio/dio.dart';
-import 'package:extended_image/extended_image.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import 'package:comic_nyaa/library/mio/model/site.dart';
@@ -27,26 +17,34 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:material_floating_search_bar/material_floating_search_bar.dart';
-import 'package:percent_indicator/circular_percent_indicator.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
-import 'package:shimmer/shimmer.dart';
 
 import '../../app/global.dart';
 import '../../models/typed_model.dart';
 
+class GalleryController {
+  Function(String keywords)? _search;
+  search(String keywords) {
+    if (_search != null) {
+      _search!(keywords);
+    }
+  }
+}
+
 class GalleryView extends StatefulWidget {
-  const GalleryView({Key? key, required this.site}) : super(key: key);
+  GalleryView({Key? key, required this.site, GalleryController? controller})
+      : super(key: key) {
+    galleryController = controller;
+  }
+
   final Site site;
+  GalleryController? galleryController;
   @override
   State<GalleryView> createState() => _GalleryViewState();
 }
 
-class _GalleryViewState extends State<GalleryView> with TickerProviderStateMixin, AutomaticKeepAliveClientMixin<GalleryView>  {
-  @override
-  void dispose() {
-    // TODO: implement dispose
-    super.dispose();
-  }
+class _GalleryViewState extends State<GalleryView>
+    with TickerProviderStateMixin, AutomaticKeepAliveClientMixin<GalleryView> {
   final globalKey = GlobalKey<ScaffoldState>();
   final ScrollController _scrollController = ScrollController();
   final RefreshController _refreshController =
@@ -59,6 +57,7 @@ class _GalleryViewState extends State<GalleryView> with TickerProviderStateMixin
   List<Site> _sites = [];
   List<TypedModel> _preloadModels = [];
   final List<Site> _tabs = [];
+
   // final Map<int, RefreshController> _refreshControllerSet = {};
   int _currentSiteId = 920;
   int _page = 1;
@@ -70,7 +69,7 @@ class _GalleryViewState extends State<GalleryView> with TickerProviderStateMixin
   /// 加载列表
   Future<List<TypedModel>> _load(
       {bool isNext = false, bool isReset = false}) async {
-    print('LIST SIZE: ${_models.length}');
+    // print('LIST SIZE: ${_models.length}');
     if (_isLoading) return [];
     try {
       // 重置状态
@@ -79,8 +78,7 @@ class _GalleryViewState extends State<GalleryView> with TickerProviderStateMixin
       }
       // 试图获取预加载内容
       if (_preloadModels.isNotEmpty) {
-        print(
-            'READ PRELOAD ====================== SIZE = ${_preloadModels.length}');
+        // print('READ PRELOAD ====================== SIZE = ${_preloadModels.length}');
         final models = _preloadModels;
         _page++;
         _preloadModels = [];
@@ -90,13 +88,13 @@ class _GalleryViewState extends State<GalleryView> with TickerProviderStateMixin
       // 否则重新加载
       _isLoading = true;
       if (isNext) _page++;
-      print('CURRENT PAGE: $_page');
+      // print('CURRENT PAGE: $_page');
       final images = await _getModels();
       if (images.isEmpty) {
         if (isNext) _page--;
         Fluttertoast.showToast(msg: '已经到底了');
       } else {
-        print('SEND PRELOAD =====> PAGE = ${_page}');
+        // print('SEND PRELOAD =====> PAGE = ${_page}');
         _preload();
       }
       return images;
@@ -173,7 +171,9 @@ class _GalleryViewState extends State<GalleryView> with TickerProviderStateMixin
   }
 
   Future<void> _initialize() async {
-    print('_initialize_initialize_initialize_initialize_initialize_initialize_initialize_initialize:: ');
+    if (widget.galleryController != null) {
+      widget.galleryController?._search = _onSearch;
+    }
     await _checkUpdate();
     final sites = await RuleLoader.loadFormDirectory(await Config.ruleDir);
     sites.forEachIndexed(
@@ -265,6 +265,7 @@ class _GalleryViewState extends State<GalleryView> with TickerProviderStateMixin
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return Column(children: [
       Flexible(
         child: SmartRefresher(
