@@ -402,7 +402,7 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
         child: Row(
           children: _tabs.mapIndexed((page, tab) => InkWell(onTap: () {
             _carouselController.animateToPage(page);
-          },child: Row(children: [ Tab(icon: Icon(Icons.widgets)), Text(tab.name ?? '')],))).toList()
+          },child: Row(children: [ const Tab(icon: Icon(Icons.widgets)), Text(tab.name ?? '')],))).toList()
           // tabs: const <Widget>[
           //   Tab(
           //     icon: Icon(
