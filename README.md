@@ -13,7 +13,13 @@
 See [LICENSE](./LICENSE])
 
 
-## Usage
+## Sample
+<!-- ![Home](https://cdn.jsdelivr.net/gh/nyarray/LoliHost/images/60654495c94c0d0fc9d0861d37cf84b5.jpeg)
+![Sites](https://cdn.jsdelivr.net/gh/nyarray/LoliHost/images/fcb9dc4ccade0888e6ef759be9a1ee43.jpeg) -->
+<div style="display: flex;">
+  <img src="https://cdn.jsdelivr.net/gh/nyarray/LoliHost/images/60654495c94c0d0fc9d0861d37cf84b5.jpeg" alt="Home" width="35%"/>
+  <img src="https://cdn.jsdelivr.net/gh/nyarray/LoliHost/images/fcb9dc4ccade0888e6ef759be9a1ee43.jpeg" alt="Sites" width="35%"/>
+</div>
 
 
 ## Getting Started
