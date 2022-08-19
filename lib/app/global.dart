@@ -13,7 +13,7 @@ extension ExtendedPath on Directory {
 
 class Config {
   Config._();
-  static const uiFontFamily = null; //'sans-serif';
+  static const uiFontFamily = 'sans-serif';
 
   static const downloadDirectoryName = 'ComicNyaa';
   static const rulesDirectoryName = 'rules';
