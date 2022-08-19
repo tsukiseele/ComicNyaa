@@ -258,7 +258,7 @@ class _GalleryViewState extends State<GalleryView> with TickerProviderStateMixin
     super.build(context);
     return Column(children: [
       Flexible(
-        child: SmartRefresher(
+        child: Scrollbar(child: SmartRefresher(
             enablePullDown: true,
             enablePullUp: true,
             header: const WaterDropMaterialHeader(
@@ -311,7 +311,7 @@ class _GalleryViewState extends State<GalleryView> with TickerProviderStateMixin
                               )
                             ],
                           )));
-                })),
+                }))),
       ),
     ]);
   }
