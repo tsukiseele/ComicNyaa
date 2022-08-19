@@ -1,7 +1,7 @@
 ## ComicNyaa
 
 > A lovely comic reader.
-> 一个可爱的跨平台漫画阅读器.
+> 一个可爱的漫画阅读器.
 
 ## Support 
 
