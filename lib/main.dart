@@ -7,7 +7,7 @@ import 'package:dio/dio.dart';
 import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_displaymode/flutter_displaymode.dart';
-import 'package:http/http.dart' as http;
+
 import 'app/global.dart';
 import 'library/mio/core/mio.dart';
 import 'views/main_view.dart';
@@ -47,7 +47,7 @@ class _ComicNyaaState extends State<ComicNyaa> {
     // 初始化显示模式
     setOptimalDisplayMode();
     // 初始化Mio
-    // client.maxConnectionsPerHost = 3;
+    client.maxConnectionsPerHost = 3;
     Mio.setCustomRequest((url, {Map<String, String>? headers}) async {
       if (headers != null) {
         headers['user-agent'] = r'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36';
@@ -55,8 +55,6 @@ class _ComicNyaaState extends State<ComicNyaa> {
       final response = await Http.client()
           .get(url, options: Options(responseType: ResponseType.plain, headers: headers));
       return response.data.toString();
-
-
     //   HttpClientRequest request = await client.getUrl(Uri.parse(url));//.then((HttpClientRequest request) {
     //     headers?.forEach((key, value) => request.headers.add(key, value));
     //     request.headers.add('user-agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36');
