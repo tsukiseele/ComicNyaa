@@ -19,6 +19,7 @@ class _SettingsViewState extends State<StatefulWidget> {
 
   initialized() async {
     _downloadPath = (await Config.downloadDir).path;
+    setState(() {});
   }
   @override
   void initState() {

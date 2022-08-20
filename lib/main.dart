@@ -53,17 +53,19 @@ class _ComicNyaaState extends State<ComicNyaa> {
     // 初始化Mio
     client.maxConnectionsPerHost = 3;
     Mio.setCustomRequest((url, {Map<String, String>? headers}) async {
-      if (headers != null) {
-        headers['user-agent'] = r'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36';
-      }
-      final response = await Http.client()
-          .get(url, options: Options(responseType: ResponseType.plain, headers: headers));
-      return response.data.toString();
-    //   HttpClientRequest request = await client.getUrl(Uri.parse(url));//.then((HttpClientRequest request) {
-    //     headers?.forEach((key, value) => request.headers.add(key, value));
-    //     request.headers.add('user-agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36');
-    //   HttpClientResponse response =  await  request.close();
-    //   return await response.transform(utf8.decoder).join();
+      // if (headers != null) {
+      //   headers['user-agent'] = r'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36';
+      // }
+      //
+      // final response = await Http.client()
+      //     .get(url, options: Options(responseType: ResponseType.plain, headers: headers));
+      // return response.data.toString();
+
+      HttpClientRequest request = await client.getUrl(Uri.parse(url));//.then((HttpClientRequest request) {
+        headers?.forEach((key, value) => request.headers.add(key, value));
+        request.headers.add('user-agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36');
+      HttpClientResponse response =  await  request.close();
+      return await response.transform(utf8.decoder).join();
     });
     super.initState();
   }

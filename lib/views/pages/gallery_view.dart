@@ -1,23 +1,21 @@
 import 'dart:async';
 import 'dart:io';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:collection/collection.dart';
 import 'package:comic_nyaa/library/mio/core/mio_loader.dart';
 import 'package:comic_nyaa/utils/http.dart';
 import 'package:comic_nyaa/views/detail/comic_detail_view.dart';
 import 'package:comic_nyaa/views/detail/image_detail_view.dart';
 import 'package:comic_nyaa/views/detail/video_detail_view.dart';
-import 'package:flutter/gestures.dart';
+import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
 
 import 'package:comic_nyaa/library/mio/model/site.dart';
 import 'package:comic_nyaa/library/mio/core/mio.dart';
 import 'package:comic_nyaa/models/typed_model.dart';
-import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:material_floating_search_bar/material_floating_search_bar.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
+import 'package:shimmer/shimmer.dart';
 
 import '../../app/global.dart';
 import '../../models/typed_model.dart';
@@ -41,18 +39,14 @@ class _GalleryViewState extends State<GalleryView> with TickerProviderStateMixin
   final globalKey = GlobalKey<ScaffoldState>();
   final ScrollController _scrollController = ScrollController();
   final RefreshController _refreshController = RefreshController(initialRefresh: false);
-  final FloatingSearchBarController _floatingSearchBarController = FloatingSearchBarController();
   final Map<int, double> _heightCache = {};
-  List<TypedModel> _models = [];
   List<Site> _sites = [];
+  List<TypedModel> _models = [];
   List<TypedModel> _preloadModels = [];
-  final List<Site> _tabs = [];
   int _currentSiteId = 920;
   int _page = 1;
   String _keywords = '';
   bool _isLoading = false;
-  int _lastScrollPosition = 0;
-  int initPosition = 0;
 
   Future<void> _initialize() async {
     widget.controller.search = (String kwds) {
@@ -66,8 +60,6 @@ class _GalleryViewState extends State<GalleryView> with TickerProviderStateMixin
     setState(() {
       _sites = sites;
       _currentSiteId = _currentSiteId < 0 ? _sites[0].id! : _currentSiteId;
-      _tabs.add(_currentSite!);
-      // _refreshControllerSet.add(RefreshController(initialRefresh: false));
     });
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -79,15 +71,15 @@ class _GalleryViewState extends State<GalleryView> with TickerProviderStateMixin
             _onNext();
           }
         }
-        if (_scrollController.position.pixels < 128) {
-          _floatingSearchBarController.isHidden ? _floatingSearchBarController.show() : null;
-        } else if (_scrollController.position.pixels > _lastScrollPosition + 64) {
-          _lastScrollPosition = _scrollController.position.pixels.toInt();
-          _floatingSearchBarController.isVisible ? _floatingSearchBarController.hide() : null;
-        } else if (_scrollController.position.pixels < _lastScrollPosition - 64) {
-          _lastScrollPosition = _scrollController.position.pixels.toInt();
-          _floatingSearchBarController.isHidden ? _floatingSearchBarController.show() : null;
-        }
+        // if (_scrollController.position.pixels < 128) {
+        //   _floatingSearchBarController.isHidden ? _floatingSearchBarController.show() : null;
+        // } else if (_scrollController.position.pixels > _lastScrollPosition + 64) {
+        //   _lastScrollPosition = _scrollController.position.pixels.toInt();
+        //   _floatingSearchBarController.isVisible ? _floatingSearchBarController.hide() : null;
+        // } else if (_scrollController.position.pixels < _lastScrollPosition - 64) {
+        //   _lastScrollPosition = _scrollController.position.pixels.toInt();
+        //   _floatingSearchBarController.isHidden ? _floatingSearchBarController.show() : null;
+        // }
       });
     });
   }
@@ -118,7 +110,7 @@ class _GalleryViewState extends State<GalleryView> with TickerProviderStateMixin
         if (isNext) _page--;
         Fluttertoast.showToast(msg: '已经到底了');
       } else {
-        print('SEND PRELOAD =====> PAGE = ${_page}');
+        print('SEND PRELOAD =====> PAGE = $_page');
         _preload();
       }
       return images;
@@ -160,7 +152,7 @@ class _GalleryViewState extends State<GalleryView> with TickerProviderStateMixin
         return;
       }
       for (var model in _preloadModels) {
-        CachedNetworkImageProvider(model.coverUrl ?? '').resolve(const ImageConfiguration());
+        DynamicCacheImageProvider(model.coverUrl ?? '').resolve(const ImageConfiguration());
       }
     } catch (e) {
       print(e);
@@ -239,8 +231,17 @@ class _GalleryViewState extends State<GalleryView> with TickerProviderStateMixin
 
   Future<ImageInfo> getImageInfo(ImageProvider image) async {
     final c = Completer<ImageInfo>();
-    image.resolve(const ImageConfiguration()).addListener(ImageStreamListener((ImageInfo i, bool _) => c.complete(i)));
+    ImageStream imageStream = image.resolve(const ImageConfiguration());
+    imageStream.addListener(ImageStreamListener((ImageInfo i, bool _) => c.complete(i)));
     return c.future;
+  }
+
+  void cacheHeight(ImageProvider image, int index) async {
+    ImageInfo imageInfo = await getImageInfo(image);
+    // _heightCache[index] = imageInfo.image.height.toDouble();
+    _heightCache[index] = imageInfo.image.width / imageInfo.image.height;
+
+    print('CAHCE HEIGHT: ${_heightCache[index]}');
   }
 
   @override
@@ -270,6 +271,7 @@ class _GalleryViewState extends State<GalleryView> with TickerProviderStateMixin
                 controller: _scrollController,
                 // physics: const BouncingScrollPhysics(),
                 itemBuilder: (context, index) {
+                  final controller = AnimationController(value: 1, duration: const Duration(milliseconds: 500), vsync: this);
                   return Material(
                       clipBehavior: Clip.hardEdge,
                       elevation: 2,
@@ -278,22 +280,37 @@ class _GalleryViewState extends State<GalleryView> with TickerProviderStateMixin
                           onTap: () => _jump(_models[index]),
                           child: Column(
                             children: [
-                              CachedNetworkImage(
-                                imageUrl: _models[index].coverUrl ?? '',
-                                fadeInDuration: const Duration(milliseconds: 200),
-                                fadeOutDuration: const Duration(milliseconds: 200),
-                                fit: BoxFit.cover,
-                                errorWidget: (ctx, url, error) => const AspectRatio(
-                                    aspectRatio: 1,
-                                    child: Icon(
-                                      Icons.image_not_supported,
-                                      size: 64,
-                                    )),
-                                placeholder: (ctx, text) =>
-                                    const AspectRatio(aspectRatio: 0.66, child: SpinKitDoubleBounce(color: Colors.teal)),
-                                httpHeaders: _currentSite?.headers,
-                                // )
-                              ),
+                              ExtendedImage.network( _models[index].coverUrl ?? '',
+                              headers: _currentSite?.headers,
+                              height: _heightCache[index],
+                              opacity: controller,
+                              fit: BoxFit.cover,
+                              filterQuality: FilterQuality.low,
+                              timeRetry: const Duration(milliseconds: 500),
+                              timeLimit: const Duration(milliseconds: 5000),
+                              loadStateChanged: (state) {
+                                switch (state.extendedImageLoadState) {
+                                  case LoadState.loading:
+                                    controller.reset();
+                                    return Shimmer.fromColors(
+                                        baseColor: const Color.fromRGBO(240, 240, 240, 1),
+                                        highlightColor: Colors.white,
+                                        child: AspectRatio(
+                                          aspectRatio: 0.66,
+                                          child: Container(
+                                            decoration: const BoxDecoration(color: Colors.white),
+                                          ),
+                                        ));
+                                  case LoadState.failed:
+                                    return const AspectRatio(aspectRatio: 0.66, child: Icon(Icons.image_not_supported, size: 64));
+                                  case LoadState.completed:
+                                    controller.forward();
+                                    return null;
+                                }
+                              },
+                              afterPaintImage: (canvas, rect, image, paint) {
+                                  _heightCache[index] = rect.height;
+                              }),
                               Container(
                                 padding: const EdgeInsets.all(8.0),
                                 child: Text(

@@ -33,9 +33,6 @@ class MainView extends StatefulWidget {
 class _MainViewState extends State<MainView> with TickerProviderStateMixin {
   final globalKey = GlobalKey<ScaffoldState>();
   final FloatingSearchBarController _floatingSearchBarController = FloatingSearchBarController();
-
-  // final CarouselController _carouselController = CarouselController();
-  // final CarouselController _tabController = CarouselController();
   DateTime? currentBackPressTime = DateTime.now();
   List<Site> _sites = [];
   List<String> _autosuggest = [];
