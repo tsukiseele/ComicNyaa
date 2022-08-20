@@ -152,7 +152,8 @@ class _GalleryViewState extends State<GalleryView> with TickerProviderStateMixin
         return;
       }
       for (var model in _preloadModels) {
-        DynamicCacheImageProvider(model.coverUrl ?? '').resolve(const ImageConfiguration());
+        ExtendedImage.network(model.coverUrl ?? '');
+        // DynamicCacheImageProvider(model.coverUrl ?? '').resolve(const ImageConfiguration());
       }
     } catch (e) {
       print(e);

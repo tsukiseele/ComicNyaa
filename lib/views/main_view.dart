@@ -15,6 +15,7 @@ import 'package:flutter/material.dart';
 
 import 'package:comic_nyaa/library/mio/model/site.dart';
 import 'package:comic_nyaa/models/typed_model.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:material_floating_search_bar/material_floating_search_bar.dart';
 
 import '../app/global.dart';
@@ -272,7 +273,15 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
                     },
                     onScroll: (double value) {},
                     tabBuilder: (BuildContext context, int index) {
-                      return Tab(
+                      return InkWell(
+                        onLongPress: () {
+                          if (_tabs.length > 1) {
+                            setState(() => _tabs.removeAt(index));
+                          } else {
+                            Fluttertoast.showToast(msg: '您不能删除最后一个标签页');
+                          }
+                        },
+                          child:  Tab(
                           iconMargin: EdgeInsets.zero,
                           height: 48,
                           icon: SizedBox(
@@ -282,7 +291,7 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
                                 imageUrl: _tabs[index].icon ?? '',
                                 fit: BoxFit.contain,
                               )),
-                          text: _tabs[index].name ?? '');
+                          text: _tabs[index].name ?? ''));
                     },
                   )),
               buildFloatingSearchBar(),
