@@ -228,7 +228,8 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
                                       ? Icons.image
                                       : _sites[index].type == 'video'
                                           ? Icons.video_collection
-                                          : Icons.quiz),
+                                          : Icons.quiz,
+                              color: Theme.of(context).primaryColor),
                             )));
                   })),
         ])));
