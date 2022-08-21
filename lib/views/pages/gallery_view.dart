@@ -22,7 +22,9 @@ import '../../models/typed_model.dart';
 
 class GalleryController {
   String keywords = '';
+  ScrollController? scrollController;
   void Function(String keywords)? search;
+  void Function()? refresh;
   void Function(double offset, { required Duration duration,   required Curve curve})? animateTo;
 }
 
@@ -47,6 +49,8 @@ class _GalleryViewState extends State<GalleryView> with TickerProviderStateMixin
   bool _isLoading = false;
 
   Future<void> _initialize() async {
+    widget.controller.scrollController = _scrollController;
+    widget.controller.refresh = _refreshController.requestRefresh;
     widget.controller.search = (String kwds) {
       _keywords = kwds;
       _refreshController.requestRefresh();
@@ -326,4 +330,10 @@ class _GalleryViewState extends State<GalleryView> with TickerProviderStateMixin
 
   @override
   bool get wantKeepAlive => true;
+
+  @override
+  void dispose() {
+    super.dispose();
+    _scrollController.dispose();
+  }
 }

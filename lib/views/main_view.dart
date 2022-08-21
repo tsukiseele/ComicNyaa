@@ -4,9 +4,6 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:collection/collection.dart';
 import 'package:comic_nyaa/library/mio/core/mio_loader.dart';
 import 'package:comic_nyaa/utils/http.dart';
-import 'package:comic_nyaa/views/detail/comic_detail_view.dart';
-import 'package:comic_nyaa/views/detail/image_detail_view.dart';
-import 'package:comic_nyaa/views/detail/video_detail_view.dart';
 import 'package:comic_nyaa/views/settings_view.dart';
 import 'package:comic_nyaa/views/subscribe_view.dart';
 import 'package:comic_nyaa/views/widget/dynamic_tab_view.dart';
@@ -14,12 +11,10 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 
 import 'package:comic_nyaa/library/mio/model/site.dart';
-import 'package:comic_nyaa/models/typed_model.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:material_floating_search_bar/material_floating_search_bar.dart';
 
 import '../app/global.dart';
-import '../models/typed_model.dart';
 import '../utils/string_extensions.dart';
 import 'pages/gallery_view.dart';
 
@@ -34,48 +29,32 @@ class MainView extends StatefulWidget {
 class _MainViewState extends State<MainView> with TickerProviderStateMixin {
   final globalKey = GlobalKey<ScaffoldState>();
   final FloatingSearchBarController _floatingSearchBarController = FloatingSearchBarController();
-  DateTime? currentBackPressTime = DateTime.now();
+  final List<GalleryView> _gallerys = [];
+  ScrollController? _galleryScrollController;
   List<Site> _sites = [];
   List<String> _autosuggest = [];
-  final List<Site> _tabs = [];
-  final List<GalleryView> _gallerys = [];
-  int _currentSiteId = 920;
   int _currentTabIndex = 0;
+  DateTime? currentBackPressTime = DateTime.now();
+  int _lastScrollPosition = 0;
 
   Future<void> _initialize() async {
     await _checkUpdate();
     setState(() {
       _sites = RuleLoader.sites.values.toList();
-      _currentSiteId = _currentSiteId < 0 ? _sites[0].id! : _currentSiteId;
-      _tabs.add(_currentSite!);
+      // 打开默认标签
+      addTab(_sites.firstWhereOrNull((site) => site.id == 920) ?? _sites[0]);
+
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          _galleryScrollController = _currentTab?.controller.scrollController;
+          if (_galleryScrollController == null) return;
+          _galleryScrollController!.removeListener(onGalleryScroll);
+          _galleryScrollController!.addListener(onGalleryScroll);
+        }
+      });
     });
   }
 
-  void _jump(TypedModel model) {
-    Widget? target;
-    switch (model.type) {
-      case 'image':
-        target = ImageDetailView(models: [model]);
-        break;
-      case 'video':
-        target = VideoDetailView(model: model);
-        break;
-      case 'comic':
-        target = ComicDetailView(model: model);
-        break;
-    }
-    if (target != null) {
-      Navigator.push(context, MaterialPageRoute(builder: (context) => target!));
-    }
-  }
-
-  Site? get _currentSite {
-    return _sites.firstWhereOrNull((site) => site.id == _currentSiteId);
-  }
-
-  GalleryView? get _currentTab {
-    return _gallerys.isNotEmpty ? _gallerys[_currentTabIndex] : null;
-  }
 
   Future<void> _checkUpdate() async {
     final ruleDir = (await Config.ruleDir);
@@ -97,22 +76,212 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
     super.initState();
   }
 
-  Future<bool> onWillPop() {
-    if (globalKey.currentState?.isDrawerOpen == true) {
-      globalKey.currentState?.closeDrawer();
-      return Future.value(false);
+  GalleryView? get _currentTab {
+    return _gallerys[_currentTabIndex];
+  }
+
+  void addTab(Site site) {
+    _gallerys.add(GalleryView(site: site));
+  }
+
+  void removeTab(int index) {
+    setState(() {
+      print('REMOVE::::: ${_gallerys[index].site.name}');
+      _gallerys[index].controller.scrollController?.dispose();
+      _gallerys.removeAt(index);
+
+      if (_currentTabIndex > _gallerys.length - 1) {
+        _currentTabIndex = _gallerys.length - 1;
+      }
+    });
+  }
+  onGalleryScroll() {
+    if (_galleryScrollController == null) return;
+    // if (_galleryScrollController!.positions.isEmpty) _galleryScrollController!.dispose();
+    if (_galleryScrollController!.position.pixels < 128) {
+      _floatingSearchBarController.isHidden ? _floatingSearchBarController.show() : null;
+    } else if (_galleryScrollController!.position.pixels > _lastScrollPosition + 64) {
+      _lastScrollPosition = _galleryScrollController!.position.pixels.toInt();
+      _floatingSearchBarController.isVisible ? _floatingSearchBarController.hide() : null;
+    } else if (_galleryScrollController!.position.pixels < _lastScrollPosition - 64) {
+      _lastScrollPosition = _galleryScrollController!.position.pixels.toInt();
+      _floatingSearchBarController.isHidden ? _floatingSearchBarController.show() : null;
     }
-    if (globalKey.currentState?.isEndDrawerOpen == true) {
-      globalKey.currentState?.closeEndDrawer();
-      return Future.value(false);
-    }
-    DateTime now = DateTime.now();
-    if (currentBackPressTime == null || now.difference(currentBackPressTime!) > const Duration(seconds: 2)) {
-      currentBackPressTime = now;
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('再按一次退出')));
-      return Future.value(false);
-    }
-    return Future.value(true);
+  }
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      key: globalKey,
+      resizeToAvoidBottomInset: false,
+      drawerEdgeDragWidth: 64,
+      drawerEnableOpenDragGesture: true,
+      endDrawerEnableOpenDragGesture: true,
+      drawer: buildDrawer(),
+      endDrawer: buildEndDrawer(),
+      body: WillPopScope(
+          onWillPop: onWillPop,
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              Container(
+                  padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
+                  child: DynamicTabView(
+                    position: _currentTabIndex,
+                    onPositionChange: (int index) {
+                      setState(() => _currentTabIndex = index);
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        if (mounted) {
+                          _galleryScrollController = _currentTab?.controller.scrollController;
+                          if (_galleryScrollController == null) return;
+                          onGalleryScroll();
+                          _galleryScrollController!.removeListener(onGalleryScroll);
+                          _galleryScrollController!.addListener(onGalleryScroll);
+                        }
+                      });
+                    },
+                    onScroll: (double value) {},
+                    itemCount: _gallerys.length,
+                    isScrollToNewTab: true,
+                    pageBuilder: (BuildContext context, int index) => _gallerys[index],
+                    tabBuilder: (BuildContext context, int index) {
+                      return InkWell(
+                          onLongPress: () {
+                            if (_gallerys.length > 1) {
+                              setState(() => removeTab(index));
+                            } else {
+                              Fluttertoast.showToast(msg: '您不能删除最后一个标签页');
+                            }
+                          },
+                          onTap: () {
+                            setState(() => _currentTabIndex = index);
+                          },
+                          child: Tab(
+                              iconMargin: EdgeInsets.zero,
+                              height: 48,
+                              icon: SizedBox(
+                                  width: 24,
+                                  height: 24,
+                                  child: CachedNetworkImage(
+                                    imageUrl: _gallerys[index].site.icon ?? '',
+                                    fit: BoxFit.contain,
+                                  )),
+                              text: _gallerys[index].site.name ?? ''));
+                    },
+                  )),
+              buildFloatingSearchBar(),
+            ],
+          )),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+      floatingActionButton: Container(
+          margin: const EdgeInsets.only(bottom: 48),
+          child: FloatingActionButton(
+            onPressed: () =>
+                _currentTab?.controller.animateTo!(0, duration: const Duration(milliseconds: 1000), curve: Curves.ease),
+            tooltip: 'Top',
+            child: const Icon(Icons.arrow_upward),
+          )),
+    );
+  }
+
+  Widget buildFloatingSearchBar() {
+    final isPortrait = MediaQuery.of(context).orientation == Orientation.portrait;
+
+    return FloatingSearchBar(
+        title: Text(
+          StringUtil.value(_currentTab?.controller.keywords, 'Search...'),
+          style: TextStyle(
+              fontFamily: Config.uiFontFamily,
+              fontSize: 16,
+              color: _currentTab?.controller.keywords == null ? Colors.black26 : Colors.black87),
+        ),
+        controller: _floatingSearchBarController,
+        automaticallyImplyDrawerHamburger: false,
+        automaticallyImplyBackButton: false,
+        hint: 'Search...',
+        scrollPadding: const EdgeInsets.only(top: 8, bottom: 8),
+        // implicitDuration: const Duration(milliseconds: 250),
+        transitionDuration: const Duration(milliseconds: 200),
+        transitionCurve: Curves.easeInOut,
+        // physics: const BouncingScrollPhysics(),
+        axisAlignment: isPortrait ? 0.0 : -1.0,
+        openAxisAlignment: 0.0,
+        width: isPortrait ? 600 : 500,
+        debounceDelay: const Duration(milliseconds: 500),
+        // clearQueryOnClose: false,
+        hintStyle: const TextStyle(fontFamily: Config.uiFontFamily, fontSize: 16, color: Colors.black26),
+        queryStyle: const TextStyle(fontFamily: Config.uiFontFamily, fontSize: 16),
+        onQueryChanged: (query) async {
+          final value = await Dio()
+              .get('https://danbooru.donmai.us/autocomplete.json?search[query]=$query&search[type]=tag_query&limit=10');
+          final result = List<Map<String, dynamic>>.from(value.data);
+          setState(() {
+            _autosuggest = result.map((item) => item['value'] as String).toList();
+            print('_autosuggest: $_autosuggest');
+          });
+        },
+
+        // Specify a custom transition to be used for
+        // animating between opened and closed stated.
+        transition: CircularFloatingSearchBarTransition(),
+        // transition: SlideFadeFloatingSearchBarTransition(),
+        leadingActions: [
+          FloatingSearchBarAction.hamburgerToBack(),
+          FloatingSearchBarAction(
+              showIfOpened: true,
+              child: SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: CachedNetworkImage(
+                      imageUrl: _currentTab?.site.icon ?? '',
+                      errorWidget: (ctx, url, error) {
+                        return Text(
+                          _currentTab?.site.name?.substring(0, 1) ?? '?',
+                          style: const TextStyle(fontFamily: Config.uiFontFamily, fontSize: 18, color: Colors.teal),
+                        );
+                      }))),
+        ],
+        actions: [
+          FloatingSearchBarAction(
+            showIfOpened: false,
+            child: CircularButton(
+              // icon: const Icon(CupertinoIcons.square_grid_2x2),
+              icon: const Icon(Icons.extension),
+              // icon: const Icon( CupertinoIcons.square_stack_3d_up),
+              onPressed: () {
+                globalKey.currentState?.openEndDrawer();
+              },
+            ),
+          ),
+          // FloatingSearchBarAction.icon(icon: Icon., onTap: onTap)
+          FloatingSearchBarAction.searchToClear(
+            showIfClosed: false,
+          ),
+        ],
+        onSubmitted: (query) {
+          _currentTab?.controller.search!(query);
+          _floatingSearchBarController.close();
+        },
+        builder: (context, transition) => Material(
+              color: Colors.white,
+              elevation: 4.0,
+              borderRadius: BorderRadius.circular(4),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: _autosuggest
+                    .map((query) => ListTile(
+                        leading: const Icon(Icons.search),
+                        onTap: () {
+                          _currentTab?.controller.search!(query);
+                          _floatingSearchBarController.query = query;
+                          _floatingSearchBarController.close();
+                        },
+                        title: Text(
+                          query,
+                          style: const TextStyle(fontFamily: Config.uiFontFamily, fontSize: 14),
+                        )))
+                    .toList(),
+              ),
+            ));
   }
 
   Widget buildDrawer() {
@@ -183,14 +352,11 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
                   itemCount: _sites.length,
                   itemBuilder: (ctx, index) {
                     return Material(
-                        // elevation: _currentSiteId == _sites[index].id ? 4 : 0,
                         child: InkWell(
                             onTap: () {
                               setState(() {
-                                _currentSiteId = _sites[index].id!;
-                                _tabs.add(_currentSite!);
-                                // _carouselController
-                                //     .animateToPage(_tabs.length - 1);
+                                // _tabs.add(_sites[index]);
+                                addTab(_sites[index]);
                                 globalKey.currentState?.closeEndDrawer();
                               });
                               setState(() {});
@@ -218,195 +384,35 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
                                 overflow: TextOverflow.ellipsis,
                                 style: const TextStyle(fontSize: 14, color: Colors.black26),
                               ),
-                              trailing: Icon(_sites[index].type == 'comic'
-                                  ? Icons.photo_library
-                                  : _sites[index].type == 'image'
-                                      ? Icons.image
-                                      : _sites[index].type == 'video'
-                                          ? Icons.video_collection
-                                          : Icons.quiz,
-                              color: Theme.of(context).primaryColor),
+                              trailing: Icon(
+                                  _sites[index].type == 'comic'
+                                      ? Icons.photo_library
+                                      : _sites[index].type == 'image'
+                                          ? Icons.image
+                                          : _sites[index].type == 'video'
+                                              ? Icons.video_collection
+                                              : Icons.quiz,
+                                  color: Theme.of(context).primaryColor),
                             )));
                   })),
         ])));
   }
 
-  Future<ImageInfo> getImageInfo(ImageProvider image) async {
-    final c = Completer<ImageInfo>();
-    image.resolve(const ImageConfiguration()).addListener(ImageStreamListener((ImageInfo i, bool _) => c.complete(i)));
-    return c.future;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      key: globalKey,
-      resizeToAvoidBottomInset: false,
-      drawerEdgeDragWidth: 64,
-      drawerEnableOpenDragGesture: true,
-      endDrawerEnableOpenDragGesture: true,
-      drawer: buildDrawer(),
-      endDrawer: buildEndDrawer(),
-      body: WillPopScope(
-          onWillPop: onWillPop,
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              Container(
-                  padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
-                  child: DynamicTabView(
-                    initPosition: _currentTabIndex,
-                    onPositionChange: (int index) {
-                      setState(() => _currentTabIndex = index);
-                    },
-                    itemCount: _tabs.length,
-                    isScrollToNewTab: true,
-                    pageBuilder: (BuildContext context, int index) {
-                      while (_gallerys.length <= index) {
-                        _gallerys.add(GalleryView(site: _tabs[index]));
-                      }
-                      return _gallerys[index];
-                    },
-                    onScroll: (double value) {},
-                    tabBuilder: (BuildContext context, int index) {
-                      return InkWell(
-                        onLongPress: () {
-                          if (_tabs.length > 1) {
-                            setState(() => _tabs.removeAt(index));
-                          } else {
-                            Fluttertoast.showToast(msg: '您不能删除最后一个标签页');
-                          }
-                        },
-                          onTap: () {
-                          setState(() => _currentTabIndex = index);
-                          },
-                          child:  Tab(
-                          iconMargin: EdgeInsets.zero,
-                          height: 48,
-                          icon: SizedBox(
-                              width: 24,
-                              height: 24,
-                              child: CachedNetworkImage(
-                                imageUrl: _tabs[index].icon ?? '',
-                                fit: BoxFit.contain,
-                              )),
-                          text: _tabs[index].name ?? ''));
-                    },
-                  )),
-              buildFloatingSearchBar(),
-            ],
-          )),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-      floatingActionButton: Container(
-          margin: const EdgeInsets.only(bottom: 48),
-          child: FloatingActionButton(
-            onPressed: () =>
-                _currentTab?.controller.animateTo!(0, duration: const Duration(milliseconds: 1000), curve: Curves.ease),
-            //globalKey.currentState?.openEndDrawer(),
-            tooltip: 'Top',
-            child: const Icon(Icons.arrow_upward),
-          )),
-    );
-  }
-
-  Widget buildFloatingSearchBar() {
-    final isPortrait = MediaQuery.of(context).orientation == Orientation.portrait;
-
-    return FloatingSearchBar(
-        title: Text(
-          StringUtil.value(_currentTab?.controller.keywords, 'Search...'),
-          style: TextStyle(
-              fontFamily: Config.uiFontFamily,
-              fontSize: 16,
-              color: _currentTab?.controller.keywords == null ? Colors.black26 : Colors.black87),
-        ),
-        controller: _floatingSearchBarController,
-        automaticallyImplyDrawerHamburger: false,
-        automaticallyImplyBackButton: false,
-        hint: 'Search...',
-        scrollPadding: const EdgeInsets.only(top: 8, bottom: 8),
-        // implicitDuration: const Duration(milliseconds: 250),
-        transitionDuration: const Duration(milliseconds: 300),
-        transitionCurve: Curves.easeInOut,
-        // physics: const BouncingScrollPhysics(),
-        axisAlignment: isPortrait ? 0.0 : -1.0,
-        openAxisAlignment: 0.0,
-        width: isPortrait ? 600 : 500,
-        debounceDelay: const Duration(milliseconds: 500),
-        // clearQueryOnClose: false,
-        hintStyle: const TextStyle(fontFamily: Config.uiFontFamily, fontSize: 16, color: Colors.black26),
-        queryStyle: const TextStyle(fontFamily: Config.uiFontFamily, fontSize: 16),
-        onQueryChanged: (query) async {
-          final value = await Dio()
-              .get('https://danbooru.donmai.us/autocomplete.json?search[query]=$query&search[type]=tag_query&limit=10');
-          final result = List<Map<String, dynamic>>.from(value.data);
-          setState(() {
-            _autosuggest = result.map((item) => item['value'] as String).toList();
-            print('_autosuggest: $_autosuggest');
-          });
-        },
-
-        // Specify a custom transition to be used for
-        // animating between opened and closed stated.
-        transition: CircularFloatingSearchBarTransition(),
-        // transition: SlideFadeFloatingSearchBarTransition(),
-        leadingActions: [
-          FloatingSearchBarAction.hamburgerToBack(),
-          FloatingSearchBarAction(
-              showIfOpened: true,
-              child: SizedBox(
-                  width: 24,
-                  height: 24,
-                  child: CachedNetworkImage(
-                      imageUrl: _currentTab?.site.icon ?? '',
-                      errorWidget: (ctx, url, error) {
-                        return Text(
-                          _currentSite?.name?.substring(0, 1) ?? '?',
-                          style: const TextStyle(fontFamily: Config.uiFontFamily, fontSize: 18, color: Colors.teal),
-                        );
-                      }))),
-        ],
-        actions: [
-          FloatingSearchBarAction(
-            showIfOpened: false,
-            child: CircularButton(
-              // icon: const Icon(CupertinoIcons.square_grid_2x2),
-              icon: const Icon(Icons.extension),
-              // icon: const Icon( CupertinoIcons.square_stack_3d_up),
-              onPressed: () {
-                globalKey.currentState?.openEndDrawer();
-              },
-            ),
-          ),
-          // FloatingSearchBarAction.icon(icon: Icon., onTap: onTap)
-          FloatingSearchBarAction.searchToClear(
-            showIfClosed: false,
-          ),
-        ],
-        onSubmitted: (query) {
-          _currentTab?.controller.search!(query);
-          _floatingSearchBarController.close();
-        },
-        builder: (context, transition) => Material(
-              color: Colors.white,
-              elevation: 4.0,
-              borderRadius: BorderRadius.circular(4),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: _autosuggest
-                    .map((query) => ListTile(
-                        leading: const Icon(Icons.search),
-                        onTap: () {
-                          _currentTab?.controller.search!(query);
-                          _floatingSearchBarController.query = query;
-                          _floatingSearchBarController.close();
-                        },
-                        title: Text(
-                          query,
-                          style: const TextStyle(fontFamily: Config.uiFontFamily, fontSize: 14),
-                        )))
-                    .toList(),
-              ),
-            ));
+  Future<bool> onWillPop() {
+    if (globalKey.currentState?.isDrawerOpen == true) {
+      globalKey.currentState?.closeDrawer();
+      return Future.value(false);
+    }
+    if (globalKey.currentState?.isEndDrawerOpen == true) {
+      globalKey.currentState?.closeEndDrawer();
+      return Future.value(false);
+    }
+    DateTime now = DateTime.now();
+    if (currentBackPressTime == null || now.difference(currentBackPressTime!) > const Duration(seconds: 2)) {
+      currentBackPressTime = now;
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('再按一次退出')));
+      return Future.value(false);
+    }
+    return Future.value(true);
   }
 }

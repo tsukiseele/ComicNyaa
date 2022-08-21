@@ -8,7 +8,7 @@ class DynamicTabView extends StatefulWidget {
   final Widget? stub;
   final ValueChanged<int> onPositionChange;
   final ValueChanged<double> onScroll;
-  final int? initPosition;
+  final int? position;
   final bool isScrollToNewTab;
 
   const DynamicTabView({
@@ -19,7 +19,7 @@ class DynamicTabView extends StatefulWidget {
     this.stub,
     required this.onPositionChange,
     required this.onScroll,
-    this.initPosition,
+    this.position,
     this.isScrollToNewTab = false,
   }) : super(key: key);
 
@@ -34,11 +34,9 @@ class _DynamicTabsState extends State<DynamicTabView> with TickerProviderStateMi
 
   @override
   void initState() {
-    if (widget.initPosition != null) {
-      _currentPosition = widget.initPosition!;
+    if (widget.position != null) {
+      _currentPosition = widget.position!;
     }
-
-    // _currentPosition = widget.initPosition;
     controller = TabController(
       length: widget.itemCount,
       vsync: this,
@@ -57,19 +55,20 @@ class _DynamicTabsState extends State<DynamicTabView> with TickerProviderStateMi
       controller?.removeListener(onPositionChange);
       controller?.dispose();
 
-      if (widget.initPosition != null) {
-        _currentPosition = widget.initPosition!;
+      if (widget.position != null) {
+        _currentPosition = widget.position!;
       }
       // 页面被删除时，重新获取正确的当前索引值
       if (_currentPosition > widget.itemCount - 1) {
         _currentPosition = widget.itemCount - 1;
         _currentPosition = _currentPosition < 0 ? 0 : _currentPosition;
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (mounted) {
-            controller?.animateTo(_currentPosition, duration: const Duration(milliseconds: 1), curve: Curves.ease);
-          }
-        });
+        // WidgetsBinding.instance.addPostFrameCallback((_) {
+        //   if (mounted) {
+        //     controller?.animateTo(_currentPosition, duration: const Duration(milliseconds: 1), curve: Curves.ease);
+        //   }
+        // });
       }
+
       _currentCount = widget.itemCount;
       setState(() {
         controller = TabController(
@@ -79,6 +78,7 @@ class _DynamicTabsState extends State<DynamicTabView> with TickerProviderStateMi
         );
         controller?.addListener(onPositionChange);
         controller?.animation?.addListener(onScroll);
+
         // 跳转到新增的索引
         if (widget.isScrollToNewTab) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -87,10 +87,18 @@ class _DynamicTabsState extends State<DynamicTabView> with TickerProviderStateMi
               controller?.animateTo(_currentPosition, duration: const Duration(milliseconds: 1), curve: Curves.ease);
             }
           });
+        } else {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) {
+              onPositionChange();
+              controller?.animateTo(_currentPosition, duration: const Duration(milliseconds: 1), curve: Curves.ease);
+
+            }
+          });
         }
       });
-    } else if (widget.initPosition != null) {
-      controller?.animateTo(widget.initPosition!);
+    } else if (widget.position != null) {
+      controller?.animateTo(widget.position!);
     }
 
     super.didUpdateWidget(oldWidget);
