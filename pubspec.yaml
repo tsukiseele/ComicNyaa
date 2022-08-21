@@ -102,21 +102,10 @@ flutter:
   # list giving the asset and other descriptors for the font. For
   # example:
   fonts:
-    - family: ComicNeueBold
-      fonts:
-        - asset: assets/fonts/ComicNeue-Bold.ttf
-        - asset: assets/fonts/ComicNeue-BoldItalic.ttf
-          style: italic
-          weight: 300
     - family: ComicNeue
       fonts:
         - asset: assets/fonts/ComicNeue-Regular.ttf
         - asset: assets/fonts/ComicNeue-Italic.ttf
-          style: italic
-    - family: ComicNeueLight
-      fonts:
-        - asset: assets/fonts/ComicNeue-Light.ttf
-        - asset: assets/fonts/ComicNeue-LightItalic.ttf
           style: italic
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/custom-fonts/#from-packages
