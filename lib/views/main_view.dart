@@ -43,12 +43,8 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
   int _currentTabIndex = 0;
 
   Future<void> _initialize() async {
-    // final sites = await RuleLoader.loadFormDirectory(await Config.ruleDir);
-    // sites.forEachIndexed(
-    //     (i, element) => print('$i: [${element.id}]${element.name}'));
     await _checkUpdate();
     setState(() {
-      // _sites = sites;
       _sites = RuleLoader.sites.values.toList();
       _currentSiteId = _currentSiteId < 0 ? _sites[0].id! : _currentSiteId;
       _tabs.add(_currentSite!);
@@ -259,9 +255,8 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
               Container(
                   padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
                   child: DynamicTabView(
-                    // initPosition: _tabs.isNotEmpty ? _tabs.length - 1 : 0,
+                    initPosition: _currentTabIndex,
                     onPositionChange: (int index) {
-                      print('onPositionChangeonPositionChangeonPositionChangeonPositionChangeonPositionChangeonPositionChange');
                       setState(() => _currentTabIndex = index);
                     },
                     itemCount: _tabs.length,
@@ -282,6 +277,9 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
                             Fluttertoast.showToast(msg: '您不能删除最后一个标签页');
                           }
                         },
+                          onTap: () {
+                          setState(() => _currentTabIndex = index);
+                          },
                           child:  Tab(
                           iconMargin: EdgeInsets.zero,
                           height: 48,

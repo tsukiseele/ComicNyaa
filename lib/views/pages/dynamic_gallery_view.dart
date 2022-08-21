@@ -26,22 +26,24 @@ class GalleryController {
   void Function(double offset, { required Duration duration,   required Curve curve})? animateTo;
 }
 
-class GalleryView extends StatefulWidget {
-  GalleryView({Key? key, required this.site}) : super(key: key);
+class DynamicGalleryView extends StatefulWidget {
+  DynamicGalleryView({Key? key, required this.site}) : super(key: key);
   final Site site;
   final GalleryController controller = GalleryController();
 
   @override
-  State<GalleryView> createState() => _GalleryViewState();
+  State<DynamicGalleryView> createState() => _DynamicGalleryViewState();
 }
 
-class _GalleryViewState extends State<GalleryView> with TickerProviderStateMixin, AutomaticKeepAliveClientMixin<GalleryView> {
+class _DynamicGalleryViewState extends State<DynamicGalleryView> with TickerProviderStateMixin, AutomaticKeepAliveClientMixin<DynamicGalleryView> {
   final globalKey = GlobalKey<ScaffoldState>();
   final ScrollController _scrollController = ScrollController();
   final RefreshController _refreshController = RefreshController(initialRefresh: false);
   final Map<int, double> _heightCache = {};
+  List<Site> _sites = [];
   List<TypedModel> _models = [];
   List<TypedModel> _preloadModels = [];
+  int _currentSiteId = 920;
   int _page = 1;
   String _keywords = '';
   bool _isLoading = false;
@@ -52,12 +54,12 @@ class _GalleryViewState extends State<GalleryView> with TickerProviderStateMixin
       _refreshController.requestRefresh();
     };
 
-    // await _checkUpdate();
-    // final sites = await RuleLoader.loadFormDirectory(await Config.ruleDir);
-    // sites.forEachIndexed((i, element) => print('$i: [${element.id}]${element.name}'));
+    await _checkUpdate();
+    final sites = await RuleLoader.loadFormDirectory(await Config.ruleDir);
+    sites.forEachIndexed((i, element) => print('$i: [${element.id}]${element.name}'));
     setState(() {
-      // _sites = sites;
-      // _currentSiteId = _currentSiteId < 0 ? _sites[0].id! : _currentSiteId;
+      _sites = sites;
+      _currentSiteId = _currentSiteId < 0 ? _sites[0].id! : _currentSiteId;
     });
 
     WidgetsBinding.instance.addPostFrameCallback((_) {

@@ -84,7 +84,8 @@ class Mio<T extends Model> {
   /// @param {*} item
   /// @param {*} rules
   /// @return {Promise<T extends Meta>}
-  Future<Map<String, dynamic>> parseChildrenConcurrency(Map<String, dynamic> item, Rules rules, {Future<bool> Function(List<Map<String, dynamic>>)? callback}) async {
+  Future<Map<String, dynamic>> parseChildrenConcurrency(Map<String, dynamic> item, Rules rules,
+      {Future<bool> Function(List<Map<String, dynamic>>)? callback}) async {
     if (item[r'$children'] != null && rules[r'$children'] != null) {
       int page = 0;
       Selector $children = rules[r'$children']!;
@@ -117,7 +118,7 @@ class Mio<T extends Model> {
             }
             item['children'] != null ? item['children']?.addAll(children) : (item['children'] = children);
             if (callback != null) {
-             await callback(children);
+              await callback(children);
             }
           }
         }
@@ -141,34 +142,32 @@ class Mio<T extends Model> {
       do {
         // print('PARSE CHILDREN START =======================================');
         final children = await parseRules(url, $children.rules!, page = page, keywords = '');
+        if (children.isEmpty) break;
         // print('PARSE CHILDREN LENGTH ======================================= ${children.length}');
         List<String> newKeys = isMulitPage ? children.map((item) => item[r'$key'].toString()).toList() : [];
         // print('PARSE EQ ======================================= $keys === $newKeys');
         if (isMulitPage && equalsKeys(keys, newKeys)) break;
         keys = newKeys;
         page++;
-
-        if (children.isNotEmpty) {
-          // 解析下级子节点
-          final nextChildren = rules[r'$children']?.rules;
-          if (children.first[r'$children'] != null && nextChildren != null) {
-            await Future.wait(children.map((child) => parseChildrenConcurrency(child, nextChildren)));
+        // 解析下级子节点
+        final nextChildren = rules[r'$children']?.rules;
+        if (children.first[r'$children'] != null && nextChildren != null) {
+          await Future.wait(children.map((child) => parseChildrenConcurrency(child, nextChildren)));
+        }
+        // 判断是否拉平子节点(并终止获取)，否则追加到子节点下，
+        if ($children.flat != null && $children.flat == true) {
+          item.addAll(children.first);
+          yield [item];
+          break;
+        } else {
+          if ($children.extend == true) {
+            // 判断并继承父节点字段
+            // extend && children.forEach((child, index) => (children[index] = Object.assign({}, item, child)))
           }
-          // 判断是否拉平子节点(并终止获取)，否则追加到子节点下，
-          if ($children.flat != null && $children.flat == true) {
-            item.addAll(children.first);
-            yield [item];
-            break;
-          } else {
-            if ($children.extend == true) {
-              // 判断并继承父节点字段
-              // extend && children.forEach((child, index) => (children[index] = Object.assign({}, item, child)))
-            }
-            item['children'] != null ? item['children']?.addAll(children) : (item['children'] = children);
-            // print('YIDLE START =======================================');
-            yield children;
-            // print('YIDLE END =======================================');
-          }
+          item['children'] != null ? item['children']?.addAll(children) : (item['children'] = children);
+          // print('YIDLE START =======================================');
+          yield children;
+          // print('YIDLE END =======================================');
         }
       } while (isMulitPage && keys.isNotEmpty);
     }
@@ -246,7 +245,6 @@ class Mio<T extends Model> {
     // print('RESULT SET === $resultSet');
     for (var item in resultSet) {
       item['type'] = site?.type ?? 'unknown';
-
     }
     return resultSet; // resultSet;
   }
