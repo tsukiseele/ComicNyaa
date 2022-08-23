@@ -1,6 +1,3 @@
-import 'package:comic_nyaa/widget/keep_alive_wrapper.dart';
-import 'package:extended_tabs/extended_tabs.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class NyaaTabView extends StatefulWidget {
@@ -13,18 +10,22 @@ class NyaaTabView extends StatefulWidget {
   final int? position;
   final bool isScrollToNewTab;
   final Decoration? indicator;
+  final Color? color;
+  final Duration duration;
 
   const NyaaTabView({
     Key? key,
     required this.itemCount,
     required this.tabBuilder,
     required this.pageBuilder,
-    this.stub,
     required this.onPositionChange,
     required this.onScroll,
     this.position,
     this.isScrollToNewTab = false,
-    this.indicator
+    this.indicator,
+    this.stub,
+    this.color,
+    this.duration = const Duration(milliseconds: 1000),
   }) : super(key: key);
 
   @override
@@ -66,7 +67,11 @@ class _NyaaTabsState extends State<NyaaTabView> with TickerProviderStateMixin {
         _currentPosition = _currentPosition < 0 ? 0 : _currentPosition;
       }
 
-      final transitionPostion = widget.isScrollToNewTab && widget.itemCount > _currentCount && widget.itemCount > 1 ? widget.itemCount - 2 : _currentPosition;
+      final transitionPostion = widget.isScrollToNewTab &&
+              widget.itemCount > _currentCount &&
+              widget.itemCount > 1
+          ? widget.itemCount - 2
+          : _currentPosition;
 
       _currentCount = widget.itemCount;
 
@@ -87,13 +92,13 @@ class _NyaaTabsState extends State<NyaaTabView> with TickerProviderStateMixin {
             }
             controller?.animateTo(_currentPosition,
                 duration: const Duration(milliseconds: 1), curve: Curves.ease);
+            // onPositionChange();
           }
         });
       });
     } else if (widget.position != null) {
       controller?.animateTo(widget.position!);
     }
-
   }
 
   @override
@@ -112,16 +117,21 @@ class _NyaaTabsState extends State<NyaaTabView> with TickerProviderStateMixin {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
         Expanded(
-          child: TabBarView(
-            controller: controller,
-            // allowImplicitScrolling: true,
-            children: List.generate(
-                widget.itemCount,
-                (index) => widget.pageBuilder(context,
-                    index) //KeepAliveWrapper(child: widget.pageBuilder(context, index)) ,
-                ),
-          ),
-        ),
+            child: Material(
+          borderRadius: const BorderRadius.only(
+              bottomLeft: Radius.circular(32),
+              bottomRight: Radius.circular(32)),
+          clipBehavior: Clip.hardEdge,
+          color: Colors.transparent,
+          child: AnimatedContainer(
+              color: widget.color,
+              duration: widget.duration,
+              child: TabBarView(
+                controller: controller,
+                children: List.generate(widget.itemCount,
+                    (index) => widget.pageBuilder(context, index)),
+              )),
+        )),
         Container(
           alignment: Alignment.center,
           child: TabBar(

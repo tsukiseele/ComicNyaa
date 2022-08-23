@@ -7,7 +7,7 @@ extension UriExtension on Uri {
     return Uri.decodeComponent(uri);
   }
 
-  String filename() {
+  String get filename {
     return Uri.parse(toString().split("/").last.split('?').first).decodeComponentDeep();
   }
 }

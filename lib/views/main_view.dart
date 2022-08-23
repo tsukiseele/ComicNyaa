@@ -6,11 +6,8 @@ import 'package:comic_nyaa/library/mio/core/mio_loader.dart';
 import 'package:comic_nyaa/utils/http.dart';
 import 'package:comic_nyaa/views/settings_view.dart';
 import 'package:comic_nyaa/views/subscribe_view.dart';
-import 'package:comic_nyaa/views/widget/custom_tab_view.dart';
-import 'package:comic_nyaa/views/widget/dynamic_tab_view.dart';
 import 'package:comic_nyaa/widget/nyaa_tab_view.dart';
 import 'package:dio/dio.dart';
-import 'package:extended_tabs/extended_tabs.dart';
 import 'package:flutter/material.dart';
 
 import 'package:comic_nyaa/library/mio/model/site.dart';
@@ -41,6 +38,20 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
   int _currentTabIndex = 0;
   DateTime? currentBackPressTime = DateTime.now();
   int _lastScrollPosition = 0;
+  final colorList = [
+    Colors.blue[100],
+    Colors.green[100],
+    Colors.purple[100],
+    Colors.amber[100],
+    Colors.pink[100]
+  ];
+  final textColorList = [
+    Colors.blue[300],
+    Colors.green[300],
+    Colors.purple[300],
+    Colors.amber[300],
+    Colors.pink[300]
+  ];
 
   Future<void> _initialize() async {
     await _checkUpdate();
@@ -70,7 +81,8 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
 
   Future<void> _updateSubscribe(Directory dir) async {
     final savePath = dir.join('rules.zip').path;
-    await Http.client().download('https://hlo.li/static/rules.zip', savePath);
+    const sourceUrl = 'https://hlo.li/static/rules.zip';
+    await Http.client().download(sourceUrl, savePath);
     await RuleLoader.loadFormDirectory(dir);
   }
 
@@ -131,8 +143,6 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
     }
   }
 
-  final colorList = [ Colors.blue[100], Colors.green[100], Colors.purple[100], Colors.amber[100], Colors.deepOrange[100]];
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -154,7 +164,10 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
                       onPositionChange: (int index) {
                         // Remove old scroll listener
                         // _gallerys[_currentTabIndex].controller.scrollController?.removeListener(onGalleryScroll);
-                        setState(() => _currentTabIndex = index);colorList[_currentTabIndex % colorList.length];
+                        print('POSITIONCHANGE::::::::::::::::::::: $index');
+
+                        setState(() => _currentTabIndex = index);
+
                         // Add new scroll listener
                         WidgetsBinding.instance.addPostFrameCallback((_) {
                           if (mounted) {
@@ -169,24 +182,16 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
                       onScroll: (double value) {},
                       itemCount: _gallerys.length,
                       isScrollToNewTab: true,
+                      color: colorList[_currentTabIndex % colorList.length],
                       indicator: BoxDecoration(
-                        color: colorList[_currentTabIndex % colorList.length]?.withOpacity(.3), //Theme.of(context).primaryColor.withOpacity(.6),
-                        // color: Theme.of(context).primaryColor,
-                        // backgroundBlendMode: BlendMode.,
-                        borderRadius: BorderRadius.circular(16),
-                        // border: Border(
-                        //   bottom: BorderSide(
-                        //     color: Theme.of(context).primaryColor,
-                        //     width: 0,
-                        //   ),
-                        // ),
+                        color: colorList[_currentTabIndex % colorList.length]
+                            ?.withOpacity(.6),
+                        borderRadius: BorderRadius.circular(20),
                       ),
-                      pageBuilder: (BuildContext context, int index) =>
-                          _gallerys[index],
+                      pageBuilder: (BuildContext context, int index) => _gallerys[index],
                       tabBuilder: (BuildContext context, int index) {
                         return Material(
                             color: Colors.transparent,
-                            // color: _currentTabIndex == index ? Theme.of(context).primaryColor : null,
                             child: InkWell(
                                 onLongPress: () {
                                   if (_gallerys.length > 1) {
@@ -203,8 +208,14 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
                                     curve: Curves.ease,
                                     child: Row(children: [
                                       Container(
+                                          width: 40,
+                                          height: 40,
                                           padding: EdgeInsets.only(
-                                              top: 8, bottom: 8, right: _currentTabIndex == index ? 8 : 0),
+                                              top: 8,
+                                              bottom: 8,
+                                              right: _currentTabIndex == index
+                                                  ? 8
+                                                  : 0),
                                           child: CachedNetworkImage(
                                             imageUrl:
                                                 _gallerys[index].site.icon ??
@@ -214,7 +225,7 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
                                       _currentTabIndex == index
                                           ? SizedBox(
                                               width: _currentTabIndex == index
-                                                  ? 100.0
+                                                  ? 96.0
                                                   : null,
                                               child: MarqueeWidget(
                                                   direction: Axis.horizontal,
@@ -227,7 +238,10 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
                                                           TextOverflow.ellipsis,
                                                       maxLines: 1,
                                                       style: TextStyle(
-                                                          color: colorList[_currentTabIndex % colorList.length]))))
+                                                          color: textColorList[
+                                                              _currentTabIndex %
+                                                                  colorList
+                                                                      .length]))))
                                           : Container()
                                     ]))));
                       })

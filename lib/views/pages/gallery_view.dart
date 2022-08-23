@@ -26,7 +26,7 @@ class GalleryController {
   ScrollController? scrollController;
   void Function(String keywords)? search;
   void Function()? refresh;
-  void Function(double offset, { required Duration duration,   required Curve curve})? animateTo;
+  void Function(double offset, { required Duration duration, required Curve curve})? animateTo;
 }
 
 class GalleryView extends StatefulWidget {

@@ -92,7 +92,7 @@ class ImageDetailViewState extends State<ImageDetailView> {
   }
 
   onDownload(String url) async {
-    String savePath = (await Config.downloadDir).join(Uri.parse(url).filename()).path;
+    String savePath = (await Config.downloadDir).join(Uri.parse(url).filename).path;
     Fluttertoast.showToast(msg: '下载已添加：$savePath');
     await Dio().download(url, savePath);
   }
