@@ -22,6 +22,7 @@ import '../../models/typed_model.dart';
 
 class GalleryController {
   String keywords = '';
+  List<TypedModel> models = [];
   ScrollController? scrollController;
   void Function(String keywords)? search;
   void Function()? refresh;
@@ -29,17 +30,18 @@ class GalleryController {
 }
 
 class GalleryView extends StatefulWidget {
-  GalleryView({Key? key, required this.site}) : super(key: key);
+  GalleryView({Key? key, required this.site/*, this.scrollController*/}) : super(key: key);
   final Site site;
+  // final ScrollController? scrollController;
   final GalleryController controller = GalleryController();
 
   @override
   State<GalleryView> createState() => _GalleryViewState();
 }
 
-class _GalleryViewState extends State<GalleryView> with TickerProviderStateMixin, AutomaticKeepAliveClientMixin<GalleryView> {
+class _GalleryViewState extends State<GalleryView> with AutomaticKeepAliveClientMixin<GalleryView>, TickerProviderStateMixin {
   final globalKey = GlobalKey<ScaffoldState>();
-  final ScrollController _scrollController = ScrollController();
+  late final ScrollController _scrollController = ScrollController();
   final RefreshController _refreshController = RefreshController(initialRefresh: false);
   final Map<int, double> _heightCache = {};
   List<TypedModel> _models = [];
@@ -49,6 +51,7 @@ class _GalleryViewState extends State<GalleryView> with TickerProviderStateMixin
   bool _isLoading = false;
 
   Future<void> _initialize() async {
+    // _scrollController = widget.scrollController ?? ScrollController();
     widget.controller.scrollController = _scrollController;
     widget.controller.refresh = _refreshController.requestRefresh;
     widget.controller.search = (String kwds) {
@@ -66,7 +69,7 @@ class _GalleryViewState extends State<GalleryView> with TickerProviderStateMixin
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _refreshController.requestRefresh();
-      widget.controller.animateTo = _scrollController.animateTo;
+      // widget.controller.animateTo = _scrollController.animateTo;
       _scrollController.addListener(() {
         if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent) {
           if (!_isLoading) {
@@ -96,7 +99,7 @@ class _GalleryViewState extends State<GalleryView> with TickerProviderStateMixin
       }
       // 试图获取预加载内容
       if (_preloadModels.isNotEmpty) {
-        print('READ PRELOAD ====================== SIZE = ${_preloadModels.length}');
+        // print('READ PRELOAD ====================== SIZE = ${_preloadModels.length}');
         final models = _preloadModels;
         _page++;
         _preloadModels = [];
@@ -106,13 +109,13 @@ class _GalleryViewState extends State<GalleryView> with TickerProviderStateMixin
       // 否则重新加载
       _isLoading = true;
       if (isNext) _page++;
-      print('CURRENT PAGE: $_page');
+      // print('CURRENT PAGE: $_page');
       final images = await _getModels();
       if (images.isEmpty) {
         if (isNext) _page--;
         Fluttertoast.showToast(msg: '已经到底了');
       } else {
-        print('SEND PRELOAD =====> PAGE = $_page');
+        // print('SEND PRELOAD =====> PAGE = $_page');
         _preload();
       }
       return images;
@@ -167,6 +170,7 @@ class _GalleryViewState extends State<GalleryView> with TickerProviderStateMixin
     final models = await _load(isNext: true);
     _refreshController.loadComplete();
     setState(() => _models.addAll(models));
+    widget.controller.models = _models;
     return models;
   }
 
@@ -181,6 +185,7 @@ class _GalleryViewState extends State<GalleryView> with TickerProviderStateMixin
     final models = await _load(isReset: true);
     _refreshController.refreshCompleted();
     setState(() => _models = models);
+    widget.controller.models = _models;
     return models;
   }
 
@@ -210,20 +215,6 @@ class _GalleryViewState extends State<GalleryView> with TickerProviderStateMixin
   Site? get _currentSite {
     // return _sites.firstWhereOrNull((site) => site.id == _currentSiteId);
     return widget.site;
-  }
-
-  _checkUpdate() async {
-    final ruleDir = (await Config.ruleDir);
-    await RuleLoader.loadFormDirectory(ruleDir);
-    if (RuleLoader.sites.isEmpty) {
-      await _updateSubscribe(ruleDir);
-    }
-  }
-
-  Future<void> _updateSubscribe(Directory dir) async {
-    final savePath = dir.join('rules.zip').path;
-    await Http.client().download('https://hlo.li/static/rules.zip', savePath);
-    await RuleLoader.loadFormDirectory(dir);
   }
 
   @override
@@ -329,11 +320,33 @@ class _GalleryViewState extends State<GalleryView> with TickerProviderStateMixin
   }
 
   @override
+  void didUpdateWidget(covariant GalleryView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.site.id != oldWidget.site.id) {
+      print('didUpdateWidget:::::: NAME: ${oldWidget.site.name} >>>>>>>> ${widget.site.name}');
+      print('didUpdateWidget:::::: DATA: ${widget.controller.models} <<<<<<<< ${oldWidget.controller.models}');
+      // 销毁被旧的滚动控制器
+      // oldWidget.controller.scrollController?.dispose();
+      setState(() {
+        WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+          _initialize();
+          // _models = widget.controller.models;
+          // _preloadModels = [];
+          // print('FINALMODELS: $_models');
+          // _refreshController.requestRefresh();
+        });
+      });
+      updateKeepAlive();
+    }
+  }
+
+  @override
   bool get wantKeepAlive => true;
 
   @override
   void dispose() {
-    super.dispose();
     _scrollController.dispose();
+    _refreshController.dispose();
+    super.dispose();
   }
 }

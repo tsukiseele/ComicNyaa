@@ -6,8 +6,11 @@ import 'package:comic_nyaa/library/mio/core/mio_loader.dart';
 import 'package:comic_nyaa/utils/http.dart';
 import 'package:comic_nyaa/views/settings_view.dart';
 import 'package:comic_nyaa/views/subscribe_view.dart';
+import 'package:comic_nyaa/views/widget/custom_tab_view.dart';
 import 'package:comic_nyaa/views/widget/dynamic_tab_view.dart';
+import 'package:comic_nyaa/widget/nyaa_tab_view.dart';
 import 'package:dio/dio.dart';
+import 'package:extended_tabs/extended_tabs.dart';
 import 'package:flutter/material.dart';
 
 import 'package:comic_nyaa/library/mio/model/site.dart';
@@ -16,6 +19,7 @@ import 'package:material_floating_search_bar/material_floating_search_bar.dart';
 
 import '../app/global.dart';
 import '../utils/string_extensions.dart';
+import '../widget/marquee_widget.dart';
 import 'pages/gallery_view.dart';
 
 class MainView extends StatefulWidget {
@@ -28,7 +32,8 @@ class MainView extends StatefulWidget {
 
 class _MainViewState extends State<MainView> with TickerProviderStateMixin {
   final globalKey = GlobalKey<ScaffoldState>();
-  final FloatingSearchBarController _floatingSearchBarController = FloatingSearchBarController();
+  final FloatingSearchBarController _floatingSearchBarController =
+      FloatingSearchBarController();
   final List<GalleryView> _gallerys = [];
   ScrollController? _galleryScrollController;
   List<Site> _sites = [];
@@ -46,15 +51,14 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
 
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
-          _galleryScrollController = _currentTab?.controller.scrollController;
-          if (_galleryScrollController == null) return;
-          _galleryScrollController!.removeListener(onGalleryScroll);
-          _galleryScrollController!.addListener(onGalleryScroll);
+          // _galleryScrollController = _currentTab?.controller.scrollController;
+          //   if (_galleryScrollController == null) return;
+          //   _galleryScrollController!.removeListener(onGalleryScroll);
+          //   _galleryScrollController!.addListener(onGalleryScroll);
         }
       });
     });
   }
-
 
   Future<void> _checkUpdate() async {
     final ruleDir = (await Config.ruleDir);
@@ -77,37 +81,58 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
   }
 
   GalleryView? get _currentTab {
-    return _gallerys[_currentTabIndex];
+    return _gallerys.isNotEmpty ? _gallerys[_currentTabIndex] : null;
   }
 
   void addTab(Site site) {
     _gallerys.add(GalleryView(site: site));
+    // WidgetsBinding.instance.addPostFrameCallback((_) {
+    //   _currentTabIndex = _gallerys.length - 1;
+    // });
   }
 
   void removeTab(int index) {
+    // final temp = _gallerys[index];
+    // _gallerys.removeAt(index);
+    // _gallerys.add(temp);
     setState(() {
       print('REMOVE::::: ${_gallerys[index].site.name}');
-      _gallerys[index].controller.scrollController?.dispose();
+      // try {
+      //   _gallerys[index].controller.scrollController?.dispose();
+      // } catch (e) {
+      //   print(e);
+      // }
       _gallerys.removeAt(index);
-
       if (_currentTabIndex > _gallerys.length - 1) {
         _currentTabIndex = _gallerys.length - 1;
       }
     });
   }
+
   onGalleryScroll() {
     if (_galleryScrollController == null) return;
     // if (_galleryScrollController!.positions.isEmpty) _galleryScrollController!.dispose();
     if (_galleryScrollController!.position.pixels < 128) {
-      _floatingSearchBarController.isHidden ? _floatingSearchBarController.show() : null;
-    } else if (_galleryScrollController!.position.pixels > _lastScrollPosition + 64) {
+      _floatingSearchBarController.isHidden
+          ? _floatingSearchBarController.show()
+          : null;
+    } else if (_galleryScrollController!.position.pixels >
+        _lastScrollPosition + 64) {
       _lastScrollPosition = _galleryScrollController!.position.pixels.toInt();
-      _floatingSearchBarController.isVisible ? _floatingSearchBarController.hide() : null;
-    } else if (_galleryScrollController!.position.pixels < _lastScrollPosition - 64) {
+      _floatingSearchBarController.isVisible
+          ? _floatingSearchBarController.hide()
+          : null;
+    } else if (_galleryScrollController!.position.pixels <
+        _lastScrollPosition - 64) {
       _lastScrollPosition = _galleryScrollController!.position.pixels.toInt();
-      _floatingSearchBarController.isHidden ? _floatingSearchBarController.show() : null;
+      _floatingSearchBarController.isHidden
+          ? _floatingSearchBarController.show()
+          : null;
     }
   }
+
+  final colorList = [ Colors.blue[100], Colors.green[100], Colors.purple[100], Colors.amber[100], Colors.deepOrange[100]];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -123,51 +148,90 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
           child: Stack(
             fit: StackFit.expand,
             children: [
-              Container(
-                  padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
-                  child: DynamicTabView(
-                    position: _currentTabIndex,
-                    onPositionChange: (int index) {
-                      setState(() => _currentTabIndex = index);
-                      WidgetsBinding.instance.addPostFrameCallback((_) {
-                        if (mounted) {
-                          _galleryScrollController = _currentTab?.controller.scrollController;
-                          if (_galleryScrollController == null) return;
-                          onGalleryScroll();
-                          _galleryScrollController!.removeListener(onGalleryScroll);
-                          _galleryScrollController!.addListener(onGalleryScroll);
-                        }
-                      });
-                    },
-                    onScroll: (double value) {},
-                    itemCount: _gallerys.length,
-                    isScrollToNewTab: true,
-                    pageBuilder: (BuildContext context, int index) => _gallerys[index],
-                    tabBuilder: (BuildContext context, int index) {
-                      return InkWell(
-                          onLongPress: () {
-                            if (_gallerys.length > 1) {
-                              setState(() => removeTab(index));
-                            } else {
-                              Fluttertoast.showToast(msg: '您不能删除最后一个标签页');
-                            }
-                          },
-                          onTap: () {
-                            setState(() => _currentTabIndex = index);
-                          },
-                          child: Tab(
-                              iconMargin: EdgeInsets.zero,
-                              height: 48,
-                              icon: SizedBox(
-                                  width: 24,
-                                  height: 24,
-                                  child: CachedNetworkImage(
-                                    imageUrl: _gallerys[index].site.icon ?? '',
-                                    fit: BoxFit.contain,
-                                  )),
-                              text: _gallerys[index].site.name ?? ''));
-                    },
-                  )),
+              _gallerys.isNotEmpty
+                  ? NyaaTabView(
+                      position: _currentTabIndex,
+                      onPositionChange: (int index) {
+                        // Remove old scroll listener
+                        // _gallerys[_currentTabIndex].controller.scrollController?.removeListener(onGalleryScroll);
+                        setState(() => _currentTabIndex = index);
+                        // Add new scroll listener
+                        WidgetsBinding.instance.addPostFrameCallback((_) {
+                          if (mounted) {
+                            // _galleryScrollController = _currentTab?.controller.scrollController;
+                            // if (_galleryScrollController == null) return;
+                            // onGalleryScroll();
+                            // _galleryScrollController!.removeListener(onGalleryScroll);
+                            // _galleryScrollController!.addListener(onGalleryScroll);
+                          }
+                        });
+                      },
+                      onScroll: (double value) {},
+                      itemCount: _gallerys.length,
+                      isScrollToNewTab: true,
+                      indicator: BoxDecoration(
+                        color: colorList[_currentTabIndex % colorList.length]?.withOpacity(.3), //Theme.of(context).primaryColor.withOpacity(.6),
+                        // color: Theme.of(context).primaryColor,
+                        // backgroundBlendMode: BlendMode.,
+                        borderRadius: BorderRadius.circular(16),
+                        // border: Border(
+                        //   bottom: BorderSide(
+                        //     color: Theme.of(context).primaryColor,
+                        //     width: 0,
+                        //   ),
+                        // ),
+                      ),
+                      pageBuilder: (BuildContext context, int index) =>
+                          _gallerys[index],
+                      tabBuilder: (BuildContext context, int index) {
+                        return Material(
+                            color: Colors.transparent,
+                            // color: _currentTabIndex == index ? Theme.of(context).primaryColor : null,
+                            child: InkWell(
+                                onLongPress: () {
+                                  if (_gallerys.length > 1) {
+                                    setState(() => removeTab(index));
+                                  } else {
+                                    Fluttertoast.showToast(msg: '您不能删除最后一个标签页');
+                                  }
+                                },
+                                onTap: () {
+                                  setState(() => _currentTabIndex = index);
+                                },
+                                child: AnimatedSize(
+                                    duration: const Duration(milliseconds: 250),
+                                    curve: Curves.ease,
+                                    child: Row(children: [
+                                      Container(
+                                          padding: const EdgeInsets.only(
+                                              top: 8, bottom: 8, right: 8),
+                                          child: CachedNetworkImage(
+                                            imageUrl:
+                                                _gallerys[index].site.icon ??
+                                                    '',
+                                            fit: BoxFit.contain,
+                                          )),
+                                      _currentTabIndex == index
+                                          ? SizedBox(
+                                              width: _currentTabIndex == index
+                                                  ? 100.0
+                                                  : null,
+                                              child: MarqueeWidget(
+                                                  direction: Axis.horizontal,
+                                                  child: Text(
+                                                      _gallerys[index]
+                                                              .site
+                                                              .name ??
+                                                          'unknown',
+                                                      overflow:
+                                                          TextOverflow.ellipsis,
+                                                      maxLines: 1,
+                                                      style: TextStyle(
+                                                          color: colorList[_currentTabIndex % colorList.length]))))
+                                          : Container()
+                                    ]))));
+                      })
+                  : Container(),
               buildFloatingSearchBar(),
             ],
           )),
@@ -175,8 +239,9 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
       floatingActionButton: Container(
           margin: const EdgeInsets.only(bottom: 48),
           child: FloatingActionButton(
-            onPressed: () =>
-                _currentTab?.controller.animateTo!(0, duration: const Duration(milliseconds: 1000), curve: Curves.ease),
+            onPressed: () => _currentTab?.controller.animateTo!(0,
+                duration: const Duration(milliseconds: 1000),
+                curve: Curves.ease),
             tooltip: 'Top',
             child: const Icon(Icons.arrow_upward),
           )),
@@ -184,7 +249,8 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
   }
 
   Widget buildFloatingSearchBar() {
-    final isPortrait = MediaQuery.of(context).orientation == Orientation.portrait;
+    final isPortrait =
+        MediaQuery.of(context).orientation == Orientation.portrait;
 
     return FloatingSearchBar(
         title: Text(
@@ -192,7 +258,9 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
           style: TextStyle(
               fontFamily: Config.uiFontFamily,
               fontSize: 16,
-              color: _currentTab?.controller.keywords == null ? Colors.black26 : Colors.black87),
+              color: _currentTab?.controller.keywords == null
+                  ? Colors.black26
+                  : Colors.black87),
         ),
         controller: _floatingSearchBarController,
         automaticallyImplyDrawerHamburger: false,
@@ -208,14 +276,19 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
         width: isPortrait ? 600 : 500,
         debounceDelay: const Duration(milliseconds: 500),
         // clearQueryOnClose: false,
-        hintStyle: const TextStyle(fontFamily: Config.uiFontFamily, fontSize: 16, color: Colors.black26),
-        queryStyle: const TextStyle(fontFamily: Config.uiFontFamily, fontSize: 16),
+        hintStyle: const TextStyle(
+            fontFamily: Config.uiFontFamily,
+            fontSize: 16,
+            color: Colors.black26),
+        queryStyle:
+            const TextStyle(fontFamily: Config.uiFontFamily, fontSize: 16),
         onQueryChanged: (query) async {
-          final value = await Dio()
-              .get('https://danbooru.donmai.us/autocomplete.json?search[query]=$query&search[type]=tag_query&limit=10');
+          final value = await Dio().get(
+              'https://danbooru.donmai.us/autocomplete.json?search[query]=$query&search[type]=tag_query&limit=10');
           final result = List<Map<String, dynamic>>.from(value.data);
           setState(() {
-            _autosuggest = result.map((item) => item['value'] as String).toList();
+            _autosuggest =
+                result.map((item) => item['value'] as String).toList();
             print('_autosuggest: $_autosuggest');
           });
         },
@@ -236,7 +309,10 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
                       errorWidget: (ctx, url, error) {
                         return Text(
                           _currentTab?.site.name?.substring(0, 1) ?? '?',
-                          style: const TextStyle(fontFamily: Config.uiFontFamily, fontSize: 18, color: Colors.teal),
+                          style: const TextStyle(
+                              fontFamily: Config.uiFontFamily,
+                              fontSize: 18,
+                              color: Colors.teal),
                         );
                       }))),
         ],
@@ -277,7 +353,8 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
                         },
                         title: Text(
                           query,
-                          style: const TextStyle(fontFamily: Config.uiFontFamily, fontSize: 14),
+                          style: const TextStyle(
+                              fontFamily: Config.uiFontFamily, fontSize: 14),
                         )))
                     .toList(),
               ),
@@ -289,7 +366,8 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
         child: ListView(padding: EdgeInsets.zero, children: [
       Stack(children: [
         CachedNetworkImage(
-          imageUrl: 'https://cdn.jsdelivr.net/gh/nyarray/LoliHost/images/94d6d0e7be187770e5d538539d95a12a.jpeg',
+          imageUrl:
+              'https://cdn.jsdelivr.net/gh/nyarray/LoliHost/images/94d6d0e7be187770e5d538539d95a12a.jpeg',
           fit: BoxFit.cover,
           height: 256,
         ),
@@ -297,16 +375,21 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
           child: Container(
               decoration: BoxDecoration(
                   color: Colors.white,
-                  gradient: LinearGradient(begin: FractionalOffset.topCenter, end: FractionalOffset.bottomCenter, colors: [
-                    Colors.grey.withOpacity(0.0),
-                    Colors.black45,
-                  ], stops: const [
-                    0.0,
-                    1.0
-                  ])),
+                  gradient: LinearGradient(
+                      begin: FractionalOffset.topCenter,
+                      end: FractionalOffset.bottomCenter,
+                      colors: [
+                        Colors.grey.withOpacity(0.0),
+                        Colors.black45,
+                      ],
+                      stops: const [
+                        0.0,
+                        1.0
+                      ])),
               padding: const EdgeInsets.all(8),
               alignment: Alignment.bottomLeft,
-              child: const Text('ポトフちゃんとワトラちゃんがすごくかわいいです！', style: TextStyle(color: Colors.white, fontSize: 18))),
+              child: const Text('ポトフちゃんとワトラちゃんがすごくかわいいです！',
+                  style: TextStyle(color: Colors.white, fontSize: 18))),
         ),
       ]),
       Container(height: 8),
@@ -320,15 +403,21 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
       ListTile(
           title: const Text('订阅'),
           onTap: () {
-            Navigator.push(context, MaterialPageRoute(builder: (ctx) => const SubscribeView()));
+            Navigator.push(context,
+                MaterialPageRoute(builder: (ctx) => const SubscribeView()));
           },
           iconColor: Colors.black87,
           leading: const Icon(Icons.collections_bookmark)),
-      ListTile(title: const Text('下载'), onTap: () {}, iconColor: Colors.black87, leading: const Icon(Icons.download)),
+      ListTile(
+          title: const Text('下载'),
+          onTap: () {},
+          iconColor: Colors.black87,
+          leading: const Icon(Icons.download)),
       ListTile(
           title: const Text('设置'),
           onTap: () {
-            Navigator.push(context, MaterialPageRoute(builder: (ctx) => const SettingsView()));
+            Navigator.push(context,
+                MaterialPageRoute(builder: (ctx) => const SettingsView()));
           },
           iconColor: Colors.black87,
           leading: const Icon(Icons.tune))
@@ -342,7 +431,8 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
         child: Material(
             child: Column(children: [
           CachedNetworkImage(
-            imageUrl: 'https://cdn.jsdelivr.net/gh/nyarray/LoliHost/images/7c4f1d7ea2dadd3ca835b9b2b9219681.webp',
+            imageUrl:
+                'https://cdn.jsdelivr.net/gh/nyarray/LoliHost/images/7c4f1d7ea2dadd3ca835b9b2b9219681.webp',
             fit: BoxFit.cover,
             height: 192,
           ),
@@ -368,7 +458,9 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
                                   child: CachedNetworkImage(
                                     imageUrl: _sites[index].icon ?? '',
                                     fit: BoxFit.cover,
-                                    errorWidget: (ctx, url, error) => const Icon(Icons.image_not_supported, size: 32),
+                                    errorWidget: (ctx, url, error) =>
+                                        const Icon(Icons.image_not_supported,
+                                            size: 32),
                                   )),
                               title: Text(
                                 _sites[index].name ?? '',
@@ -382,7 +474,8 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
                                 _sites[index].details ?? '',
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(fontSize: 14, color: Colors.black26),
+                                style: const TextStyle(
+                                    fontSize: 14, color: Colors.black26),
                               ),
                               trailing: Icon(
                                   _sites[index].type == 'comic'
@@ -408,9 +501,11 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
       return Future.value(false);
     }
     DateTime now = DateTime.now();
-    if (currentBackPressTime == null || now.difference(currentBackPressTime!) > const Duration(seconds: 2)) {
+    if (currentBackPressTime == null ||
+        now.difference(currentBackPressTime!) > const Duration(seconds: 2)) {
       currentBackPressTime = now;
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('再按一次退出')));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('再按一次退出')));
       return Future.value(false);
     }
     return Future.value(true);

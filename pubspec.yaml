@@ -29,6 +29,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  get: ^4.6.5
   intl: ^0.17.0
   flutter_cache_manager: ^3.3.0
   dio: ^4.0.6
@@ -54,6 +55,8 @@ dependencies:
   cached_network_image: ^3.2.1
   octo_image: ^1.0.2
   shimmer: ^2.0.0
+  extended_tabs: ^3.0.3
+#  flutter_custom_tab_bar: ^1.1.9
   # Rebuild Launch Splash: flutter pub run flutter_native_splash:create
   flutter_native_splash: ^2.2.7
   # Rebuild Icon: flutter pub run flutter_launcher_icons:main

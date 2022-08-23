@@ -1,7 +1,9 @@
+import 'package:comic_nyaa/widget/keep_alive_wrapper.dart';
+import 'package:extended_tabs/extended_tabs.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-class DynamicTabView extends StatefulWidget {
+class NyaaTabView extends StatefulWidget {
   final int itemCount;
   final IndexedWidgetBuilder tabBuilder;
   final IndexedWidgetBuilder pageBuilder;
@@ -10,8 +12,9 @@ class DynamicTabView extends StatefulWidget {
   final ValueChanged<double> onScroll;
   final int? position;
   final bool isScrollToNewTab;
+  final Decoration? indicator;
 
-  const DynamicTabView({
+  const NyaaTabView({
     Key? key,
     required this.itemCount,
     required this.tabBuilder,
@@ -21,13 +24,14 @@ class DynamicTabView extends StatefulWidget {
     required this.onScroll,
     this.position,
     this.isScrollToNewTab = false,
+    this.indicator
   }) : super(key: key);
 
   @override
-  State<DynamicTabView> createState() => _DynamicTabsState();
+  State<NyaaTabView> createState() => _NyaaTabsState();
 }
 
-class _DynamicTabsState extends State<DynamicTabView> with TickerProviderStateMixin {
+class _NyaaTabsState extends State<NyaaTabView> with TickerProviderStateMixin {
   TabController? controller;
   int _currentCount = 0;
   int _currentPosition = 0;
@@ -49,53 +53,47 @@ class _DynamicTabsState extends State<DynamicTabView> with TickerProviderStateMi
   }
 
   @override
-  void didUpdateWidget(DynamicTabView oldWidget) {
+  void didUpdateWidget(NyaaTabView oldWidget) {
+    super.didUpdateWidget(oldWidget);
     if (_currentCount != widget.itemCount) {
       controller?.animation?.removeListener(onScroll);
       controller?.removeListener(onPositionChange);
       controller?.dispose();
-      // 尝试使用传入索引
-      if (widget.position != null) {
-        _currentPosition = widget.position!;
-      }
+
       // 页面被删除时，重新获取正确的当前索引值
       if (_currentPosition > widget.itemCount - 1) {
         _currentPosition = widget.itemCount - 1;
         _currentPosition = _currentPosition < 0 ? 0 : _currentPosition;
       }
-      // 重置控制器
+
+      final transitionPostion = widget.isScrollToNewTab && widget.itemCount > _currentCount && widget.itemCount > 1 ? widget.itemCount - 2 : _currentPosition;
+
       _currentCount = widget.itemCount;
+
       setState(() {
         controller = TabController(
           length: widget.itemCount,
           vsync: this,
-          initialIndex: _currentPosition,
+          // 此处
+          initialIndex: transitionPostion,
         );
         controller?.addListener(onPositionChange);
         controller?.animation?.addListener(onScroll);
-
-        // 跳转到新增的索引
-        if (widget.isScrollToNewTab) {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (mounted) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            // 跳转到新增的索引
+            if (widget.isScrollToNewTab) {
               _currentPosition = widget.itemCount - 1;
-              controller?.animateTo(_currentPosition, duration: const Duration(milliseconds: 1), curve: Curves.ease);
             }
-          });
-        } else {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (mounted) {
-              onPositionChange();
-              controller?.animateTo(_currentPosition, duration: const Duration(milliseconds: 1), curve: Curves.ease);
-            }
-          });
-        }
+            controller?.animateTo(_currentPosition,
+                duration: const Duration(milliseconds: 1), curve: Curves.ease);
+          }
+        });
       });
     } else if (widget.position != null) {
       controller?.animateTo(widget.position!);
     }
 
-    super.didUpdateWidget(oldWidget);
   }
 
   @override
@@ -116,10 +114,12 @@ class _DynamicTabsState extends State<DynamicTabView> with TickerProviderStateMi
         Expanded(
           child: TabBarView(
             controller: controller,
+            // allowImplicitScrolling: true,
             children: List.generate(
-              widget.itemCount,
-              (index) => widget.pageBuilder(context, index),
-            ),
+                widget.itemCount,
+                (index) => widget.pageBuilder(context,
+                    index) //KeepAliveWrapper(child: widget.pageBuilder(context, index)) ,
+                ),
           ),
         ),
         Container(
@@ -130,14 +130,15 @@ class _DynamicTabsState extends State<DynamicTabView> with TickerProviderStateMi
             labelColor: Theme.of(context).primaryColor,
             unselectedLabelColor: Theme.of(context).hintColor,
             enableFeedback: true,
-            indicator: BoxDecoration(
-              border: Border(
-                bottom: BorderSide(
-                  color: Theme.of(context).primaryColor,
-                  width: 2,
-                ),
-              ),
-            ),
+            indicator: widget.indicator,
+            // indicator: BoxDecoration(
+            //   border: Border(
+            //     bottom: BorderSide(
+            //       color: Theme.of(context).primaryColor,
+            //       width: 2,
+            //     ),
+            //   ),
+            // ),
             tabs: List.generate(
               widget.itemCount,
               (index) => widget.tabBuilder(context, index),

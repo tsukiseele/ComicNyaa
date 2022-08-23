@@ -8,6 +8,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_displaymode/flutter_displaymode.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
+import 'package:get/get.dart';
 
 import 'app/global.dart';
 import 'library/mio/core/mio.dart';
@@ -20,7 +21,7 @@ void main() async {
   // });
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
-  runApp(const ComicNyaa());
+  runApp(const GetMaterialApp(home: ComicNyaa()));
   FlutterNativeSplash.remove();
 }
 
