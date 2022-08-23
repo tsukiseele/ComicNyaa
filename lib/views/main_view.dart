@@ -154,7 +154,7 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
                       onPositionChange: (int index) {
                         // Remove old scroll listener
                         // _gallerys[_currentTabIndex].controller.scrollController?.removeListener(onGalleryScroll);
-                        setState(() => _currentTabIndex = index);
+                        setState(() => _currentTabIndex = index);colorList[_currentTabIndex % colorList.length];
                         // Add new scroll listener
                         WidgetsBinding.instance.addPostFrameCallback((_) {
                           if (mounted) {
@@ -203,8 +203,8 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
                                     curve: Curves.ease,
                                     child: Row(children: [
                                       Container(
-                                          padding: const EdgeInsets.only(
-                                              top: 8, bottom: 8, right: 8),
+                                          padding: EdgeInsets.only(
+                                              top: 8, bottom: 8, right: _currentTabIndex == index ? 8 : 0),
                                           child: CachedNetworkImage(
                                             imageUrl:
                                                 _gallerys[index].site.icon ??
