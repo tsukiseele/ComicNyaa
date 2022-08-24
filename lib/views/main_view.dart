@@ -238,6 +238,7 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
                                                           TextOverflow.ellipsis,
                                                       maxLines: 1,
                                                       style: TextStyle(
+                                                        fontSize: 16,
                                                           color: textColorList[
                                                               _currentTabIndex %
                                                                   colorList

@@ -11,3 +11,9 @@ extension UriExtension on Uri {
     return Uri.parse(toString().split("/").last.split('?').first).decodeComponentDeep();
   }
 }
+
+extension UrlBuilder on String {
+  asUrl() {
+    return replaceAll(r'\', '');
+  }
+}

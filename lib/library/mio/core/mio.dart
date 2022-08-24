@@ -185,6 +185,7 @@ class Mio<T extends Model> {
     // 生成URL
     final url = replaceUrlTemplate(indexUrl, page ?? this.page, keywords ?? this.keywords);
     print('URL: $url');
+    print('SITE: ${site?.name}');
     // 发送请求
     final html = await requestText(url, headers: site?.headers);
     // 检查无效响应
@@ -194,43 +195,42 @@ class Mio<T extends Model> {
     final List<Map<String, dynamic>> resultSet = [];
     // 遍历选择器集
     for (final k in rule.keys) {
-      final exp = rule[k];
+      final exp = rule[k]!;
       // print('EXP: regex=${exp?.regex}, selector=${exp?.selector}');
       // 使用正则匹配
-      if (exp?.regex != null) {
-        if (exp?.regex == '') return resultSet;
-        var context = '';
+      if (exp.regex != null) {
+        var content = doc.outerHtml;
         // 匹配选择器内容
-        if (exp?.selector != null) {
+        if (exp.selector != null) {
           // 此处的选择器只应选择一个元素，否则result会被刷新为最后一个
-          selectEach(doc, exp?.selector as String, (result) => (context = result));
-        } else {
-          context = doc.getElementsByTagName('html')[0].innerHtml;
+          selectEach(doc, exp.selector!, (result) => (content = result));
         }
         // 匹配正则内容
-        final regexp = RegExp(exp?.regex ?? '');
-        var groups = List.of(regexp.allMatches(context));
+        final regexp = RegExp(exp.regex ?? '');
+        var groups = List.of(regexp.allMatches(content));
+        // 扩展列表
         while (resultSet.length < groups.length) {
           resultSet.add(<String, dynamic>{});
         }
         groups.forEachIndexed((i, item) {
+          print(item.groupCount);
           final match = item.groupCount > 0 ? item.group(1) : item.group(0);
-          resultSet[i][k] = replaceRegex(match ?? '', exp?.capture, exp?.replacement);
+          resultSet[i][k] = replaceRegex(match ?? '', exp.capture, exp.replacement);
         });
         // 使用选择器匹配
-      } else if (exp?.selector != null) {
-        selectEach(doc, exp?.selector as String, (result, index) {
+      } else if (exp.selector != null) {
+        selectEach(doc, exp.selector as String, (result, index) {
           // print('RRRR: $result, IIII: $index');
 
-          while (resultSet.length < index + 1) {
+          while (resultSet.length <= index) {
             resultSet.add(<String, dynamic>{});
           }
           // 执行最终替换，并添加到结果集
-          resultSet[index][k] = replaceRegex(result, exp?.capture, exp?.replacement);
+          resultSet[index][k] = replaceRegex(result, exp.capture, exp.replacement);
         });
       }
       // 处理合并属性
-      if (exp?.merge == true) {
+      if (exp.merge == true) {
         List<String> values = [];
         for (final item in resultSet) {
           final v = item[k];
@@ -242,7 +242,7 @@ class Mio<T extends Model> {
         }
       }
     }
-    // print('RESULT SET === $resultSet');
+    print('RESULT SET === $resultSet');
     for (var item in resultSet) {
       item['type'] = site?.type ?? 'unknown';
     }

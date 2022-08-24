@@ -1,8 +1,10 @@
 import 'dart:async';
 import 'dart:io';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:collection/collection.dart';
 import 'package:comic_nyaa/library/mio/core/mio_loader.dart';
 import 'package:comic_nyaa/utils/http.dart';
+import 'package:comic_nyaa/utils/uri_extensions.dart';
 import 'package:comic_nyaa/views/detail/comic_detail_view.dart';
 import 'package:comic_nyaa/views/detail/image_detail_view.dart';
 import 'package:comic_nyaa/views/detail/video_detail_view.dart';
@@ -26,12 +28,16 @@ class GalleryController {
   ScrollController? scrollController;
   void Function(String keywords)? search;
   void Function()? refresh;
-  void Function(double offset, { required Duration duration, required Curve curve})? animateTo;
+  void Function(double offset,
+      {required Duration duration, required Curve curve})? animateTo;
 }
 
 class GalleryView extends StatefulWidget {
-  GalleryView({Key? key, required this.site/*, this.scrollController*/}) : super(key: key);
+  GalleryView({Key? key, required this.site /*, this.scrollController*/
+      })
+      : super(key: key);
   final Site site;
+
   // final ScrollController? scrollController;
   final GalleryController controller = GalleryController();
 
@@ -39,10 +45,12 @@ class GalleryView extends StatefulWidget {
   State<GalleryView> createState() => _GalleryViewState();
 }
 
-class _GalleryViewState extends State<GalleryView> with AutomaticKeepAliveClientMixin<GalleryView>, TickerProviderStateMixin {
+class _GalleryViewState extends State<GalleryView>
+    with AutomaticKeepAliveClientMixin<GalleryView>, TickerProviderStateMixin {
   final globalKey = GlobalKey<ScaffoldState>();
   late final ScrollController _scrollController = ScrollController();
-  final RefreshController _refreshController = RefreshController(initialRefresh: false);
+  final RefreshController _refreshController =
+      RefreshController(initialRefresh: false);
   final Map<int, double> _heightCache = {};
   List<TypedModel> _models = [];
   List<TypedModel> _preloadModels = [];
@@ -71,7 +79,8 @@ class _GalleryViewState extends State<GalleryView> with AutomaticKeepAliveClient
       _refreshController.requestRefresh();
       // widget.controller.animateTo = _scrollController.animateTo;
       _scrollController.addListener(() {
-        if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent) {
+        if (_scrollController.position.pixels >=
+            _scrollController.position.maxScrollExtent) {
           if (!_isLoading) {
             _onNext();
           }
@@ -88,8 +97,10 @@ class _GalleryViewState extends State<GalleryView> with AutomaticKeepAliveClient
       });
     });
   }
+
   /// 加载列表
-  Future<List<TypedModel>> _load({bool isNext = false, bool isReset = false}) async {
+  Future<List<TypedModel>> _load(
+      {bool isNext = false, bool isReset = false}) async {
     print('LIST SIZE: ${_models.length}');
     if (_isLoading) return [];
     try {
@@ -129,7 +140,8 @@ class _GalleryViewState extends State<GalleryView> with AutomaticKeepAliveClient
   }
 
   /// 获取数据
-  Future<List<TypedModel>> _getModels({Site? site, int? page, String? keywords}) async {
+  Future<List<TypedModel>> _getModels(
+      {Site? site, int? page, String? keywords}) async {
     widget.controller.keywords = _keywords;
     site = site ?? _currentSite;
     page = page ?? _page;
@@ -193,7 +205,6 @@ class _GalleryViewState extends State<GalleryView> with AutomaticKeepAliveClient
     await _onSearch(_keywords);
   }
 
-
   void _jump(TypedModel model) {
     Widget? target;
     switch (model.type) {
@@ -226,7 +237,8 @@ class _GalleryViewState extends State<GalleryView> with AutomaticKeepAliveClient
   Future<ImageInfo> getImageInfo(ImageProvider image) async {
     final c = Completer<ImageInfo>();
     ImageStream imageStream = image.resolve(const ImageConfiguration());
-    imageStream.addListener(ImageStreamListener((ImageInfo i, bool _) => c.complete(i)));
+    imageStream.addListener(
+        ImageStreamListener((ImageInfo i, bool _) => c.complete(i)));
     return c.future;
   }
 
@@ -245,76 +257,90 @@ class _GalleryViewState extends State<GalleryView> with AutomaticKeepAliveClient
       Flexible(
         child: Scrollbar(
             child: SmartRefresher(
-            enablePullDown: true,
-            enablePullUp: true,
-            header: const WaterDropMaterialHeader(
-              distance: 48,
-              offset: 96,
-            ),
-            controller: _refreshController,
-            onRefresh: () => _onRefresh(),
-            onLoading: () => _onNext(),
-            physics: const BouncingScrollPhysics(),
-            // onLoading: _onLoading,
-            child: MasonryGridView.count(
-                padding: const EdgeInsets.fromLTRB(8, kToolbarHeight + 48, 8, 0),
-                crossAxisCount: 3,
-                mainAxisSpacing: 8.0,
-                crossAxisSpacing: 8.0,
-                itemCount: _models.length,
-                controller: _scrollController,
-                // physics: const BouncingScrollPhysics(),
-                itemBuilder: (context, index) {
-                  final controller = AnimationController(value: 1, duration: const Duration(milliseconds: 300), vsync: this);
-                  return Material(
-                      clipBehavior: Clip.hardEdge,
-                      elevation: 2,
-                      borderRadius: const BorderRadius.all(Radius.circular(4.0)),
-                      child: InkWell(
-                          onTap: () => _jump(_models[index]),
-                          child: Column(
-                            children: [
-                              ExtendedImage.network( _models[index].coverUrl ?? '',
-                              headers: _currentSite?.headers,
-                              height: _heightCache[index],
-                              opacity: controller,
-                              fit: BoxFit.cover,
-                              filterQuality: FilterQuality.low,
-                              timeRetry: const Duration(milliseconds: 500),
-                              timeLimit: const Duration(milliseconds: 5000),
-                              loadStateChanged: (state) {
-                                switch (state.extendedImageLoadState) {
-                                  case LoadState.loading:
-                                    controller.reset();
-                                    return Shimmer.fromColors(
-                                        baseColor: const Color.fromRGBO(240, 240, 240, 1),
-                                        highlightColor: Colors.white,
-                                        child: AspectRatio(
-                                          aspectRatio: 0.66,
-                                          child: Container(
-                                            decoration: const BoxDecoration(color: Colors.white),
-                                          ),
-                                        ));
-                                  case LoadState.failed:
-                                    return const AspectRatio(aspectRatio: 0.66, child: Icon(Icons.image_not_supported, size: 64));
-                                  case LoadState.completed:
-                                    controller.forward();
-                                    return null;
-                                }
-                              },
-                              afterPaintImage: (canvas, rect, image, paint) {
-                                  _heightCache[index] = rect.height;
-                              }),
-                              Container(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Text(
-                                  _models[index].title ?? '',
-                                  maxLines: 3,
-                                ),
-                              )
-                            ],
-                          )));
-                }))),
+                enablePullDown: true,
+                enablePullUp: true,
+                header: const WaterDropMaterialHeader(
+                  distance: 48,
+                  offset: 96,
+                ),
+                controller: _refreshController,
+                onRefresh: () => _onRefresh(),
+                onLoading: () => _onNext(),
+                physics: const BouncingScrollPhysics(),
+                // onLoading: _onLoading,
+                child: MasonryGridView.count(
+                    padding:
+                        const EdgeInsets.fromLTRB(8, kToolbarHeight + 48, 8, 0),
+                    crossAxisCount: 3,
+                    mainAxisSpacing: 8.0,
+                    crossAxisSpacing: 8.0,
+                    itemCount: _models.length,
+                    controller: _scrollController,
+                    // physics: const BouncingScrollPhysics(),
+                    itemBuilder: (context, index) {
+                      final controller = AnimationController(
+                          value: 1,
+                          duration: const Duration(milliseconds: 300),
+                          vsync: this);
+                      return Material(
+                          clipBehavior: Clip.hardEdge,
+                          elevation: 2,
+                          borderRadius:
+                              const BorderRadius.all(Radius.circular(4.0)),
+                          child: InkWell(
+                              onTap: () => _jump(_models[index]),
+                              child: Column(
+                                children: [
+                                  ExtendedImage.network(
+                                      _models[index].coverUrl?.asUrl() ?? '',
+                                      headers: _currentSite?.headers,
+                                      height: _heightCache[index],
+                                      opacity: controller,
+                                      fit: BoxFit.cover,
+                                      filterQuality: FilterQuality.low,
+                                      timeRetry:
+                                          const Duration(milliseconds: 500),
+                                      timeLimit:
+                                          const Duration(milliseconds: 5000),
+                                      loadStateChanged: (state) {
+                                    switch (state.extendedImageLoadState) {
+                                      case LoadState.loading:
+                                        controller.reset();
+                                        return Shimmer.fromColors(
+                                            baseColor: const Color.fromRGBO(
+                                                240, 240, 240, 1),
+                                            highlightColor: Colors.white,
+                                            child: AspectRatio(
+                                              aspectRatio: 0.66,
+                                              child: Container(
+                                                decoration: const BoxDecoration(
+                                                    color: Colors.white),
+                                              ),
+                                            ));
+                                      case LoadState.failed:
+                                        return const AspectRatio(
+                                            aspectRatio: 0.66,
+                                            child: Icon(
+                                                Icons.image_not_supported,
+                                                size: 64));
+                                      case LoadState.completed:
+                                        controller.forward();
+                                        return null;
+                                    }
+                                  }, afterPaintImage:
+                                          (canvas, rect, image, paint) {
+                                    _heightCache[index] = rect.height;
+                                  }),
+                                  Container(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: Text(
+                                      _models[index].title ?? '',
+                                      maxLines: 3,
+                                    ),
+                                  )
+                                ],
+                              )));
+                    }))),
       ),
     ]);
   }
@@ -323,8 +349,10 @@ class _GalleryViewState extends State<GalleryView> with AutomaticKeepAliveClient
   void didUpdateWidget(covariant GalleryView oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.site.id != oldWidget.site.id) {
-      print('didUpdateWidget:::::: NAME: ${oldWidget.site.name} >>>>>>>> ${widget.site.name}');
-      print('didUpdateWidget:::::: DATA: ${widget.controller.models} <<<<<<<< ${oldWidget.controller.models}');
+      print(
+          'didUpdateWidget:::::: NAME: ${oldWidget.site.name} >>>>>>>> ${widget.site.name}');
+      print(
+          'didUpdateWidget:::::: DATA: ${widget.controller.models} <<<<<<<< ${oldWidget.controller.models}');
       // 销毁被旧的滚动控制器
       // oldWidget.controller.scrollController?.dispose();
       setState(() {
