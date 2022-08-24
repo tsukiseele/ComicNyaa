@@ -31,7 +31,6 @@ class NyaaTabView extends StatefulWidget {
     this.duration = const Duration(milliseconds: 1000),
     this.elevation = 8,
     this.tabBarBorderRadius = BorderRadius.zero,
-
     this.tabBarPadding = const EdgeInsets.all(4)
   }) : super(key: key);
 
@@ -142,7 +141,7 @@ class _NyaaTabsState extends State<NyaaTabView> with TickerProviderStateMixin {
                 color: widget.color,
                 duration: widget.duration,
                 child: TabBar(
-                  padding: EdgeInsets.all(4),
+                  padding: widget.tabBarPadding,
                   isScrollable: true,
                   controller: controller,
                   labelColor: Theme.of(context).primaryColor,
