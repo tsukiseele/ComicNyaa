@@ -23,8 +23,8 @@ class Mio<T extends Model> {
   Site? site;
   int page = 1;
   String? keywords;
-  static Future<String> Function(String url, {Map<String, String>? headers}) _request =
-      (url, {Map<String, String>? headers}) async {
+  static Future<String> Function(String url, {Map<String, String>? headers})
+      _request = (url, {Map<String, String>? headers}) async {
     // final response = await Http.client()
     //     .get(url, options: Options(responseType: ResponseType.plain, headers: headers));
     // return response.data.toString();
@@ -34,7 +34,9 @@ class Mio<T extends Model> {
     return await response.transform(utf8.decoder).join();
   };
 
-  static void setCustomRequest(Future<String> Function(String url, {Map<String, String>? headers}) request) {
+  static void setCustomRequest(
+      Future<String> Function(String url, {Map<String, String>? headers})
+          request) {
     _request = request;
   }
 
@@ -50,14 +52,16 @@ class Mio<T extends Model> {
 
   /// 解析Site对象，返回结果集
   /// @returns {Promise<<T extends Meta>[]>}
-  Future<List<Map<String, dynamic>>> parseSite([bool isParseChildren = false]) async {
+  Future<List<Map<String, dynamic>>> parseSite(
+      [bool isParseChildren = false]) async {
     return await parseSection(getCurrentSection()!, isParseChildren);
   }
 
   /// 解析Section对象，返回结果集
   /// @param [Section] section 站点板块
   /// @return [bool] isParseChildren
-  Future<List<Map<String, dynamic>>> parseSection(Section section, [bool isParseChildren = false]) async {
+  Future<List<Map<String, dynamic>>> parseSection(Section section,
+      [bool isParseChildren = false]) async {
     if (site == null) throw Exception('site cannot be empty!');
     // 复用规则
     if (section.reuse != null) {
@@ -75,8 +79,10 @@ class Mio<T extends Model> {
     return result;
   }
 
-  Future<void> parseChildrenOfList(List<Map<String, dynamic>> list, Rules rules) async {
-    await Future.wait(list.map((item) => parseChildrenConcurrency(item, rules)));
+  Future<void> parseChildrenOfList(
+      List<Map<String, dynamic>> list, Rules rules) async {
+    await Future.wait(
+        list.map((item) => parseChildrenConcurrency(item, rules)));
 // await Promise.allSettled(list.map((item) => this.parseChildrenConcurrency(item, rules)))
   }
 
@@ -84,7 +90,8 @@ class Mio<T extends Model> {
   /// @param {*} item
   /// @param {*} rules
   /// @return {Promise<T extends Meta>}
-  Future<Map<String, dynamic>> parseChildrenConcurrency(Map<String, dynamic> item, Rules rules,
+  Future<Map<String, dynamic>> parseChildrenConcurrency(
+      Map<String, dynamic> item, Rules rules,
       {Future<bool> Function(List<Map<String, dynamic>>)? callback}) async {
     if (item[r'$children'] != null && rules[r'$children'] != null) {
       int page = 0;
@@ -93,17 +100,23 @@ class Mio<T extends Model> {
       List<String> keys = [];
       final isMulitPage = url.contains(REG_PAGE_MATCH);
       do {
-        final children = await parseRules(url, $children.rules!, page = page, keywords = '');
+        final children =
+            await parseRules(url, $children.rules!, page = page, keywords = '');
         page++;
-        List<String> newKeys = isMulitPage ? children.map((item) => item[r'$key'].toString()).toList() : [];
+        List<String> newKeys = isMulitPage
+            ? children.map((item) => item[r'$key'].toString()).toList()
+            : [];
         // print('EQ: [$url] $keys == $newKeys');
-        if (isMulitPage && keys.length == newKeys.length && keys.equals(newKeys)) break;
+        if (isMulitPage &&
+            keys.length == newKeys.length &&
+            keys.equals(newKeys)) break;
         keys = newKeys;
         if (children.isNotEmpty) {
           // 解析下级子节点
           final nextChildren = rules[r'$children']?.rules;
           if (children.first[r'$children'] != null && nextChildren != null) {
-            await Future.wait(children.map((child) => parseChildrenConcurrency(child, nextChildren)));
+            await Future.wait(children
+                .map((child) => parseChildrenConcurrency(child, nextChildren)));
           }
           // print('SELECTOR: ${$children.toJson().toString()}');
           // 判断是否拉平子节点，否则追加到子节点下
@@ -116,7 +129,9 @@ class Mio<T extends Model> {
               // 判断并继承父节点字段
               // extend && children.forEach((child, index) => (children[index] = Object.assign({}, item, child)))
             }
-            item['children'] != null ? item['children']?.addAll(children) : (item['children'] = children);
+            item['children'] != null
+                ? item['children']?.addAll(children)
+                : (item['children'] = children);
             if (callback != null) {
               await callback(children);
             }
@@ -129,10 +144,12 @@ class Mio<T extends Model> {
 
   bool equalsKeys(List<String> a, List<String> b) {
     if (a.length != b.length) return false;
-    return a.whereIndexed((index, element) => a[index] == b[index]).length == a.length;
+    return a.whereIndexed((index, element) => a[index] == b[index]).length ==
+        a.length;
   }
 
-  Stream<List<Map<String, dynamic>>> parseChildrenStream(Map<String, dynamic> item, Rules rules) async* {
+  Stream<List<Map<String, dynamic>>> parseChildrenStream(
+      Map<String, dynamic> item, Rules rules) async* {
     if (item[r'$children'] != null && rules[r'$children'] != null) {
       int page = 0;
       Selector $children = rules[r'$children']!;
@@ -141,10 +158,13 @@ class Mio<T extends Model> {
       final isMulitPage = url.contains(REG_PAGE_MATCH);
       do {
         // print('PARSE CHILDREN START =======================================');
-        final children = await parseRules(url, $children.rules!, page = page, keywords = '');
+        List<Map<String, dynamic>> children =
+            await parseRules(url, $children.rules!, page = page, keywords = '');
         if (children.isEmpty) break;
         // print('PARSE CHILDREN LENGTH ======================================= ${children.length}');
-        List<String> newKeys = isMulitPage ? children.map((item) => item[r'$key'].toString()).toList() : [];
+        List<String> newKeys = isMulitPage
+            ? children.map((item) => item[r'$key'].toString()).toList()
+            : [];
         // print('PARSE EQ ======================================= $keys === $newKeys');
         if (isMulitPage && equalsKeys(keys, newKeys)) break;
         keys = newKeys;
@@ -152,7 +172,8 @@ class Mio<T extends Model> {
         // 解析下级子节点
         final nextChildren = rules[r'$children']?.rules;
         if (children.first[r'$children'] != null && nextChildren != null) {
-          await Future.wait(children.map((child) => parseChildrenConcurrency(child, nextChildren)));
+          await Future.wait(children
+              .map((child) => parseChildrenConcurrency(child, nextChildren)));
         }
         // 判断是否拉平子节点(并终止获取)，否则追加到子节点下，
         if ($children.flat != null && $children.flat == true) {
@@ -164,7 +185,9 @@ class Mio<T extends Model> {
             // 判断并继承父节点字段
             // extend && children.forEach((child, index) => (children[index] = Object.assign({}, item, child)))
           }
-          item['children'] != null ? item['children']?.addAll(children) : (item['children'] = children);
+          item['children'] != null
+              ? item['children']?.addAll(children)
+              : (item['children'] = children);
           // print('YIDLE START =======================================');
           yield children;
           // print('YIDLE END =======================================');
@@ -181,22 +204,24 @@ class Mio<T extends Model> {
   /// @param {Number} page 页码
   /// @param {Number} keywords 关键字
   /// @returns {Promise<<T extends Meta>[]>}
-  Future<List<Map<String, dynamic>>> parseRules(String indexUrl, Rules rule, [int? page, String? keywords]) async {
+  Future<List<Map<String, dynamic>>> parseRules(String indexUrl, Rules rule,
+      [int? page, String? keywords]) async {
     // 生成URL
-    final url = replaceUrlTemplate(indexUrl, page ?? this.page, keywords ?? this.keywords);
-    print('URL: $url');
-    print('SITE: ${site?.name}');
+    final url = replaceUrlTemplate(
+        indexUrl, page ?? this.page, keywords ?? this.keywords);
     // 发送请求
     final html = await requestText(url, headers: site?.headers);
     // 检查无效响应
-    if (isEmpty(html)) return [];
+    if (html.trim().isEmpty) return [];
     // 加载文档
     final doc = parse(html);
     final List<Map<String, dynamic>> resultSet = [];
+    final Map<String, List<String>> mergeSet = {};
     // 遍历选择器集
     for (final k in rule.keys) {
       final exp = rule[k]!;
       // print('EXP: regex=${exp?.regex}, selector=${exp?.selector}');
+      final props = <String>[];
       // 使用正则匹配
       if (exp.regex != null) {
         var content = doc.outerHtml;
@@ -208,45 +233,44 @@ class Mio<T extends Model> {
         // 匹配正则内容
         final regexp = RegExp(exp.regex ?? '');
         var groups = List.of(regexp.allMatches(content));
-        // 扩展列表
-        while (resultSet.length < groups.length) {
-          resultSet.add(<String, dynamic>{});
-        }
+
         groups.forEachIndexed((i, item) {
-          print(item.groupCount);
           final match = item.groupCount > 0 ? item.group(1) : item.group(0);
-          resultSet[i][k] = replaceRegex(match ?? '', exp.capture, exp.replacement);
+          final value = replaceRegex(match ?? '', exp.capture, exp.replacement);
+          props.add(value);
         });
         // 使用选择器匹配
       } else if (exp.selector != null) {
         selectEach(doc, exp.selector as String, (result, index) {
           // print('RRRR: $result, IIII: $index');
-
-          while (resultSet.length <= index) {
-            resultSet.add(<String, dynamic>{});
-          }
           // 执行最终替换，并添加到结果集
-          resultSet[index][k] = replaceRegex(result, exp.capture, exp.replacement);
+          final value = replaceRegex(result, exp.capture, exp.replacement);
+          props.add(value);
         });
       }
-      // 处理合并属性
+      // 组合数据
       if (exp.merge == true) {
-        List<String> values = [];
-        for (final item in resultSet) {
-          final v = item[k];
-          if (v != null && v.toString().isNotEmpty) values.add(v);
+        mergeSet[k] = props;
+      } else {
+        while (resultSet.length < props.length) {
+          resultSet.add(<String, dynamic>{});
         }
-        String value = values.join(',');
-        for (var item in resultSet) {
-          (item[k] = value);
-        }
+        props.forEachIndexed((i, prop) => resultSet[i][k] = prop);
       }
     }
+    // 处理合并属性
+    mergeSet.forEach((key, value) {
+      final mergeProp = value.join(',');
+      for (var item in resultSet) {
+        item[key] = mergeProp;
+      }
+    });
     print('RESULT SET === $resultSet');
+    // 注入类型
     for (var item in resultSet) {
       item['type'] = site?.type ?? 'unknown';
     }
-    return resultSet; // resultSet;
+    return resultSet;
   }
 
   /// 请求文档内容，默认使用fetch发送请求，自动注入请求头
@@ -261,7 +285,8 @@ class Mio<T extends Model> {
   /// @returns {Section}
   Section? getCurrentSection() {
     if (site == null) throw Exception('site cannot be empty!');
-    final section = keywords != null ? site?.sections!['search'] : site?.sections!["home"];
+    final section =
+        keywords != null ? site?.sections!['search'] : site?.sections!["home"];
 // 复用规则
 // if (section.reuse) {
 //   section.rules = this.site.sections[section.reuse].rules
@@ -277,7 +302,9 @@ class Mio<T extends Model> {
     final matches = REG_SELECTOR_TEMPLATE.allMatches(selector);
     if (matches.isEmpty) return;
     final match = matches.first;
-    var select = match.groupCount > 0 ? match.group(1)! : throw Exception('empty selecor!!');
+    var select = match.groupCount > 0
+        ? match.group(1)!
+        : throw Exception('empty selecor!!');
     final func = match.groupCount > 1 ? match.group(2) : 'text';
     final attr = match.groupCount > 2 ? match.group(3) : 'href';
     // 选择器语法兼容
@@ -317,7 +344,8 @@ class Mio<T extends Model> {
       final groups = result.first;
       for (int index = 0; index < groups.groupCount + 1; index++) {
         // print('index: $index, group: ${groups.group(index)}');
-        replacement = replacement?.replaceAll(RegExp("\\\$$index"), groups.group(index) ?? '');
+        replacement = replacement?.replaceAll(
+            RegExp("\\\$$index"), groups.group(index) ?? '');
       }
     }
     return replacement ?? "";
@@ -342,15 +370,21 @@ class Mio<T extends Model> {
       // print('TEMPLATE: [$template], page: [$page], keywords: [$keywords]');
       // print('MATCHES: ${pageMatch.groupCount}, G0: [${pageMatch.group(0)}], G1: [${pageMatch.group(1)}], G2: [${pageMatch.group(2)}]');
       final offset =
-          pageMatch.groupCount > 0 && (pageMatch.group(1)?.isNotEmpty ?? false) ? int.parse(pageMatch.group(1) ?? '0') : 0;
+          pageMatch.groupCount > 0 && (pageMatch.group(1)?.isNotEmpty ?? false)
+              ? int.parse(pageMatch.group(1) ?? '0')
+              : 0;
       final range =
-          pageMatch.groupCount > 1 && (pageMatch.group(2)?.isNotEmpty ?? false) ? int.parse(pageMatch.group(2) ?? '1') : 1;
+          pageMatch.groupCount > 1 && (pageMatch.group(2)?.isNotEmpty ?? false)
+              ? int.parse(pageMatch.group(2) ?? '1')
+              : 1;
 
       // print('BEFORE FINAL PAGE: [$p] offset: [$offset], range: [$range]');
       p = (p + offset) * range;
 
       // print('AFTER FINAL PAGE: [$p] offset: [$offset], range: [$range]');
     }
-    return template.replaceAll(REG_PAGE_MATCH, p.toString()).replaceAll(REG_KEYWORD_MATCH, keywords ?? k ?? '');
+    return template
+        .replaceAll(REG_PAGE_MATCH, p.toString())
+        .replaceAll(REG_KEYWORD_MATCH, keywords ?? k ?? '');
   }
 }
