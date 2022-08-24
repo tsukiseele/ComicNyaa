@@ -184,12 +184,14 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
                       itemCount: _gallerys.length,
                       isScrollToNewTab: true,
                       color: colorList[_currentTabIndex % colorList.length],
-                      indicator: BoxDecoration(
+                  // tabBorderRadius: const BorderRadius.all(Radius.circular(20)),
+                      indicator: const BoxDecoration(
                         color: Colors.white70,
+                        boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 8)],
                         // color: colorList[_currentTabIndex % colorList.length]
                         //     ?.withOpacity(.6),
-                        // borderRadius: BorderRadius.circular(20),
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.all(Radius.circular(20))
+                        // borderRadius: BorderRadius.only(bottomLeft:Radius.circular(12), bottomRight: Radius.circular(12)),
                       ),
                       pageBuilder: (BuildContext context, int index) =>
                           _gallerys[index],
@@ -241,7 +243,7 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
                                                       overflow:
                                                           TextOverflow.ellipsis,
                                                       maxLines: 1,
-                                                      style: TextStyle(
+                                                      style: const TextStyle(
                                                         fontSize: 16,
                                                         color: Colors.black87
                                                         // color: textColorList[

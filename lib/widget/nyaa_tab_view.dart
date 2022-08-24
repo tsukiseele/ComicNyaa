@@ -12,6 +12,8 @@ class NyaaTabView extends StatefulWidget {
   final Decoration? indicator;
   final Color? color;
   final Duration duration;
+  final double elevation;
+  final BorderRadius tabBorderRadius;
 
   const NyaaTabView({
     Key? key,
@@ -26,6 +28,8 @@ class NyaaTabView extends StatefulWidget {
     this.stub,
     this.color,
     this.duration = const Duration(milliseconds: 1000),
+    this.elevation = 8,
+    this.tabBorderRadius = BorderRadius.zero
   }) : super(key: key);
 
   @override
@@ -113,50 +117,51 @@ class _NyaaTabsState extends State<NyaaTabView> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     if (widget.itemCount < 1) return widget.stub ?? Container();
 
-    return AnimatedContainer(
-        color: widget.color,
-        duration: widget.duration,
-        child: Stack(children: [
-          TabBarView(
+    return Stack(children: [
+      AnimatedContainer(
+          color: widget.color,
+          duration: widget.duration,
+          child: TabBarView(
             controller: controller,
             children: List.generate(widget.itemCount,
                 (index) => widget.pageBuilder(context, index)),
-          ),
-          Positioned(
-              left: 0,
-              right: 0,
-              bottom: 0,
-              child:  AnimatedContainer(
-                  color: widget.color,
-                  duration: widget.duration,
-                  child:Material(
-                  borderRadius: BorderRadius.circular(16),
-                  clipBehavior: Clip.hardEdge,
-                  color: Colors.transparent,
-                  child: Container(
-                    alignment: Alignment.center,
-                    child: TabBar(
-                      isScrollable: true,
-                      controller: controller,
-                      labelColor: Theme.of(context).primaryColor,
-                      unselectedLabelColor: Theme.of(context).hintColor,
-                      enableFeedback: true,
-                      indicator: widget.indicator,
-                      // indicator: BoxDecoration(
-                      //   border: Border(
-                      //     bottom: BorderSide(
-                      //       color: Theme.of(context).primaryColor,
-                      //       width: 2,
-                      //     ),
-                      //   ),
-                      // ),
-                      tabs: List.generate(
-                        widget.itemCount,
-                        (index) => widget.tabBuilder(context, index),
-                      ),
-                    ),
-                  )))),
-        ]));
+          )),
+      Positioned(
+          left: 0,
+          right: 0,
+          bottom: 0,
+          child: Material(
+              // borderOnForeground: true,
+            // type: MaterialType.card,
+              borderRadius: widget.tabBorderRadius,
+              clipBehavior: Clip.hardEdge,
+              color: Colors.transparent,
+              elevation: widget.elevation,
+              child: AnimatedContainer(
+                color: widget.color,
+                duration: widget.duration,
+                child: TabBar(
+                  isScrollable: true,
+                  controller: controller,
+                  labelColor: Theme.of(context).primaryColor,
+                  unselectedLabelColor: Theme.of(context).hintColor,
+                  enableFeedback: true,
+                  indicator: widget.indicator,
+                  // indicator: BoxDecoration(
+                  //   border: Border(
+                  //     bottom: BorderSide(
+                  //       color: Theme.of(context).primaryColor,
+                  //       width: 2,
+                  //     ),
+                  //   ),
+                  // ),
+                  tabs: List.generate(
+                    widget.itemCount,
+                    (index) => widget.tabBuilder(context, index),
+                  ),
+                ),
+              ))),
+    ]);
   }
 
   onPositionChange() {
