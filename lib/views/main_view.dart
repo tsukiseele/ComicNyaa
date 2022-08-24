@@ -184,7 +184,6 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
                       itemCount: _gallerys.length,
                       isScrollToNewTab: true,
                       color: colorList[_currentTabIndex % colorList.length],
-                  // tabBorderRadius: const BorderRadius.all(Radius.circular(20)),
                       indicator: const BoxDecoration(
                         color: Colors.white70,
                         boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 8)],
@@ -196,9 +195,7 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
                       pageBuilder: (BuildContext context, int index) =>
                           _gallerys[index],
                       tabBuilder: (BuildContext context, int index) {
-                        return Material(
-                            color: Colors.transparent,
-                            child: InkWell(
+                        return InkWell(
                                 onLongPress: () {
                                   if (_gallerys.length > 1) {
                                     setState(() => removeTab(index));
@@ -252,7 +249,7 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
                                                         //             .length]
                                                       ))))
                                           : Container()
-                                    ]))));
+                                    ])));
                       })
                   : Container(),
               buildFloatingSearchBar(),
