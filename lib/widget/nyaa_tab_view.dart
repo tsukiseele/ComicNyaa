@@ -13,7 +13,8 @@ class NyaaTabView extends StatefulWidget {
   final Color? color;
   final Duration duration;
   final double elevation;
-  final BorderRadius tabBorderRadius;
+  final BorderRadius tabBarBorderRadius;
+  final EdgeInsets tabBarPadding;
 
   const NyaaTabView({
     Key? key,
@@ -29,7 +30,9 @@ class NyaaTabView extends StatefulWidget {
     this.color,
     this.duration = const Duration(milliseconds: 1000),
     this.elevation = 8,
-    this.tabBorderRadius = BorderRadius.zero
+    this.tabBarBorderRadius = BorderRadius.zero,
+
+    this.tabBarPadding = const EdgeInsets.all(4)
   }) : super(key: key);
 
   @override
@@ -131,9 +134,7 @@ class _NyaaTabsState extends State<NyaaTabView> with TickerProviderStateMixin {
           right: 0,
           bottom: 0,
           child: Material(
-              // borderOnForeground: true,
-            // type: MaterialType.card,
-              borderRadius: widget.tabBorderRadius,
+              borderRadius: widget.tabBarBorderRadius,
               clipBehavior: Clip.hardEdge,
               color: Colors.transparent,
               elevation: widget.elevation,
@@ -141,6 +142,7 @@ class _NyaaTabsState extends State<NyaaTabView> with TickerProviderStateMixin {
                 color: widget.color,
                 duration: widget.duration,
                 child: TabBar(
+                  padding: EdgeInsets.all(4),
                   isScrollable: true,
                   controller: controller,
                   labelColor: Theme.of(context).primaryColor,
