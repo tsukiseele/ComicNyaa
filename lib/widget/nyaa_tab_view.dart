@@ -113,50 +113,50 @@ class _NyaaTabsState extends State<NyaaTabView> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     if (widget.itemCount < 1) return widget.stub ?? Container();
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: <Widget>[
-        Expanded(
-            child: Material(
-          borderRadius: const BorderRadius.only(
-              bottomLeft: Radius.circular(32),
-              bottomRight: Radius.circular(32)),
-          clipBehavior: Clip.hardEdge,
-          color: Colors.transparent,
-          child: AnimatedContainer(
-              color: widget.color,
-              duration: widget.duration,
-              child: TabBarView(
-                controller: controller,
-                children: List.generate(widget.itemCount,
-                    (index) => widget.pageBuilder(context, index)),
-              )),
-        )),
-        Container(
-          alignment: Alignment.center,
-          child: TabBar(
-            isScrollable: true,
+    return AnimatedContainer(
+        color: widget.color,
+        duration: widget.duration,
+        child: Stack(children: [
+          TabBarView(
             controller: controller,
-            labelColor: Theme.of(context).primaryColor,
-            unselectedLabelColor: Theme.of(context).hintColor,
-            enableFeedback: true,
-            indicator: widget.indicator,
-            // indicator: BoxDecoration(
-            //   border: Border(
-            //     bottom: BorderSide(
-            //       color: Theme.of(context).primaryColor,
-            //       width: 2,
-            //     ),
-            //   ),
-            // ),
-            tabs: List.generate(
-              widget.itemCount,
-              (index) => widget.tabBuilder(context, index),
-            ),
+            children: List.generate(widget.itemCount,
+                (index) => widget.pageBuilder(context, index)),
           ),
-        ),
-      ],
-    );
+          Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child:  AnimatedContainer(
+                  color: widget.color,
+                  duration: widget.duration,
+                  child:Material(
+                  borderRadius: BorderRadius.circular(16),
+                  clipBehavior: Clip.hardEdge,
+                  color: Colors.transparent,
+                  child: Container(
+                    alignment: Alignment.center,
+                    child: TabBar(
+                      isScrollable: true,
+                      controller: controller,
+                      labelColor: Theme.of(context).primaryColor,
+                      unselectedLabelColor: Theme.of(context).hintColor,
+                      enableFeedback: true,
+                      indicator: widget.indicator,
+                      // indicator: BoxDecoration(
+                      //   border: Border(
+                      //     bottom: BorderSide(
+                      //       color: Theme.of(context).primaryColor,
+                      //       width: 2,
+                      //     ),
+                      //   ),
+                      // ),
+                      tabs: List.generate(
+                        widget.itemCount,
+                        (index) => widget.tabBuilder(context, index),
+                      ),
+                    ),
+                  )))),
+        ]));
   }
 
   onPositionChange() {

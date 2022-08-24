@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:collection/collection.dart';
 import 'package:comic_nyaa/library/mio/core/mio_loader.dart';
+import 'package:comic_nyaa/library/mio/model/base.dart';
 import 'package:comic_nyaa/utils/http.dart';
 import 'package:comic_nyaa/views/settings_view.dart';
 import 'package:comic_nyaa/views/subscribe_view.dart';
@@ -184,11 +185,14 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
                       isScrollToNewTab: true,
                       color: colorList[_currentTabIndex % colorList.length],
                       indicator: BoxDecoration(
-                        color: colorList[_currentTabIndex % colorList.length]
-                            ?.withOpacity(.6),
-                        borderRadius: BorderRadius.circular(20),
+                        color: Colors.white70,
+                        // color: colorList[_currentTabIndex % colorList.length]
+                        //     ?.withOpacity(.6),
+                        // borderRadius: BorderRadius.circular(20),
+                        borderRadius: BorderRadius.circular(8),
                       ),
-                      pageBuilder: (BuildContext context, int index) => _gallerys[index],
+                      pageBuilder: (BuildContext context, int index) =>
+                          _gallerys[index],
                       tabBuilder: (BuildContext context, int index) {
                         return Material(
                             color: Colors.transparent,
@@ -239,10 +243,12 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
                                                       maxLines: 1,
                                                       style: TextStyle(
                                                         fontSize: 16,
-                                                          color: textColorList[
-                                                              _currentTabIndex %
-                                                                  colorList
-                                                                      .length]))))
+                                                        color: Colors.black87
+                                                        // color: textColorList[
+                                                        //     _currentTabIndex %
+                                                        //         colorList
+                                                        //             .length]
+                                                      ))))
                                           : Container()
                                     ]))));
                       })
@@ -273,7 +279,7 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
           style: TextStyle(
               fontFamily: Config.uiFontFamily,
               fontSize: 16,
-              color: _currentTab?.controller.keywords == null
+              color: isEmpty(_currentTab?.controller.keywords == null)
                   ? Colors.black26
                   : Colors.black87),
         ),

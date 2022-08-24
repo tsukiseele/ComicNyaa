@@ -52,6 +52,7 @@ class _GalleryViewState extends State<GalleryView>
   final RefreshController _refreshController =
       RefreshController(initialRefresh: false);
   final Map<int, double> _heightCache = {};
+   double _topOffset = 0;
   List<TypedModel> _models = [];
   List<TypedModel> _preloadModels = [];
   int _page = 1;
@@ -252,6 +253,7 @@ class _GalleryViewState extends State<GalleryView>
 
   @override
   Widget build(BuildContext context) {
+    _topOffset = kToolbarHeight + MediaQuery.of(context).viewPadding.top;
     super.build(context);
     return Column(children: [
       Flexible(
@@ -259,9 +261,9 @@ class _GalleryViewState extends State<GalleryView>
             child: SmartRefresher(
                 enablePullDown: true,
                 enablePullUp: true,
-                header: const WaterDropMaterialHeader(
+                header: WaterDropMaterialHeader(
                   distance: 48,
-                  offset: 96,
+                  offset: _topOffset,
                 ),
                 controller: _refreshController,
                 onRefresh: () => _onRefresh(),
@@ -269,8 +271,7 @@ class _GalleryViewState extends State<GalleryView>
                 physics: const BouncingScrollPhysics(),
                 // onLoading: _onLoading,
                 child: MasonryGridView.count(
-                    padding:
-                        const EdgeInsets.fromLTRB(8, kToolbarHeight + 48, 8, 0),
+                    padding: EdgeInsets.fromLTRB(8, _topOffset + 8, 8, 0),
                     crossAxisCount: 3,
                     mainAxisSpacing: 8.0,
                     crossAxisSpacing: 8.0,
