@@ -148,14 +148,6 @@ class _NyaaTabsState extends State<NyaaTabView> with TickerProviderStateMixin {
                   unselectedLabelColor: Theme.of(context).hintColor,
                   enableFeedback: true,
                   indicator: widget.indicator,
-                  // indicator: BoxDecoration(
-                  //   border: Border(
-                  //     bottom: BorderSide(
-                  //       color: Theme.of(context).primaryColor,
-                  //       width: 2,
-                  //     ),
-                  //   ),
-                  // ),
                   tabs: List.generate(
                     widget.itemCount,
                     (index) => widget.tabBuilder(context, index),
