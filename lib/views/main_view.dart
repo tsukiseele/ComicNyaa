@@ -2,9 +2,11 @@ import 'dart:async';
 import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:collection/collection.dart';
+import 'package:comic_nyaa/data/subscribe_holder.dart';
 import 'package:comic_nyaa/library/mio/core/mio_loader.dart';
 import 'package:comic_nyaa/library/mio/model/base.dart';
 import 'package:comic_nyaa/utils/http.dart';
+import 'package:comic_nyaa/utils/uri_extensions.dart';
 import 'package:comic_nyaa/views/settings_view.dart';
 import 'package:comic_nyaa/views/subscribe_view.dart';
 import 'package:comic_nyaa/widget/nyaa_tab_view.dart';
@@ -76,15 +78,8 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
     final ruleDir = (await Config.ruleDir);
     await RuleLoader.loadFormDirectory(ruleDir);
     if (RuleLoader.sites.isEmpty) {
-      await _updateSubscribe(ruleDir);
+      await SubscribeHolder().updateAllSubscribe();
     }
-  }
-
-  Future<void> _updateSubscribe(Directory dir) async {
-    final savePath = dir.join('rules.zip').path;
-    const sourceUrl = 'https://hlo.li/static/rules.zip';
-    await Http.client().download(sourceUrl, savePath);
-    await RuleLoader.loadFormDirectory(dir);
   }
 
   @override
