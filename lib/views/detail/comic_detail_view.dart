@@ -120,7 +120,7 @@ class ComicDetailViewState extends State<ComicDetailView> {
                           ),
                           child: MasonryGridView.count(
                               // controller: _scrollController,
-                              padding: EdgeInsets.fromLTRB(8, 8 + statusBarHeight.top, 8, 0),
+                              padding: EdgeInsets.fromLTRB(8, 8, 8, 0),
                               crossAxisCount: 3,
                               mainAxisSpacing: 8.0,
                               crossAxisSpacing: 8.0,
