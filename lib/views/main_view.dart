@@ -5,8 +5,6 @@ import 'package:collection/collection.dart';
 import 'package:comic_nyaa/data/subscribe_holder.dart';
 import 'package:comic_nyaa/library/mio/core/mio_loader.dart';
 import 'package:comic_nyaa/library/mio/model/base.dart';
-import 'package:comic_nyaa/utils/http.dart';
-import 'package:comic_nyaa/utils/uri_extensions.dart';
 import 'package:comic_nyaa/views/settings_view.dart';
 import 'package:comic_nyaa/views/subscribe_view.dart';
 import 'package:comic_nyaa/widget/nyaa_tab_view.dart';
@@ -42,6 +40,7 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
   int _currentTabIndex = 0;
   DateTime? currentBackPressTime = DateTime.now();
   int _lastScrollPosition = 0;
+
   final colorList = [
     Colors.blue[100],
     Colors.green[100],
@@ -450,68 +449,70 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
 
   Widget buildEndDrawer() {
     return Drawer(
-      width: 256,
-      elevation: 8,
-      child: ListView.builder(
-          padding: const EdgeInsets.only(top: 8),
-          itemCount: _sites.length,
-          itemBuilder: (ctx, i) {
-            final index = i - 1;
-            if (index < 0) {
-              return CachedNetworkImage(
-                imageUrl:
-                    'https://cdn.jsdelivr.net/gh/nyarray/LoliHost/images/7c4f1d7ea2dadd3ca835b9b2b9219681.webp',
-                fit: BoxFit.cover,
-                height: 120 + kToolbarHeight,
-              );
-            }
-            return Material(
-                child: InkWell(
-                    onTap: () {
-                      setState(() {
-                        // _tabs.add(_sites[index]);
-                        addTab(_sites[index]);
-                        globalKey.currentState?.closeEndDrawer();
-                      });
-                      setState(() {});
-                    },
-                    child: ListTile(
-                      leading: SizedBox(
-                          width: 24,
-                          height: 24,
-                          child: CachedNetworkImage(
-                            imageUrl: _sites[index].icon ?? '',
-                            fit: BoxFit.cover,
-                            errorWidget: (ctx, url, error) =>
-                                const Icon(Icons.image_not_supported, size: 32),
-                          )),
-                      title: Text(
-                        _sites[index].name ?? '',
-                        style: const TextStyle(
-                          fontFamily: Config.uiFontFamily,
-                          fontSize: 18,
+        width: 256,
+        elevation: 8,
+        child: ListView.builder(
+            padding: const EdgeInsets.only(top: 8),
+            itemCount: _sites.length,
+            itemBuilder: (ctx, i) {
+              final index = i - 1;
+              if (index < 0) {
+                return CachedNetworkImage(
+                  imageUrl:
+                  'https://cdn.jsdelivr.net/gh/nyarray/LoliHost/images/7c4f1d7ea2dadd3ca835b9b2b9219681.webp',
+                  fit: BoxFit.cover,
+                  height: 120 + kToolbarHeight,
+                );
+              }
+              return Material(
+                  child: InkWell(
+                      onTap: () {
+                        setState(() {
+                          // _tabs.add(_sites[index]);
+                          addTab(_sites[index]);
+                          globalKey.currentState?.closeEndDrawer();
+                        });
+                        setState(() {});
+                      },
+                      child: ListTile(
+                        leading: SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: CachedNetworkImage(
+                              imageUrl: _sites[index].icon ?? '',
+                              fit: BoxFit.cover,
+                              errorWidget: (ctx, url, error) =>
+                              const Icon(Icons.image_not_supported, size: 32),
+                            )),
+                        title: Text(
+                          _sites[index].name ?? '',
+                          style: const TextStyle(
+                            fontFamily: Config.uiFontFamily,
+                            fontSize: 18,
+                          ),
+                          textAlign: TextAlign.start,
                         ),
-                        textAlign: TextAlign.start,
-                      ),
-                      subtitle: Text(
-                        _sites[index].details ?? '',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                            fontSize: 14, color: Colors.black26),
-                      ),
-                      trailing: Icon(
-                          _sites[index].type == 'comic'
-                              ? Icons.photo_library
-                              : _sites[index].type == 'image'
-                                  ? Icons.image
-                                  : _sites[index].type == 'video'
-                                      ? Icons.video_collection
-                                      : Icons.quiz,
-                          color: Theme.of(context).primaryColor),
-                    )));
-          }),
-    );
+                        subtitle: Text(
+                          _sites[index].details ?? '',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                              fontSize: 14, color: Colors.black26),
+                        ),
+                        trailing: Icon(
+                            _sites[index].type == 'comic'
+                                ? Icons.photo_library
+                                : _sites[index].type == 'image'
+                                ? Icons.image
+                                : _sites[index].type == 'video'
+                                ? Icons.video_collection
+                                : Icons.quiz,
+                            color: Theme
+                                .of(context)
+                                .primaryColor),
+                      )));
+            }),
+      );
   }
 
   Future<bool> onWillPop() {
