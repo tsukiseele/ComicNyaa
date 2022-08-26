@@ -285,9 +285,10 @@ class _GalleryViewState extends State<GalleryView>
                           vsync: this);
                       return Material(
                           clipBehavior: Clip.hardEdge,
+                          shadowColor: Colors.black45,
                           elevation: 2,
                           borderRadius:
-                              const BorderRadius.all(Radius.circular(4.0)),
+                              const BorderRadius.all(Radius.circular(2.0)),
                           child: InkWell(
                               onTap: () => _jump(_models[index]),
                               child: Column(
@@ -332,13 +333,13 @@ class _GalleryViewState extends State<GalleryView>
                                           (canvas, rect, image, paint) {
                                     _heightCache[index] = rect.height;
                                   }),
-                                  Container(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: Text(
-                                      _models[index].title ?? '',
-                                      maxLines: 3,
-                                    ),
-                                  )
+                                  // Container(
+                                  //   padding: const EdgeInsets.all(8.0),
+                                  //   child: Text(
+                                  //     _models[index].title ?? '',
+                                  //     maxLines: 3,
+                                  //   ),
+                                  // )
                                 ],
                               )));
                     }))),

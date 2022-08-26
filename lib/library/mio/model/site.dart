@@ -114,6 +114,7 @@ class Selector {
   bool? flat; // $children only
   bool? extend; // $children only
   Rules? rules; // $children only
+  Rules? parent; // $children only
 
   Selector({this.regex, this.selector, this.capture, this.replacement, this.flat, this.extend, this.rules});
 
@@ -126,6 +127,7 @@ class Selector {
     flat = json['flat']?.toString().parseBool();
     extend = json['extend']?.toString().parseBool();
     rules = json['rules'] != null ? Rules.fromJson(json['rules']) : null;
+    parent = json['parent'] != null ? Rules.fromJson(json['parent']) : null;
   }
 
   Map<String, dynamic> toJson() {
@@ -139,6 +141,9 @@ class Selector {
     data['extend'] = extend;
     if (rules != null) {
       data['rules'] = rules!.toJson();
+    }
+    if (parent != null) {
+      data['parent'] = parent!.toJson();
     }
     return data;
   }

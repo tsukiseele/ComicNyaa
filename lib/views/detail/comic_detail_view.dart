@@ -24,32 +24,30 @@ class ComicDetailView extends StatefulWidget {
 }
 
 class ComicDetailViewState extends State<ComicDetailView> {
+  final RefreshController _refreshController = RefreshController();
   final ScrollController _scrollController = ScrollController();
-  StreamSubscription<List<Map<String, dynamic>>>? stream;
   final List<TypedModel> _children = [];
-  final RefreshController refreshController = RefreshController();
-  int streamIndex = 0;
-  final List<String> tags = [];
+  final List<String> _tags = [];
+  StreamSubscription<List<Map<String, dynamic>>>? _stream;
 
   void initialized() {
     _scrollController.addListener(() {
       const offset = 32;
-      if (_scrollController.position.pixels >=
-          _scrollController.position.maxScrollExtent) {
+      if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent) {
         print(
             'SCROLL POSITION: ${_scrollController.position.pixels} >= ${_scrollController.position.maxScrollExtent - offset}');
-        while (stream?.isPaused == true) {
+        while (_stream?.isPaused == true) {
           print('STREAM RESUME >>>>>>>>>>>>>>>>>> ');
 
-          stream?.resume();
+          _stream?.resume();
         }
       }
     });
     final model = widget.model;
-    stream = Mio(model.$site)
-        .parseChildrenStream(model.toJson(), model.$section!.rules!)
-        .listen((List<Map<String, dynamic>> data) {
-      stream?.pause();
+    _tags.addAll(model.tags?.split(' ') ?? []);
+    _stream =
+        Mio(model.$site).parseChildrenStream(model.toJson(), model.$section!.rules!).listen((List<Map<String, dynamic>> data) {
+      _stream?.pause();
       _getNext(data);
     });
   }
@@ -72,17 +70,9 @@ class ComicDetailViewState extends State<ComicDetailView> {
     try {
       final children = item.children != null ? item.children![0] : null;
       if (children != null) {
-        return children.coverUrl ??
-            children.sampleUrl ??
-            children.largerUrl ??
-            children.originUrl ??
-            '';
+        return children.coverUrl ?? children.sampleUrl ?? children.largerUrl ?? children.originUrl ?? '';
       }
-      return item.coverUrl ??
-          item.sampleUrl ??
-          item.largerUrl ??
-          item.originUrl ??
-          '';
+      return item.coverUrl ?? item.sampleUrl ?? item.largerUrl ?? item.originUrl ?? '';
     } catch (e) {
       print('ERROR: $e');
     }
@@ -92,154 +82,158 @@ class ComicDetailViewState extends State<ComicDetailView> {
   @override
   void initState() {
     initialized();
+
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    final statusBarHeight = MediaQuery.of(context).viewPadding;
+    Theme.of(context).primaryColor;
+    final statusBarHeight = MediaQuery.of(context).viewPadding.top;
     return Scaffold(
-        // appBar: AppBar(
-        //   title: Text(widget.title),
-        // ),
-        body: Container(
-            padding: const EdgeInsets.all(8.0),
-            child: Column(children: [
-              Wrap(children: List.generate(tags.length, (i) => Text(tags[i]))),
-              Flexible(
-                  child: _children.isNotEmpty
-                      ? SmartRefresher(
-                          controller: refreshController,
-                          header: SliverToBoxAdapter(
-                            child: Expanded(
-                                child: Row(children: [
-                              ExtendedImage.network(
-                                  widget.model.coverUrl ?? ''),
-                              Text(widget.model.title ?? 'Unknown')
-                            ])),
-                          ),
-                          child: MasonryGridView.count(
-                              // controller: _scrollController,
-                              padding: EdgeInsets.fromLTRB(8, 8, 8, 0),
-                              crossAxisCount: 3,
-                              mainAxisSpacing: 8.0,
-                              crossAxisSpacing: 8.0,
-                              itemCount: _children.length,
-                              shrinkWrap: true,
-                              itemBuilder: (context, index) {
-                                return Material(
-                                    elevation: 2.0,
-                                    borderRadius: const BorderRadius.all(
-                                        Radius.circular(4.0)),
-                                    child: InkWell(
-                                        onTap: () {
-                                          Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                  builder: (ctx) =>
-                                                      ImageDetailView(
-                                                        models: _children,
-                                                        index: index,
-                                                      )));
-                                        },
-                                        child: Column(
-                                          children: [
-                                            CachedNetworkImage(
-                                              imageUrl:
-                                                  getUrl(_children[index]),
-                                              httpHeaders:
-                                                  widget.model.$site?.headers,
-                                              height: 160,
-                                              fit: BoxFit.cover,
-                                              placeholder: (ctx, text) =>
-                                                  Shimmer.fromColors(
-                                                      baseColor:
-                                                          const Color.fromRGBO(
-                                                              240, 240, 240, 1),
-                                                      highlightColor:
-                                                          Colors.white,
-                                                      child: AspectRatio(
-                                                        aspectRatio: 0.8,
-                                                        child: Container(
-                                                          decoration:
-                                                              const BoxDecoration(
-                                                                  color: Colors
-                                                                      .white),
-                                                        ),
-                                                      )),
-                                              errorWidget: (ctx, url, error) =>
-                                                  const AspectRatio(
-                                                      aspectRatio: 1,
-                                                      child: Icon(
-                                                        Icons
-                                                            .image_not_supported,
-                                                        size: 64,
-                                                        color: Colors.redAccent,
-                                                      )),
-                                            ),
-                                            // ExtendedImage.network(
-                                            //   getUrl(_children?[index]),
-                                            //   height: _heightCache[index],
-                                            //   fit: BoxFit.cover,
-                                            //   cache: true,
-                                            //   handleLoadingProgress: true,
-                                            //   gaplessPlayback: true,
-                                            //   timeRetry: const Duration(milliseconds: 1000),
-                                            //   // border: Border.all(color: Colors.red, width: 1.0),
-                                            //   // shape: boxShape,
-                                            //   borderRadius: const BorderRadius.all(Radius.circular(4.0)),
-                                            //   //cancelToken: cancellationToken,
-                                            //   afterPaintImage: (Canvas canvas, Rect rect, image, Paint paint) {
-                                            //     if (_heightCache[index] == null) {
-                                            //       _heightCache[index] = rect.height;
-                                            //     }
-                                            //   },
-                                            //   loadStateChanged: (status) {
-                                            //     switch (status.extendedImageLoadState) {
-                                            //       case LoadState.failed:
-                                            //         return Container(
-                                            //             decoration: const BoxDecoration(color: Colors.white),
-                                            //             height: 96,
-                                            //             width: double.infinity,
-                                            //             child: const Icon(
-                                            //               Icons.close,
-                                            //               size: 40,
-                                            //               color: Colors.black,
-                                            //             ));
-                                            //       case LoadState.loading:
-                                            //         return Container(
-                                            //             decoration: const BoxDecoration(color: Colors.white),
-                                            //             height: 192,
-                                            //             child: const SpinKitFoldingCube(
-                                            //               color: Colors.teal,
-                                            //               size: 40.0,
-                                            //             ));
-                                            //       case LoadState.completed:
-                                            //         break;
-                                            //     }
-                                            //     return null;
-                                            //   },
-                                            // ),
-                                            Container(
-                                              padding:
-                                                  const EdgeInsets.all(8.0),
-                                              child: Text(
-                                                  _children[index].title ?? ''),
-                                            )
-                                          ],
-                                        )));
-                              }))
-                      : const Center(
-                          child: SpinKitSpinningLines(
-                          color: Colors.teal,
-                          size: 64,
-                        ))),
-            ])));
+      // appBar: AppBar(
+      //   title: Text(widget.title),
+      // ),
+      body: SmartRefresher(
+          controller: _refreshController,
+          header: SliverToBoxAdapter(
+            child: Material(elevation: 4, child: Container(
+                color: Theme.of(context).primaryColor.withOpacity(.75),
+                padding: EdgeInsets.only(left: 8, top: statusBarHeight + 8, right: 8, bottom: 8),
+                child: Column(children: [
+                  Row(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
+                    Material(
+                      elevation: 8,
+                      child: Padding(
+                        padding: const EdgeInsets.all(4),
+                        child: ExtendedImage.network(
+                          widget.model.coverUrl ?? '',
+                          height: 192,
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      flex: 1,
+                      child: Container(
+                          margin: const EdgeInsets.only(left: 8),
+                          child: Text(
+                            widget.model.title ?? 'Unknown',
+                            style: const TextStyle(color: Colors.white, fontSize: 20),
+                          )),
+                    )
+                  ]),
+                  Wrap(children: List.generate(_tags.length, (i) => Text(_tags[i]))),
+                ]))),
+          ),
+          child: _children.isNotEmpty
+              ? MasonryGridView.count(
+                  // controller: _scrollController,
+                  padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
+                  crossAxisCount: 3,
+                  mainAxisSpacing: 8.0,
+                  crossAxisSpacing: 8.0,
+                  itemCount: _children.length,
+                  shrinkWrap: true,
+                  itemBuilder: (context, index) {
+                    return Material(
+                      shadowColor: Colors.black45,//Colors.grey[100],
+                        elevation: 2,
+                        borderRadius: const BorderRadius.all(Radius.circular(2.0)),
+                        child: InkWell(
+                            onTap: () {
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (ctx) => ImageDetailView(
+                                            models: _children,
+                                            index: index,
+                                          )));
+                            },
+                            child: Column(
+                              children: [
+                                CachedNetworkImage(
+                                  imageUrl: getUrl(_children[index]),
+                                  httpHeaders: widget.model.$site?.headers,
+                                  height: 160,
+                                  fit: BoxFit.cover,
+                                  placeholder: (ctx, text) => Shimmer.fromColors(
+                                      baseColor: const Color.fromRGBO(240, 240, 240, 1),
+                                      highlightColor: Colors.white,
+                                      child: AspectRatio(
+                                        aspectRatio: 0.8,
+                                        child: Container(
+                                          decoration: const BoxDecoration(color: Colors.white),
+                                        ),
+                                      )),
+                                  errorWidget: (ctx, url, error) => const AspectRatio(
+                                      aspectRatio: 1,
+                                      child: Icon(
+                                        Icons.image_not_supported,
+                                        size: 64,
+                                        color: Colors.redAccent,
+                                      )),
+                                ),
+                                // ExtendedImage.network(
+                                //   getUrl(_children?[index]),
+                                //   height: _heightCache[index],
+                                //   fit: BoxFit.cover,
+                                //   cache: true,
+                                //   handleLoadingProgress: true,
+                                //   gaplessPlayback: true,
+                                //   timeRetry: const Duration(milliseconds: 1000),
+                                //   // border: Border.all(color: Colors.red, width: 1.0),
+                                //   // shape: boxShape,
+                                //   borderRadius: const BorderRadius.all(Radius.circular(4.0)),
+                                //   //cancelToken: cancellationToken,
+                                //   afterPaintImage: (Canvas canvas, Rect rect, image, Paint paint) {
+                                //     if (_heightCache[index] == null) {
+                                //       _heightCache[index] = rect.height;
+                                //     }
+                                //   },
+                                //   loadStateChanged: (status) {
+                                //     switch (status.extendedImageLoadState) {
+                                //       case LoadState.failed:
+                                //         return Container(
+                                //             decoration: const BoxDecoration(color: Colors.white),
+                                //             height: 96,
+                                //             width: double.infinity,
+                                //             child: const Icon(
+                                //               Icons.close,
+                                //               size: 40,
+                                //               color: Colors.black,
+                                //             ));
+                                //       case LoadState.loading:
+                                //         return Container(
+                                //             decoration: const BoxDecoration(color: Colors.white),
+                                //             height: 192,
+                                //             child: const SpinKitFoldingCube(
+                                //               color: Colors.teal,
+                                //               size: 40.0,
+                                //             ));
+                                //       case LoadState.completed:
+                                //         break;
+                                //     }
+                                //     return null;
+                                //   },
+                                // ),
+                                Container(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Text(_children[index].title ?? ''),
+                                )
+                              ],
+                            )));
+                  })
+              : const Center(
+                  child: SpinKitSpinningLines(
+                  color: Colors.teal,
+                  size: 64,
+                ))),
+    );
   }
 
   @override
   void dispose() {
     super.dispose();
-    stream?.cancel();
+    _stream?.cancel();
   }
 }
