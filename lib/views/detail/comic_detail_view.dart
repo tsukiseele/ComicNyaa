@@ -4,6 +4,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:comic_nyaa/library/mio/core/mio.dart';
 import 'package:comic_nyaa/models/typed_model.dart';
 import 'package:comic_nyaa/views/detail/image_detail_view.dart';
+import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
@@ -26,6 +27,7 @@ class ComicDetailViewState extends State<ComicDetailView> {
   StreamSubscription<List<Map<String, dynamic>>>? stream;
   final List<TypedModel> _children = [];
   int streamIndex = 0;
+  final List<String> tags = [];
 
   void initialized() {
     _scrollController.addListener(() {
@@ -90,6 +92,12 @@ class ComicDetailViewState extends State<ComicDetailView> {
         body: Container(
             padding: const EdgeInsets.all(8.0),
             child: Column(children: [
+              Row(
+                children: [
+                ExtendedImage.network(widget.model.coverUrl ?? ''),
+                  Text(widget.model.title ?? 'Unknown')
+              ]),
+              Wrap(children: List.generate(tags.length, (i) => Text( tags[i]))),
               Flexible(
                   child: _children.isNotEmpty
                       ? MasonryGridView.count(
@@ -99,6 +107,7 @@ class ComicDetailViewState extends State<ComicDetailView> {
                           mainAxisSpacing: 8.0,
                           crossAxisSpacing: 8.0,
                           itemCount: _children.length,
+                      shrinkWrap: true,
                           itemBuilder: (context, index) {
                             return Material(
                                 elevation: 2.0,

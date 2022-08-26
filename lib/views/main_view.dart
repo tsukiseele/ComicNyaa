@@ -11,6 +11,7 @@ import 'package:comic_nyaa/views/settings_view.dart';
 import 'package:comic_nyaa/views/subscribe_view.dart';
 import 'package:comic_nyaa/widget/nyaa_tab_view.dart';
 import 'package:dio/dio.dart';
+import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
 
 import 'package:comic_nyaa/library/mio/model/site.dart';
@@ -180,71 +181,70 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
                       isScrollToNewTab: true,
                       color: colorList[_currentTabIndex % colorList.length],
                       indicator: const BoxDecoration(
-                        color: Colors.white70,
-                        boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 8)],
-                        // color: colorList[_currentTabIndex % colorList.length]
-                        //     ?.withOpacity(.6),
-                        borderRadius: BorderRadius.all(Radius.circular(20))
-                        // borderRadius: BorderRadius.only(bottomLeft:Radius.circular(12), bottomRight: Radius.circular(12)),
-                      ),
+                          color: Colors.white70,
+                          boxShadow: [
+                            BoxShadow(color: Colors.black12, blurRadius: 8)
+                          ],
+                          // color: colorList[_currentTabIndex % colorList.length]
+                          //     ?.withOpacity(.6),
+                          borderRadius: BorderRadius.all(Radius.circular(20))
+                          // borderRadius: BorderRadius.only(bottomLeft:Radius.circular(12), bottomRight: Radius.circular(12)),
+                          ),
                       pageBuilder: (BuildContext context, int index) =>
                           _gallerys[index],
                       tabBuilder: (BuildContext context, int index) {
                         return InkWell(
-                                onLongPress: () {
-                                  if (_gallerys.length > 1) {
-                                    setState(() => removeTab(index));
-                                  } else {
-                                    Fluttertoast.showToast(msg: '您不能删除最后一个标签页');
-                                  }
-                                },
-                                onTap: () {
-                                  setState(() => _currentTabIndex = index);
-                                },
-                                child: AnimatedSize(
-                                    duration: const Duration(milliseconds: 250),
-                                    curve: Curves.ease,
-                                    child: Row(children: [
-                                      Container(
-                                          width: 40,
-                                          height: 40,
-                                          padding: EdgeInsets.only(
-                                              top: 8,
-                                              bottom: 8,
-                                              right: _currentTabIndex == index
-                                                  ? 8
-                                                  : 0),
-                                          child: CachedNetworkImage(
-                                            imageUrl:
-                                                _gallerys[index].site.icon ??
-                                                    '',
-                                            fit: BoxFit.contain,
-                                          )),
-                                      _currentTabIndex == index
-                                          ? SizedBox(
-                                              width: _currentTabIndex == index
-                                                  ? 96.0
-                                                  : null,
-                                              child: MarqueeWidget(
-                                                  direction: Axis.horizontal,
-                                                  child: Text(
-                                                      _gallerys[index]
-                                                              .site
-                                                              .name ??
-                                                          'unknown',
-                                                      overflow:
-                                                          TextOverflow.ellipsis,
-                                                      maxLines: 1,
-                                                      style: const TextStyle(
-                                                        fontSize: 16,
-                                                        color: Colors.black87
-                                                        // color: textColorList[
-                                                        //     _currentTabIndex %
-                                                        //         colorList
-                                                        //             .length]
+                            onLongPress: () {
+                              if (_gallerys.length > 1) {
+                                setState(() => removeTab(index));
+                              } else {
+                                Fluttertoast.showToast(msg: '您不能删除最后一个标签页');
+                              }
+                            },
+                            onTap: () {
+                              setState(() => _currentTabIndex = index);
+                            },
+                            child: AnimatedSize(
+                                duration: const Duration(milliseconds: 250),
+                                curve: Curves.ease,
+                                child: Row(children: [
+                                  Container(
+                                      width: 40,
+                                      height: 40,
+                                      padding: EdgeInsets.only(
+                                          top: 8,
+                                          bottom: 8,
+                                          right: _currentTabIndex == index
+                                              ? 8
+                                              : 0),
+                                      child: CachedNetworkImage(
+                                        imageUrl:
+                                            _gallerys[index].site.icon ?? '',
+                                        fit: BoxFit.contain,
+                                      )),
+                                  _currentTabIndex == index
+                                      ? SizedBox(
+                                          width: _currentTabIndex == index
+                                              ? 96.0
+                                              : null,
+                                          child: MarqueeWidget(
+                                              direction: Axis.horizontal,
+                                              child: Text(
+                                                  _gallerys[index].site.name ??
+                                                      'unknown',
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                  maxLines: 1,
+                                                  style: const TextStyle(
+                                                      fontSize: 16,
+                                                      color: Colors.black87
+                                                      // color: textColorList[
+                                                      //     _currentTabIndex %
+                                                      //         colorList
+                                                      //             .length]
                                                       ))))
-                                          : Container()
-                                    ])));
+                                      : Container()
+                                ])));
                       })
                   : Container(),
               buildFloatingSearchBar(),
@@ -379,35 +379,44 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
   Widget buildDrawer() {
     return Drawer(
         child: ListView(padding: EdgeInsets.zero, children: [
-      Stack(children: [
-        CachedNetworkImage(
-          imageUrl:
+      Container(
+          margin: const EdgeInsets.only(bottom: 8),
+          child: Stack(children: [
+            ExtendedImage.network(
               'https://cdn.jsdelivr.net/gh/nyarray/LoliHost/images/94d6d0e7be187770e5d538539d95a12a.jpeg',
-          fit: BoxFit.cover,
-          height: 256,
-        ),
-        Positioned.fill(
-          child: Container(
-              decoration: BoxDecoration(
-                  color: Colors.white,
-                  gradient: LinearGradient(
-                      begin: FractionalOffset.topCenter,
-                      end: FractionalOffset.bottomCenter,
-                      colors: [
-                        Colors.grey.withOpacity(0.0),
-                        Colors.black45,
-                      ],
-                      stops: const [
-                        0.0,
-                        1.0
-                      ])),
-              padding: const EdgeInsets.all(8),
-              alignment: Alignment.bottomLeft,
-              child: const Text('ポトフちゃんとワトラちゃんがすごくかわいいです！',
-                  style: TextStyle(color: Colors.white, fontSize: 18))),
-        ),
-      ]),
-      Container(height: 8),
+              fit: BoxFit.cover,
+              width: double.maxFinite,
+              height: 160 + kToolbarHeight,
+            ),
+            Positioned.fill(
+              child: Container(
+                  decoration: BoxDecoration(
+                      color: Colors.white,
+                      gradient: LinearGradient(
+                          begin: FractionalOffset.topCenter,
+                          end: FractionalOffset.bottomCenter,
+                          colors: [
+                            Colors.grey.withOpacity(0.0),
+                            Colors.black45,
+                          ],
+                          stops: const [
+                            0.0,
+                            1.0
+                          ])),
+                  padding: const EdgeInsets.all(8),
+                  alignment: Alignment.bottomLeft,
+                  child: Text(
+                      "Os iustī meditabitur sapientiam, Et lingua eius loquetur iudicium.",
+                      // "ポトフちゃんとワトラちゃんがすごくかわいいです！",
+                      style: TextStyle(color: Colors.teal[200], fontSize: 18,
+                          // fontWeight: FontWeight.bold,
+                          shadows: [
+                            Shadow(color: Colors.teal[100]!, blurRadius: 8)
+                          ]))),
+              // child: const Text('ポトフちゃんとワトラちゃんがすごくかわいいです！',
+              //     style: TextStyle(color: Colors.white, fontSize: 16))),
+            ),
+          ])),
       ListTile(
           title: const Text('主页'),
           selected: true,
@@ -441,69 +450,68 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
 
   Widget buildEndDrawer() {
     return Drawer(
-        width: 256,
-        elevation: 8,
-        child: Material(
-            child: Column(children: [
-          CachedNetworkImage(
-            imageUrl:
-                'https://cdn.jsdelivr.net/gh/nyarray/LoliHost/images/7c4f1d7ea2dadd3ca835b9b2b9219681.webp',
-            fit: BoxFit.cover,
-            height: 192,
-          ),
-          Flexible(
-              child: ListView.builder(
-                  padding: const EdgeInsets.only(top: 8),
-                  itemCount: _sites.length,
-                  itemBuilder: (ctx, index) {
-                    return Material(
-                        child: InkWell(
-                            onTap: () {
-                              setState(() {
-                                // _tabs.add(_sites[index]);
-                                addTab(_sites[index]);
-                                globalKey.currentState?.closeEndDrawer();
-                              });
-                              setState(() {});
-                            },
-                            child: ListTile(
-                              leading: SizedBox(
-                                  width: 24,
-                                  height: 24,
-                                  child: CachedNetworkImage(
-                                    imageUrl: _sites[index].icon ?? '',
-                                    fit: BoxFit.cover,
-                                    errorWidget: (ctx, url, error) =>
-                                        const Icon(Icons.image_not_supported,
-                                            size: 32),
-                                  )),
-                              title: Text(
-                                _sites[index].name ?? '',
-                                style: const TextStyle(
-                                  fontFamily: Config.uiFontFamily,
-                                  fontSize: 18,
-                                ),
-                                textAlign: TextAlign.start,
-                              ),
-                              subtitle: Text(
-                                _sites[index].details ?? '',
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
-                                    fontSize: 14, color: Colors.black26),
-                              ),
-                              trailing: Icon(
-                                  _sites[index].type == 'comic'
-                                      ? Icons.photo_library
-                                      : _sites[index].type == 'image'
-                                          ? Icons.image
-                                          : _sites[index].type == 'video'
-                                              ? Icons.video_collection
-                                              : Icons.quiz,
-                                  color: Theme.of(context).primaryColor),
-                            )));
-                  })),
-        ])));
+      width: 256,
+      elevation: 8,
+      child: ListView.builder(
+          padding: const EdgeInsets.only(top: 8),
+          itemCount: _sites.length,
+          itemBuilder: (ctx, i) {
+            final index = i - 1;
+            if (index < 0) {
+              return CachedNetworkImage(
+                imageUrl:
+                    'https://cdn.jsdelivr.net/gh/nyarray/LoliHost/images/7c4f1d7ea2dadd3ca835b9b2b9219681.webp',
+                fit: BoxFit.cover,
+                height: 120 + kToolbarHeight,
+              );
+            }
+            return Material(
+                child: InkWell(
+                    onTap: () {
+                      setState(() {
+                        // _tabs.add(_sites[index]);
+                        addTab(_sites[index]);
+                        globalKey.currentState?.closeEndDrawer();
+                      });
+                      setState(() {});
+                    },
+                    child: ListTile(
+                      leading: SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CachedNetworkImage(
+                            imageUrl: _sites[index].icon ?? '',
+                            fit: BoxFit.cover,
+                            errorWidget: (ctx, url, error) =>
+                                const Icon(Icons.image_not_supported, size: 32),
+                          )),
+                      title: Text(
+                        _sites[index].name ?? '',
+                        style: const TextStyle(
+                          fontFamily: Config.uiFontFamily,
+                          fontSize: 18,
+                        ),
+                        textAlign: TextAlign.start,
+                      ),
+                      subtitle: Text(
+                        _sites[index].details ?? '',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                            fontSize: 14, color: Colors.black26),
+                      ),
+                      trailing: Icon(
+                          _sites[index].type == 'comic'
+                              ? Icons.photo_library
+                              : _sites[index].type == 'image'
+                                  ? Icons.image
+                                  : _sites[index].type == 'video'
+                                      ? Icons.video_collection
+                                      : Icons.quiz,
+                          color: Theme.of(context).primaryColor),
+                    )));
+          }),
+    );
   }
 
   Future<bool> onWillPop() {

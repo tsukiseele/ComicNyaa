@@ -22,15 +22,28 @@ class SubscribeHolder {
     return _subscribes;
   }
 
-  addSubscribe(Subscribe subscribe) {
-    _subscribes.((i, item){ if (item.equals(subscribe)) {
-    subscribes[i] = subscribe;
-    }});
-    return ;
+
+  Future<void> addSubscribe(Subscribe subscribe) async {
+    Subscribe? existed = _subscribes.firstWhereIndexedOrNull((i, item) {
+      if (item.equals(subscribe)) {
+        subscribes[i] = subscribe;
+        return true;
+      }
+      return false;
+    });
+    if (existed == null) _subscribes.add(subscribe);
+    return await updateSubscribe(subscribe);
+  }
+
+  Future<void> removeSubscribe(Subscribe subscribe) async {
+    _subscribes.removeWhere((item) => item.url == subscribe.url);
+  }
+
+  Future<void> removeSubscribeFromUrl(String url) async {
+    removeSubscribe(Subscribe(name: 'unnamed', url: url));
   }
 
   Future<void> updateSubscribe(Subscribe subscribe) async {
-
     final url = subscribe.url;
     final dir = await Config.ruleDir;
     final savePath = dir.join(Uri.parse(url).filename).path;
