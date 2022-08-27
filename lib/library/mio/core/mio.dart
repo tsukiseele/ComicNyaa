@@ -76,7 +76,7 @@ class Mio<T extends Model> {
   }
 
   Future<void> parseChildrenOfList(List<Map<String, dynamic>> list, Rules rules) async {
-    await Future.wait(list.map((item) => parseChildrenConcurrency(item, rules)));
+    await Future.wait(list.map((item) => parseChildrenDeep(item, rules)));
 // await Promise.allSettled(list.map((item) => this.parseChildrenConcurrency(item, rules)))
   }
 
@@ -84,7 +84,7 @@ class Mio<T extends Model> {
   /// @param {*} item
   /// @param {*} rules
   /// @return {Promise<T extends Meta>}
-  Future<Map<String, dynamic>> parseChildrenConcurrency(Map<String, dynamic> item, Rules rules,
+  Future<Map<String, dynamic>> parseChildrenDeep(Map<String, dynamic> item, Rules rules,
       {Future<bool> Function(List<Map<String, dynamic>>)? callback}) async {
     if (item[r'$children'] != null && rules[r'$children'] != null) {
       int page = 0;
@@ -103,7 +103,7 @@ class Mio<T extends Model> {
           // 解析下级子节点
           final nextChildren = rules[r'$children']?.rules;
           if (children.first[r'$children'] != null && nextChildren != null) {
-            await Future.wait(children.map((child) => parseChildrenConcurrency(child, nextChildren)));
+            await Future.wait(children.map((child) => parseChildrenDeep(child, nextChildren)));
           }
           // print('SELECTOR: ${$children.toJson().toString()}');
           // 判断是否拉平子节点，否则追加到子节点下
@@ -132,7 +132,7 @@ class Mio<T extends Model> {
     return a.whereIndexed((index, element) => a[index] == b[index]).length == a.length;
   }
 
-  Stream<List<Map<String, dynamic>>> parseChildrenStream(Map<String, dynamic> item, Rules rules) async* {
+  Stream<List<Map<String, dynamic>>> parseChildrenDeepStream(Map<String, dynamic> item, Rules rules) async* {
     if (item[r'$children'] != null && rules[r'$children'] != null) {
       int page = 0;
       Selector $children = rules[r'$children']!;
@@ -156,7 +156,7 @@ class Mio<T extends Model> {
         // 解析下级子节点
         final nextChildren = rules[r'$children']?.rules;
         if (children.first[r'$children'] != null && nextChildren != null) {
-          await Future.wait(children.map((child) => parseChildrenConcurrency(child, nextChildren)));
+          await Future.wait(children.map((child) => parseChildrenDeep(child, nextChildren)));
         }
         // 判断是否拉平子节点(并终止获取)，否则追加到子节点下，
         if ($children.flat != null && $children.flat == true) {
@@ -177,6 +177,45 @@ class Mio<T extends Model> {
     }
   }
 
+  Stream<List<Map<String, dynamic>>> parseChildrenStream(Map<String, dynamic> item, Rules rules) async* {
+    if (item[r'$children'] != null && rules[r'$children'] != null) {
+      int page = 0;
+      Selector $children = rules[r'$children']!;
+      String urlTemplate = item[r'$children'];
+      List<String> keys = [];
+      final isMulitPage = urlTemplate.contains(REG_PAGE_MATCH);
+
+      do {
+        final url = replaceUrlTemplate(urlTemplate, page, '');
+        // 发送请求
+        final html = await requestText(url, headers: site?.headers);
+        // print('PARSE CHILDREN START =======================================');
+        List<Map<String, dynamic>> children = parseRulesFromHtml(html, $children.rules!);
+        if (children.isEmpty) break;
+        // print('PARSE CHILDREN LENGTH ======================================= ${children.length}');
+        List<String> newKeys = isMulitPage ? children.map((item) => item[r'$key'].toString()).toList() : [];
+        // print('PARSE EQ ======================================= $keys === $newKeys');
+        if (isMulitPage && equalsKeys(keys, newKeys)) break;
+        keys = newKeys;
+        page++;
+        // 判断是否拉平子节点(并终止获取)，否则追加到子节点下，
+        if ($children.flat != null && $children.flat == true) {
+          item.addAll(children.first);
+          yield [item];
+          break;
+        } else {
+          if ($children.extend == true) {
+            // 判断并继承父节点字段
+            // extend && children.forEach((child, index) => (children[index] = Object.assign({}, item, child)))
+          }
+          item['children'] != null ? item['children']?.addAll(children) : (item['children'] = children);
+          // print('YIDLE START =======================================');
+          yield children;
+          // print('YIDLE END =======================================');
+        }
+      } while (isMulitPage && keys.isNotEmpty);
+    }
+  }
   bool isEmpty(Object? o) {
     return o == null || o == "";
   }

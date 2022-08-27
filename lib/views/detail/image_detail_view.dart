@@ -45,7 +45,7 @@ class ImageDetailViewState extends State<ImageDetailView> {
       if (models.length == 1 && getUrl(models.first).isEmpty) {
         var model = models.first;
         // print('MODEL.SECTION: ${model.$section}');
-        final result = await Mio(model.$site).parseChildrenConcurrency(model.toJson(), model.$section!.rules!);
+        final result = await Mio(model.$site).parseChildrenDeep(model.toJson(), model.$section!.rules!);
         model = TypedModel.fromJson(result);
         if (model.children != null) {
           _updateModels(model.children ?? []);
