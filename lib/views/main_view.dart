@@ -453,7 +453,7 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
         elevation: 8,
         child: ListView.builder(
             padding: const EdgeInsets.only(top: 8),
-            itemCount: _sites.length,
+            itemCount: _sites.length + 1,
             itemBuilder: (ctx, i) {
               final index = i - 1;
               if (index < 0) {
