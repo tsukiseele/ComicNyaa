@@ -1,5 +1,4 @@
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:collection/collection.dart';
 import 'package:comic_nyaa/app/global.dart';
 import 'package:comic_nyaa/library/mio/core/mio.dart';
 import 'package:comic_nyaa/models/typed_model.dart';
@@ -10,7 +9,6 @@ import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:material_floating_search_bar/material_floating_search_bar.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
@@ -19,7 +17,8 @@ import '../../library/mio/model/site.dart';
 
 class ImageDetailView extends StatefulWidget {
   const ImageDetailView({Key? key, required this.models, this.index = 0})
-      : super(key: key);
+      : assert(models.length > 0),
+        super(key: key);
   final title = '画廊';
   final List<TypedModel> models;
   final int index;
@@ -35,7 +34,7 @@ class ImageDetailViewState extends State<ImageDetailView> {
   late List<TypedModel> _models;
   List<String> _images = [];
   Site? _site;
-  int currentIndex = 0;
+  int _currentIndex = 0;
   bool isFailed = false;
 
   void loadSingle(int index) async {
@@ -45,15 +44,11 @@ class ImageDetailViewState extends State<ImageDetailView> {
     TypedModel model = _models[index];
     String image = getUrl(model);
     if (image.isEmpty) {
-      print('LOAD SINGLE:::: $model');
-      print(
-          'LOAD SINGLE:::: ${model.$section?.rules?[r'$children']?.selector}');
-      // return;
       final results = await Mio(model.$site)
-          .parseChildrenDeep(model.toJson(), model.$section!.rules!);
-      final tm = TypedModel.fromJson(results);
-      if (tm.children?.isNotEmpty == true) {
-        final models = tm.children;
+          .parseAllChildren(model.toJson(), model.$section!.rules!);
+      final m = TypedModel.fromJson(results);
+      if (m.children?.isNotEmpty == true) {
+        final models = m.children;
         if (models == null) {
           Fluttertoast.showToast(msg: '解析异常：没有可用数据');
           return;
@@ -61,16 +56,13 @@ class ImageDetailViewState extends State<ImageDetailView> {
         if (models.length == 1) {
           model = models[0];
           image = getUrl(models[0]);
-          print('MMMMMMMMMMMMMMMMMMMMMMMMMMM === $model');
-
-          print('UUUUUUUUUUUUUUUUUUUUUUUUUUU === $image');
         } else {
           Fluttertoast.showToast(msg: '解析异常：预料之外的子数据集');
           return;
         }
       } else {
-        model = tm;
-        image = getUrl(tm);
+        model = m;
+        image = getUrl(m);
       }
     }
 
@@ -88,34 +80,14 @@ class ImageDetailViewState extends State<ImageDetailView> {
   }
 
   void loadImage() async {
-    // print('INDEX: ${widget.index}, WIDGET.MODELS: ${widget.models}');
     try {
-      currentIndex = widget.index;
+      _currentIndex = widget.index;
       _models = widget.models;
       _images = List.filled(_models.length, '');
-      _site = _models.isNotEmpty ? _models[0].$site : null;
-      // // 只有一条数据，且无图片源，则请求解析
+      _site = _models[0].$site;
 
-      loadSingle(currentIndex);
-      // if (models.length == 1 && getUrl(models.first).isEmpty) {
-      //   var model = models.first;
-      //   // print('MODEL.SECTION: ${model.$section}');
-      //   final result = await Mio(model.$site).parseChildrenDeep(model.toJson(), model.$section.rules!);
-      //   model = TypedModel.fromJson(result);
-      //   if (model.children != null) {
-      //     _updateModels(model.children ?? []);
-      //   } else {
-      //     _updateModels([model]);
-      //   }
-      // } else {
-      //   _updateModels(models);
-      // }
-      setState(() {
-        currentIndex = widget.index;
-        isFailed = _images.length > currentIndex
-            ? _images[currentIndex].isNotEmpty
-            : true;
-      });
+      loadSingle(_currentIndex);
+
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (_pageController.hasClients &&
             _images.isNotEmpty &&
@@ -124,15 +96,9 @@ class ImageDetailViewState extends State<ImageDetailView> {
         }
       });
     } catch (e) {
+      Fluttertoast.showToast(msg: e.toString());
       rethrow;
-      // print('ERROR: ${e.toString()}');
     }
-  }
-
-  _updateModels(List<TypedModel> models) {
-    _models = models;
-    _images = models.map((model) => getUrl(model)).toList();
-    print('HEADERS ================== ${_models[0].$site?.headers}');
   }
 
   String getUrl(TypedModel? item) {
@@ -181,79 +147,171 @@ class ImageDetailViewState extends State<ImageDetailView> {
         appBar: AppBar(
           title: Text(widget.title),
         ),
-        body: _images.isNotEmpty
-            ? PhotoViewGallery.builder(
-                pageController: _pageController,
-                backgroundDecoration:
-                    const BoxDecoration(color: Colors.black87),
-                scrollPhysics: const BouncingScrollPhysics(),
-                onPageChanged: (index) {
-                  loadSingle(index);
-                },
-                builder: (BuildContext context, int index) {
-                  return PhotoViewGalleryPageOptions(
-                      // imageProvider: ExtendedImage.network(
-                      //   _images[index],
-                      //   headers: _models?[index].$site?.headers,
-                      // ).image,
-                      imageProvider: CachedNetworkImageProvider(_images[index],
-                          headers: _site?.headers),
-                      initialScale: PhotoViewComputedScale.contained * 1,
-                      onTapUp: (context, detail, value) {
-                        final url = _images[index];
-                        onDownload(url);
-                      },
-                      onTapDown: (context, detail, value) {}
-                      // heroAttributes: PhotoViewHeroAttributes(tag: _children?[index].id),
-                      );
-                },
-                itemCount: _images.length,
-                loadingBuilder: (context, event) => Container(
+        body:
+            // InkWell(
+            //     onDoubleTap: () {
+            //       print('object');
+            //       // setState(() {
+            //       //
+            //       //   scale = 1.2;
+            //       // });
+            //     },child:
+            ExtendedImageGesturePageView.builder(
+          itemBuilder: (BuildContext context, int index) {
+            var item = _images[index];
+            if (item.isEmpty) {
+              return Container(
                   alignment: Alignment.center,
-                  child: CircularPercentIndicator(
-                    radius: 48,
-                    lineWidth: 8,
-                    progressColor: Colors.teal,
-                    animation: true,
-                    animateFromLastPercent: true,
-                    circularStrokeCap: CircularStrokeCap.round,
-                    percent: event == null || event.expectedTotalBytes == null
-                        ? 0
-                        : event.cumulativeBytesLoaded /
-                            event.expectedTotalBytes!,
-                    center: Text(
-                      event == null
-                          ? 'Loading...'
-                          : _getProgressText(event.cumulativeBytesLoaded,
+                  child: isFailed
+                      ? const Icon(
+                          Icons.image_not_supported,
+                          size: 64,
+                          color: Colors.redAccent,
+                        )
+                      : const SpinKitSpinningLines(
+                          color: Colors.teal,
+                          size: 96,
+                        ));
+            }
+            double scale = 1.0;
+            Widget image = ExtendedImage.network(
+              item,
+              fit: BoxFit.contain,
+              mode: ExtendedImageMode.gesture,
+              handleLoadingProgress: true,
+              loadStateChanged: (state) {
+                switch (state.extendedImageLoadState) {
+                  case LoadState.loading:
+                    final event = state.loadingProgress;
+                    if (event == null) {
+                      return const Center(child: Text('Loading...'));
+                    }
+                    double? progress;
+                    if (event.expectedTotalBytes != null &&
+                        event.expectedTotalBytes! > 0) {
+                      progress = event.cumulativeBytesLoaded /
+                          (event.expectedTotalBytes!);
+                    }
+                    return CircularPercentIndicator(
+                        radius: 48,
+                        lineWidth: 8,
+                        progressColor: Colors.teal,
+                        animation: true,
+                        animateFromLastPercent: true,
+                        circularStrokeCap: CircularStrokeCap.round,
+                        percent: progress ?? 0,
+                        center: Text(
+                          _getProgressText(event.cumulativeBytesLoaded,
                               event.expectedTotalBytes ?? 0),
-                      style: TextStyle(fontSize: event == null ? 16 : 18),
-                    ),
-                    footer: Container(
-                        margin: const EdgeInsets.only(top: 8),
-                        child: const Text(
-                          "Loading...",
-                          style: TextStyle(
-                              fontFamily: '',
-                              fontSize: 16.0,
-                              color: Colors.white70),
-                        )),
-                  ),
-                ),
-                // backgroundDecoration: widget.backgroundDecoration,
-                // pageController: widget.pageController,
-                // onPageChanged: onPageChanged,
-              )
-            : Container(
-                alignment: Alignment.center,
-                child: isFailed
-                    ? const Icon(
-                        Icons.image_not_supported,
-                        size: 64,
-                        color: Colors.redAccent,
-                      )
-                    : const SpinKitSpinningLines(
-                        color: Colors.teal,
-                        size: 96,
-                      )));
+                          style: const TextStyle(fontSize: 18),
+                        ));
+                  default:
+                    return null;
+                }
+              },
+              initGestureConfigHandler: (ExtendedImageState state) => GestureConfig(
+                  inPageView: true,
+                  initialScale: scale,
+                  cacheGesture: false),
+            );
+            image = InkWell(
+              onLongPress: () {
+                final url = _images[_currentIndex];
+                onDownload(url);
+              },
+              child: Container(
+                padding: const EdgeInsets.all(0),
+                child: image,
+              ),
+            );
+            if (index == _currentIndex) {
+              return Hero(
+                tag: item + index.toString(),
+                child: image,
+              );
+            } else {
+              return image;
+            }
+          },
+          itemCount: _images.length,
+          onPageChanged: (int index) {
+            _currentIndex = index;
+            loadSingle(index);
+          },
+          controller: ExtendedPageController(
+            initialPage: _currentIndex,
+          ),
+          scrollDirection: Axis.horizontal,
+        )
+
+        // InkWell(
+        //   onLongPress: () {
+        //     Fluttertoast.showToast(msg: 'DOWNLOAD: ${_images[_currentIndex]}');
+        //   },
+        //     child: PhotoViewGallery.builder(
+        //         pageController: _pageController,
+        //         backgroundDecoration:
+        //             const BoxDecoration(color: Colors.black87),
+        //         scrollPhysics: const BouncingScrollPhysics(),
+        //         onPageChanged: (index) {
+        //           loadSingle(index);
+        //         },
+        //         builder: (BuildContext context, int index) {
+        //           // if (_images[index].isEmpty) {
+        //           //   return PhotoViewGalleryPageOptions(imageProvider: Ink.image(image: image))
+        //           // }
+        //           return PhotoViewGalleryPageOptions(
+        //               imageProvider: ExtendedImage.network(
+        //                 _images[index],
+        //                 headers: _site?.headers,
+        //               ).image,
+        //               // imageProvider: CachedNetworkImageProvider(_images[index],
+        //               //     headers: _site?.headers),
+        //               initialScale: PhotoViewComputedScale.contained * 1,
+        //               onTapUp: (context, detail, value) {
+        //                 final url = _images[index];
+        //                 onDownload(url);
+        //               },
+        //               onTapDown: (context, detail, value) {}
+        //               // heroAttributes: PhotoViewHeroAttributes(tag: _children?[index].id),
+        //               );
+        //         },
+        //         itemCount: _images.length,
+        //         loadingBuilder: (context, event) => Container(
+        //           alignment: Alignment.center,
+        //           child: CircularPercentIndicator(
+        //             radius: 48,
+        //             lineWidth: 8,
+        //             progressColor: Colors.teal,
+        //             animation: true,
+        //             animateFromLastPercent: true,
+        //             circularStrokeCap: CircularStrokeCap.round,
+        //             percent: event == null || event.expectedTotalBytes == null
+        //                 ? 0
+        //                 : event.cumulativeBytesLoaded /
+        //                     event.expectedTotalBytes!,
+        //             center: Text(
+        //               event == null
+        //                   ? 'Loading...'
+        //                   : _getProgressText(event.cumulativeBytesLoaded,
+        //                       event.expectedTotalBytes ?? 0),
+        //               style: TextStyle(fontSize: event == null ? 16 : 18),
+        //             ),
+        //             footer: Container(
+        //                 margin: const EdgeInsets.only(top: 8),
+        //                 child: const Text(
+        //                   "Loading...",
+        //                   style: TextStyle(
+        //                       fontFamily: '',
+        //                       fontSize: 16.0,
+        //                       color: Colors.white70),
+        //                 )),
+        //           ),
+        //         ),
+        //         // backgroundDecoration: widget.backgroundDecoration,
+        //         // pageController: widget.pageController,
+        //         // onPageChanged: onPageChanged,
+        // ))
+        );
   }
 }

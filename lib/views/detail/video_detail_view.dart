@@ -42,7 +42,7 @@ class VideoDetailViewState extends State<VideoDetailView> {
     // try {
     final parent = widget.model;
     print('model.\$section: ${parent.$section}');
-    final dynamicResult = await Mio(parent.$site).parseChildrenDeep(parent.toJson(), parent.$section!.rules!);
+    final dynamicResult = await Mio(parent.$site).parseAllChildren(parent.toJson(), parent.$section!.rules!);
     final model = TypedModel.fromJson(dynamicResult);
 
     // 加载视频

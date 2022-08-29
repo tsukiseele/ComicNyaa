@@ -46,7 +46,7 @@ class ComicDetailViewState extends State<ComicDetailView> {
     final model = widget.model;
     _tags.addAll(model.tags?.split(' ') ?? []);
     _stream =
-        Mio(model.$site).parseChildrenStream(model.toJson(), model.$section!.rules!).listen((List<Map<String, dynamic>> data) {
+        Mio(model.$site).parseChildren(model.toJson(), model.$section!.rules!).listen((List<Map<String, dynamic>> data) {
       _stream?.pause();
       _getNext(data);
     });

@@ -81,7 +81,7 @@ class Mio<T extends Model> {
 
   Future<void> parseChildrenOfList(
       List<Map<String, dynamic>> list, Rules rules) async {
-    await Future.wait(list.map((item) => parseChildrenDeep(item, rules)));
+    await Future.wait(list.map((item) => parseAllChildren(item, rules)));
 // await Promise.allSettled(list.map((item) => this.parseChildrenConcurrency(item, rules)))
   }
 
@@ -89,7 +89,7 @@ class Mio<T extends Model> {
   /// @param {*} item
   /// @param {*} rules
   /// @return {Promise<T extends Meta>}
-  Future<Map<String, dynamic>> parseChildrenDeep(
+  Future<Map<String, dynamic>> parseAllChildren(
       Map<String, dynamic> item, Rules rules,
       {Future<bool> Function(List<Map<String, dynamic>>)? callback}) async {
     if (item[r'$children'] != null && rules[r'$children'] != null) {
@@ -115,13 +115,12 @@ class Mio<T extends Model> {
           // 解析下级子节点
           final nextChildren = rules[r'$children']?.rules;
           if (children.first[r'$children'] != null && nextChildren != null) {
-            await Future.wait(children
-                .map((child) => parseChildrenDeep(child, nextChildren)));
+            await Future.wait(
+                children.map((child) => parseAllChildren(child, nextChildren)));
           }
           print('SELECTOR: ${$children.toJson().toString()}');
           // 判断是否拉平子节点，否则追加到子节点下
           if ($children.flat != null && $children.flat == true) {
-
             item.addAll(children.first);
             print('FLAT CHILDREN ITEM: ${item.toString()}');
             break;
@@ -143,14 +142,19 @@ class Mio<T extends Model> {
     return item;
   }
 
+  ///
+  ///
   bool equalsKeys(List<String> a, List<String> b) {
     if (a.length != b.length) return false;
     return a.whereIndexed((index, element) => a[index] == b[index]).length ==
         a.length;
   }
 
-  Stream<List<Map<String, dynamic>>> parseChildrenDeepStream(
-      Map<String, dynamic> item, Rules rules) async* {
+  ///
+  ///
+  Stream<List<Map<String, dynamic>>> parseChildren(
+      Map<String, dynamic> item, Rules rules,
+      {bool deep = false}) async* {
     if (item[r'$children'] != null && rules[r'$children'] != null) {
       int page = 0;
       Selector $children = rules[r'$children']!;
@@ -159,9 +163,9 @@ class Mio<T extends Model> {
       final isMulitPage = urlTemplate.contains(REG_PAGE_MATCH);
 
       do {
-        final url = replaceUrlTemplate(urlTemplate, page, '');
+        final url = _parseUrlTemplate(urlTemplate, page, '');
         // 发送请求
-        final html = await requestText(url, headers: site?.headers);
+        final html = await _requestText(url, headers: site?.headers);
         // print('PARSE CHILDREN START =======================================');
         List<Map<String, dynamic>> children =
             parseRulesFromHtml(html, $children.rules!);
@@ -175,57 +179,13 @@ class Mio<T extends Model> {
         keys = newKeys;
         page++;
         // 解析下级子节点
-        final nextChildren = rules[r'$children']?.rules;
-        if (children.first[r'$children'] != null && nextChildren != null) {
-          await Future.wait(
-              children.map((child) => parseChildrenDeep(child, nextChildren)));
-        }
-        // 判断是否拉平子节点(并终止获取)，否则追加到子节点下，
-        if ($children.flat != null && $children.flat == true) {
-          item.addAll(children.first);
-          yield [item];
-          break;
-        } else {
-          if ($children.extend == true) {
-            // 判断并继承父节点字段
-            // extend && children.forEach((child, index) => (children[index] = Object.assign({}, item, child)))
+        if (deep) {
+          final nextChildren = rules[r'$children']?.rules;
+          if (children.first[r'$children'] != null && nextChildren != null) {
+            await Future.wait(
+                children.map((child) => parseAllChildren(child, nextChildren)));
           }
-          item['children'] != null
-              ? item['children']?.addAll(children)
-              : (item['children'] = children);
-          // print('YIDLE START =======================================');
-          yield children;
-          // print('YIDLE END =======================================');
         }
-      } while (isMulitPage && keys.isNotEmpty);
-    }
-  }
-
-  Stream<List<Map<String, dynamic>>> parseChildrenStream(
-      Map<String, dynamic> item, Rules rules) async* {
-    if (item[r'$children'] != null && rules[r'$children'] != null) {
-      int page = 0;
-      Selector $children = rules[r'$children']!;
-      String urlTemplate = item[r'$children'];
-      List<String> keys = [];
-      final isMulitPage = urlTemplate.contains(REG_PAGE_MATCH);
-
-      do {
-        final url = replaceUrlTemplate(urlTemplate, page, '');
-        // 发送请求
-        final html = await requestText(url, headers: site?.headers);
-        // print('PARSE CHILDREN START =======================================');
-        List<Map<String, dynamic>> children =
-            parseRulesFromHtml(html, $children.rules!);
-        if (children.isEmpty) break;
-        // print('PARSE CHILDREN LENGTH ======================================= ${children.length}');
-        List<String> newKeys = isMulitPage
-            ? children.map((item) => item[r'$key'].toString()).toList()
-            : [];
-        // print('PARSE EQ ======================================= $keys === $newKeys');
-        if (isMulitPage && equalsKeys(keys, newKeys)) break;
-        keys = newKeys;
-        page++;
         // 判断是否拉平子节点(并终止获取)，否则追加到子节点下，
         if ($children.flat != null && $children.flat == true) {
           item.addAll(children.first);
@@ -239,7 +199,8 @@ class Mio<T extends Model> {
           // 构建解析状态
           children.forEachIndexed((i, child) {
             children[i][r'$site'] = site;
-            children[i][r'$section'] = Section(index: children[i][r'$children'] ?? '', rules: $children.rules);
+            children[i][r'$section'] = Section(
+                index: children[i][r'$children'] ?? '', rules: $children.rules);
           });
 
           item['children'] != null
@@ -258,9 +219,9 @@ class Mio<T extends Model> {
   }
 
   /// 解析Rule对象，返回结果集
-  /// @param {Number} page 页码
-  /// @param {Number} keywords 关键字
-  /// @returns {Promise<<T extends Meta>[]>}
+  /// @param {String} html HTML文档
+  /// @param {Rules} rules 解析规则
+  /// @returns {List<Map<String, dynamic>>}
   List<Map<String, dynamic>> parseRulesFromHtml(String html, Rules rule) {
     // 检查无效响应
     if (html.trim().isEmpty) return [];
@@ -279,7 +240,7 @@ class Mio<T extends Model> {
         // 匹配选择器内容
         if (exp.selector != null) {
           // 此处的选择器只应选择一个元素，否则result会被刷新为最后一个
-          selectEach(doc, exp.selector!, (result) => (content = result));
+          selectEach(doc, exp.selector!, (result, index) => (content = result));
         }
         // 匹配正则内容
         final regexp = RegExp(exp.regex ?? '');
@@ -287,7 +248,7 @@ class Mio<T extends Model> {
 
         groups.forEachIndexed((i, item) {
           final match = item.groupCount > 0 ? item.group(1) : item.group(0);
-          final value = replaceRegex(match ?? '', exp.capture, exp.replacement);
+          final value = _parseRegex(match ?? '', exp.capture, exp.replacement);
           props.add(value);
         });
         // 使用选择器匹配
@@ -295,7 +256,7 @@ class Mio<T extends Model> {
         selectEach(doc, exp.selector as String, (result, index) {
           // print('RRRR: $result, IIII: $index');
           // 执行最终替换，并添加到结果集
-          final value = replaceRegex(result, exp.capture, exp.replacement);
+          final value = _parseRegex(result, exp.capture, exp.replacement);
           props.add(value);
         });
       }
@@ -331,13 +292,13 @@ class Mio<T extends Model> {
   Future<List<Map<String, dynamic>>> parseRules(String indexUrl, Rules rule,
       [int? page, String? keywords]) async {
     // 生成URL
-    final url = replaceUrlTemplate(
+    final url = _parseUrlTemplate(
         indexUrl, page ?? this.page, keywords ?? this.keywords);
     print('REQUEEST: $url');
     print('REQUEEST RULES: ${rule.keys}');
 
     // 发送请求
-    final html = await requestText(url, headers: site?.headers);
+    final html = await _requestText(url, headers: site?.headers);
     // 检查无效响应
     if (html.trim().isEmpty) return [];
     // print('HTMl: ${html}');
@@ -349,7 +310,7 @@ class Mio<T extends Model> {
   /// @param {String} url 链接
   /// @param {Object} options 操作
   /// @returns {Promise<String>} 响应文本
-  Future<String> requestText(String url, {Map<String, String>? headers}) async {
+  Future<String> _requestText(String url, {Map<String, String>? headers}) async {
     return await _request(url, headers: headers);
   }
 
@@ -370,7 +331,7 @@ class Mio<T extends Model> {
   /// @param {cheerio.CheerioAPI} $ 文档上下文
   /// @param {string} selector 选择器
   /// @param {function} each (content: string, index: number) => void
-  selectEach(Document doc, String selector, Function each) {
+  selectEach(Document doc, String selector, Function(String content, int index) each) {
     final matches = REG_SELECTOR_TEMPLATE.allMatches(selector);
     if (matches.isEmpty) return;
     final match = matches.first;
@@ -404,7 +365,7 @@ class Mio<T extends Model> {
   /// @param {String} capture 截取式
   /// @param {String} replacement 替换式
   /// @returns {String} 结果
-  String replaceRegex(String text, String? capture, String? replacement) {
+  String _parseRegex(String text, String? capture, String? replacement) {
     if (text == "") return replacement ?? "";
     if (capture == null || capture == "") return text;
     if (replacement == null || replacement == "") {
@@ -428,7 +389,7 @@ class Mio<T extends Model> {
   /// @param {Number} page 当前页码
   /// @param {String} keywords 关键字
   /// @returns {String} 真实URL
-  String replaceUrlTemplate(String template, int page, String? keywords) {
+  String _parseUrlTemplate(String template, int page, String? keywords) {
     final pageMatches = REG_PAGE_TEMPLATE.allMatches(template);
     final keywordMatches = REG_KEYWORD_TEMPLATE.allMatches(template);
     int p = page;

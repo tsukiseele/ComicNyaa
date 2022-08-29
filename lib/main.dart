@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:comic_nyaa/app/constant.dart';
-import 'package:comic_nyaa/library/mio/core/mio_loader.dart';
 import 'package:comic_nyaa/utils/http.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
