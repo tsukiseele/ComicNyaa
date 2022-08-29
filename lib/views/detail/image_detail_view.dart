@@ -29,7 +29,7 @@ class ImageDetailView extends StatefulWidget {
   }
 }
 
-class ImageDetailViewState extends State<ImageDetailView> {
+class ImageDetailViewState extends State<ImageDetailView> with TickerProviderStateMixin {
   final PageController _pageController = PageController();
   late List<TypedModel> _models;
   List<String> _images = [];
@@ -148,6 +148,15 @@ class ImageDetailViewState extends State<ImageDetailView> {
           title: Text(widget.title),
         ),
         body: ExtendedImageGesturePageView.builder(
+          itemCount: _images.length,
+          scrollDirection: Axis.horizontal,
+          controller: ExtendedPageController(
+            initialPage: _currentIndex,
+          ),
+          onPageChanged: (int index) {
+            _currentIndex = index;
+            loadSingle(index);
+          },
           itemBuilder: (BuildContext context, int index) {
             var item = _images[index];
             if (item.isEmpty) {
@@ -165,14 +174,20 @@ class ImageDetailViewState extends State<ImageDetailView> {
                         ));
             }
             double scale = 1.0;
+            final controller = AnimationController(
+                value: 1,
+                duration: const Duration(milliseconds: 500),
+                vsync: this);
             Widget image = ExtendedImage.network(
               item,
               fit: BoxFit.contain,
               mode: ExtendedImageMode.gesture,
               handleLoadingProgress: true,
+              opacity: controller,
               loadStateChanged: (state) {
                 switch (state.extendedImageLoadState) {
                   case LoadState.loading:
+                    controller.reset();
                     final event = state.loadingProgress;
                     if (event == null) {
                       return const Center(child: Text('Loading...'));
@@ -198,7 +213,8 @@ class ImageDetailViewState extends State<ImageDetailView> {
                         ));
                   case LoadState.failed:
                     return const Center(child: Icon(Icons.image_not_supported, size: 64));
-                  default:
+                  case LoadState.completed:
+                    controller.forward();
                     return null;
                 }
               },
@@ -227,15 +243,6 @@ class ImageDetailViewState extends State<ImageDetailView> {
               return image;
             }
           },
-          itemCount: _images.length,
-          onPageChanged: (int index) {
-            _currentIndex = index;
-            loadSingle(index);
-          },
-          controller: ExtendedPageController(
-            initialPage: _currentIndex,
-          ),
-          scrollDirection: Axis.horizontal,
         )
 
         // InkWell(

@@ -288,7 +288,7 @@ class _GalleryViewState extends State<GalleryView>
                           shadowColor: Colors.black45,
                           elevation: 2,
                           borderRadius:
-                              const BorderRadius.all(Radius.circular(2.0)),
+                              const BorderRadius.all(Radius.circular(4.0)),
                           child: InkWell(
                               onTap: () => _jump(_models[index]),
                               child: Column(

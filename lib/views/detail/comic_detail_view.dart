@@ -23,7 +23,7 @@ class ComicDetailView extends StatefulWidget {
   }
 }
 
-class ComicDetailViewState extends State<ComicDetailView> {
+class ComicDetailViewState extends State<ComicDetailView> with TickerProviderStateMixin {
   final RefreshController _refreshController = RefreshController();
   final ScrollController _scrollController = ScrollController();
   final List<TypedModel> _children = [];
@@ -33,7 +33,8 @@ class ComicDetailViewState extends State<ComicDetailView> {
   void initialized() {
     _scrollController.addListener(() {
       const offset = 32;
-      if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent) {
+      if (_scrollController.position.pixels >=
+          _scrollController.position.maxScrollExtent) {
         print(
             'SCROLL POSITION: ${_scrollController.position.pixels} >= ${_scrollController.position.maxScrollExtent - offset}');
         while (_stream?.isPaused == true) {
@@ -45,8 +46,9 @@ class ComicDetailViewState extends State<ComicDetailView> {
     });
     final model = widget.model;
     _tags.addAll(model.tags?.split(' ') ?? []);
-    _stream =
-        Mio(model.$site).parseChildren(model.toJson(), model.$section!.rules!).listen((List<Map<String, dynamic>> data) {
+    _stream = Mio(model.$site)
+        .parseChildren(model.toJson(), model.$section!.rules!)
+        .listen((List<Map<String, dynamic>> data) {
       _stream?.pause();
       _getNext(data);
     });
@@ -70,9 +72,17 @@ class ComicDetailViewState extends State<ComicDetailView> {
     try {
       final children = item.children != null ? item.children![0] : null;
       if (children != null) {
-        return children.coverUrl ?? children.sampleUrl ?? children.largerUrl ?? children.originUrl ?? '';
+        return children.coverUrl ??
+            children.sampleUrl ??
+            children.largerUrl ??
+            children.originUrl ??
+            '';
       }
-      return item.coverUrl ?? item.sampleUrl ?? item.largerUrl ?? item.originUrl ?? '';
+      return item.coverUrl ??
+          item.sampleUrl ??
+          item.largerUrl ??
+          item.originUrl ??
+          '';
     } catch (e) {
       rethrow;
       print('ERROR: $e');
@@ -98,33 +108,42 @@ class ComicDetailViewState extends State<ComicDetailView> {
       body: SmartRefresher(
           controller: _refreshController,
           header: SliverToBoxAdapter(
-            child: Material(elevation: 4, child: Container(
-                color: Theme.of(context).primaryColor.withOpacity(.75),
-                padding: EdgeInsets.only(left: 8, top: statusBarHeight + 8, right: 8, bottom: 8),
-                child: Column(children: [
-                  Row(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
-                    Material(
-                      elevation: 8,
-                      child: Padding(
-                        padding: const EdgeInsets.all(4),
-                        child: ExtendedImage.network(
-                          widget.model.coverUrl ?? '',
-                          height: 192,
-                        ),
-                      ),
-                    ),
-                    Expanded(
-                      flex: 1,
-                      child: Container(
-                          margin: const EdgeInsets.only(left: 8),
-                          child: Text(
-                            widget.model.title ?? 'Unknown',
-                            style: const TextStyle(color: Colors.white, fontSize: 20),
-                          )),
-                    )
-                  ]),
-                  Wrap(children: List.generate(_tags.length, (i) => Text(_tags[i]))),
-                ]))),
+            child: Material(
+                elevation: 4,
+                child: Container(
+                    color: Theme.of(context).primaryColor.withOpacity(.75),
+                    padding: EdgeInsets.only(
+                        left: 8, top: statusBarHeight + 8, right: 8, bottom: 8),
+                    child: Column(children: [
+                      Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Material(
+                              elevation: 8,
+                              child: Padding(
+                                padding: const EdgeInsets.all(4),
+                                child: ExtendedImage.network(
+                                  widget.model.coverUrl ?? '',
+                                  height: 192,
+                                ),
+                              ),
+                            ),
+                            Expanded(
+                              flex: 1,
+                              child: Container(
+                                  margin: const EdgeInsets.only(left: 8),
+                                  child: Text(
+                                    widget.model.title ?? 'Unknown',
+                                    style: const TextStyle(
+                                        color: Colors.white, fontSize: 20),
+                                  )),
+                            )
+                          ]),
+                      Wrap(
+                          children: List.generate(
+                              _tags.length, (i) => Text(_tags[i]))),
+                    ]))),
           ),
           child: _children.isNotEmpty
               ? MasonryGridView.count(
@@ -136,10 +155,16 @@ class ComicDetailViewState extends State<ComicDetailView> {
                   itemCount: _children.length,
                   shrinkWrap: true,
                   itemBuilder: (context, index) {
+                    final controller = AnimationController(
+                        value: 1,
+                        duration: const Duration(milliseconds: 300),
+                        vsync: this);
                     return Material(
-                      shadowColor: Colors.black45,//Colors.grey[100],
+                        shadowColor: Colors.black45,
+                        //Colors.grey[100],
                         elevation: 2,
-                        borderRadius: const BorderRadius.all(Radius.circular(2.0)),
+                        borderRadius:
+                            const BorderRadius.all(Radius.circular(2.0)),
                         child: InkWell(
                             onTap: () {
                               Navigator.push(
@@ -152,28 +177,65 @@ class ComicDetailViewState extends State<ComicDetailView> {
                             },
                             child: Column(
                               children: [
-                                CachedNetworkImage(
-                                  imageUrl: getUrl(_children[index]),
-                                  httpHeaders: widget.model.$site?.headers,
-                                  height: 160,
-                                  fit: BoxFit.cover,
-                                  placeholder: (ctx, text) => Shimmer.fromColors(
-                                      baseColor: const Color.fromRGBO(240, 240, 240, 1),
-                                      highlightColor: Colors.white,
-                                      child: AspectRatio(
-                                        aspectRatio: 0.8,
-                                        child: Container(
-                                          decoration: const BoxDecoration(color: Colors.white),
-                                        ),
-                                      )),
-                                  errorWidget: (ctx, url, error) => const AspectRatio(
-                                      aspectRatio: 1,
-                                      child: Icon(
-                                        Icons.image_not_supported,
-                                        size: 64,
-                                        color: Colors.redAccent,
-                                      )),
-                                ),
+                                ExtendedImage.network(getUrl(_children[index]),
+                                    headers: widget.model.$site?.headers,
+                                    height: 160,
+                                    fit: BoxFit.cover,
+                                    opacity: controller,
+                                    loadStateChanged: (state) {
+                                  switch (state.extendedImageLoadState) {
+                                    case LoadState.loading:
+                                      controller.reset();
+                                      return Shimmer.fromColors(
+                                          baseColor: const Color.fromRGBO(
+                                              240, 240, 240, 1),
+                                          highlightColor: Colors.white,
+                                          child: AspectRatio(
+                                            aspectRatio: 0.8,
+                                            child: Container(
+                                              decoration: const BoxDecoration(
+                                                  color: Colors.white),
+                                            ),
+                                          ));
+                                    case LoadState.failed:
+                                      return const AspectRatio(
+                                          aspectRatio: 1,
+                                          child: Icon(
+                                            Icons.image_not_supported,
+                                            size: 64,
+                                            color: Colors.redAccent,
+                                          ));
+                                    case LoadState.completed:
+                                      controller.forward();
+                                      return null;
+                                  }
+                                }),
+                                // CachedNetworkImage(
+                                //   imageUrl: getUrl(_children[index]),
+                                //   httpHeaders: widget.model.$site?.headers,
+                                //   height: 160,
+                                //   fit: BoxFit.cover,
+                                //   placeholder: (ctx, text) =>
+                                //       Shimmer.fromColors(
+                                //           baseColor: const Color.fromRGBO(
+                                //               240, 240, 240, 1),
+                                //           highlightColor: Colors.white,
+                                //           child: AspectRatio(
+                                //             aspectRatio: 0.8,
+                                //             child: Container(
+                                //               decoration: const BoxDecoration(
+                                //                   color: Colors.white),
+                                //             ),
+                                //           )),
+                                //   errorWidget: (ctx, url, error) =>
+                                //       const AspectRatio(
+                                //           aspectRatio: 1,
+                                //           child: Icon(
+                                //             Icons.image_not_supported,
+                                //             size: 64,
+                                //             color: Colors.redAccent,
+                                //           )),
+                                // ),
                                 // ExtendedImage.network(
                                 //   getUrl(_children?[index]),
                                 //   height: _heightCache[index],
