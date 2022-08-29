@@ -6,6 +6,7 @@ import 'package:comic_nyaa/models/typed_model.dart';
 import 'package:comic_nyaa/utils/num_extensions.dart';
 import 'package:comic_nyaa/utils/uri_extensions.dart';
 import 'package:dio/dio.dart';
+import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -17,7 +18,8 @@ import 'package:photo_view/photo_view_gallery.dart';
 import '../../library/mio/model/site.dart';
 
 class ImageDetailView extends StatefulWidget {
-  const ImageDetailView({Key? key, required this.models, this.index = 0}) : super(key: key);
+  const ImageDetailView({Key? key, required this.models, this.index = 0})
+      : super(key: key);
   final title = '画廊';
   final List<TypedModel> models;
   final int index;
@@ -41,28 +43,43 @@ class ImageDetailViewState extends State<ImageDetailView> {
       return;
     }
     TypedModel model = _models[index];
-    print('LOAD SINGLE:::: $model');
-    print('LOAD SINGLE:::: ${model.$section?.rules?[r'$children']?.selector}');
-    // return;
-    final results = await Mio(model.$site).parseChildrenDeep(model.toJson(), model.$section!.rules!);
-    final models = TypedModel.fromJson(results).children;
-    if (models == null) {
-      Fluttertoast.showToast(msg: '解析异常：没有可用数据');
-      return;
-    }
-    if (models.length == 1) {
-      final url = getUrl(model);
-      print('MMMMMMMMMMMMMMMMMMMMMMMMMMM === $model');
+    String image = getUrl(model);
+    if (image.isEmpty) {
+      print('LOAD SINGLE:::: $model');
+      print(
+          'LOAD SINGLE:::: ${model.$section?.rules?[r'$children']?.selector}');
+      // return;
+      final results = await Mio(model.$site)
+          .parseChildrenDeep(model.toJson(), model.$section!.rules!);
+      final tm = TypedModel.fromJson(results);
+      if (tm.children?.isNotEmpty == true) {
+        final models = tm.children;
+        if (models == null) {
+          Fluttertoast.showToast(msg: '解析异常：没有可用数据');
+          return;
+        }
+        if (models.length == 1) {
+          model = models[0];
+          image = getUrl(models[0]);
+          print('MMMMMMMMMMMMMMMMMMMMMMMMMMM === $model');
 
-      print('UUUUUUUUUUUUUUUUUUUUUUUUUUU === $url');
-      setState(() {
-        _images[index] = url;
-        _models[index] = model;
-      });
-    } else {
-      Fluttertoast.showToast(msg: '解析异常：预料之外的子数据集');
-      return;
+          print('UUUUUUUUUUUUUUUUUUUUUUUUUUU === $image');
+        } else {
+          Fluttertoast.showToast(msg: '解析异常：预料之外的子数据集');
+          return;
+        }
+      } else {
+        model = tm;
+        image = getUrl(tm);
+      }
     }
+
+    print('D_IMAGE::: $image');
+    print('D_MODEL::: $model');
+    setState(() {
+      _images[index] = image;
+      _models[index] = model;
+    });
     // if (model.children != null) {
     //   _updateModels(model.children ?? []);
     // } else {
@@ -95,10 +112,14 @@ class ImageDetailViewState extends State<ImageDetailView> {
       // }
       setState(() {
         currentIndex = widget.index;
-        isFailed = _images.length > currentIndex ? _images[currentIndex].isNotEmpty : true;
+        isFailed = _images.length > currentIndex
+            ? _images[currentIndex].isNotEmpty
+            : true;
       });
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if(_pageController.hasClients && _images.isNotEmpty && widget.index < _images.length){
+        if (_pageController.hasClients &&
+            _images.isNotEmpty &&
+            widget.index < _images.length) {
           _pageController.jumpToPage(widget.index);
         }
       });
@@ -120,7 +141,10 @@ class ImageDetailViewState extends State<ImageDetailView> {
     try {
       final children = item.children != null ? item.children![0] : null;
       if (children != null) {
-        url = children.sampleUrl ?? children.largerUrl ?? children.originUrl ?? '';
+        url = children.sampleUrl ??
+            children.largerUrl ??
+            children.originUrl ??
+            '';
         return url;
       }
       url = item.sampleUrl ?? item.largerUrl ?? item.originUrl ?? '';
@@ -131,7 +155,8 @@ class ImageDetailViewState extends State<ImageDetailView> {
   }
 
   onDownload(String url) async {
-    String savePath = (await Config.downloadDir).join(Uri.parse(url).filename).path;
+    String savePath =
+        (await Config.downloadDir).join(Uri.parse(url).filename).path;
     Fluttertoast.showToast(msg: '下载已添加：$savePath');
     await Dio().download(url, savePath);
   }
@@ -159,7 +184,8 @@ class ImageDetailViewState extends State<ImageDetailView> {
         body: _images.isNotEmpty
             ? PhotoViewGallery.builder(
                 pageController: _pageController,
-                backgroundDecoration: const BoxDecoration(color: Colors.black87),
+                backgroundDecoration:
+                    const BoxDecoration(color: Colors.black87),
                 scrollPhysics: const BouncingScrollPhysics(),
                 onPageChanged: (index) {
                   loadSingle(index);
@@ -170,7 +196,8 @@ class ImageDetailViewState extends State<ImageDetailView> {
                       //   _images[index],
                       //   headers: _models?[index].$site?.headers,
                       // ).image,
-                    imageProvider: CachedNetworkImageProvider( _images[index], headers: _site?.headers),
+                      imageProvider: CachedNetworkImageProvider(_images[index],
+                          headers: _site?.headers),
                       initialScale: PhotoViewComputedScale.contained * 1,
                       onTapUp: (context, detail, value) {
                         final url = _images[index];
@@ -190,16 +217,25 @@ class ImageDetailViewState extends State<ImageDetailView> {
                     animation: true,
                     animateFromLastPercent: true,
                     circularStrokeCap: CircularStrokeCap.round,
-                    percent: event == null || event.expectedTotalBytes == null ? 0 : event.cumulativeBytesLoaded / event.expectedTotalBytes!,
-                    center: Text(event == null ? 'Loading...' :
-                      _getProgressText(event.cumulativeBytesLoaded, event.expectedTotalBytes ?? 0),
+                    percent: event == null || event.expectedTotalBytes == null
+                        ? 0
+                        : event.cumulativeBytesLoaded /
+                            event.expectedTotalBytes!,
+                    center: Text(
+                      event == null
+                          ? 'Loading...'
+                          : _getProgressText(event.cumulativeBytesLoaded,
+                              event.expectedTotalBytes ?? 0),
                       style: TextStyle(fontSize: event == null ? 16 : 18),
                     ),
                     footer: Container(
                         margin: const EdgeInsets.only(top: 8),
                         child: const Text(
                           "Loading...",
-                          style: TextStyle(fontFamily: '', fontSize: 16.0, color: Colors.white70),
+                          style: TextStyle(
+                              fontFamily: '',
+                              fontSize: 16.0,
+                              color: Colors.white70),
                         )),
                   ),
                 ),
@@ -218,7 +254,6 @@ class ImageDetailViewState extends State<ImageDetailView> {
                     : const SpinKitSpinningLines(
                         color: Colors.teal,
                         size: 96,
-                      ))
-        );
+                      )));
   }
 }
