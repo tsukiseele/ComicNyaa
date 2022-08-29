@@ -1,4 +1,3 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:comic_nyaa/app/global.dart';
 import 'package:comic_nyaa/library/mio/core/mio.dart';
 import 'package:comic_nyaa/models/typed_model.dart';
@@ -10,9 +9,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
-import 'package:photo_view/photo_view.dart';
-import 'package:photo_view/photo_view_gallery.dart';
-
 import '../../library/mio/model/site.dart';
 
 class ImageDetailView extends StatefulWidget {
@@ -176,7 +172,7 @@ class ImageDetailViewState extends State<ImageDetailView> with TickerProviderSta
             double scale = 1.0;
             final controller = AnimationController(
                 value: 1,
-                duration: const Duration(milliseconds: 500),
+                duration: const Duration(milliseconds: 1000),
                 vsync: this);
             Widget image = ExtendedImage.network(
               item,
@@ -184,6 +180,10 @@ class ImageDetailViewState extends State<ImageDetailView> with TickerProviderSta
               mode: ExtendedImageMode.gesture,
               handleLoadingProgress: true,
               opacity: controller,
+              headers: _site?.headers,
+              onDoubleTap: (state) {
+                scale = 1.25;
+              },
               loadStateChanged: (state) {
                 switch (state.extendedImageLoadState) {
                   case LoadState.loading:

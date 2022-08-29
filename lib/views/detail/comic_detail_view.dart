@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:comic_nyaa/library/mio/core/mio.dart';
 import 'package:comic_nyaa/models/typed_model.dart';
 import 'package:comic_nyaa/views/detail/image_detail_view.dart';
@@ -85,9 +84,7 @@ class ComicDetailViewState extends State<ComicDetailView> with TickerProviderSta
           '';
     } catch (e) {
       rethrow;
-      print('ERROR: $e');
     }
-    return '';
   }
 
   @override
@@ -107,6 +104,7 @@ class ComicDetailViewState extends State<ComicDetailView> with TickerProviderSta
       // ),
       body: SmartRefresher(
           controller: _refreshController,
+          scrollController: _scrollController,
           header: SliverToBoxAdapter(
             child: Material(
                 elevation: 4,
@@ -147,7 +145,7 @@ class ComicDetailViewState extends State<ComicDetailView> with TickerProviderSta
           ),
           child: _children.isNotEmpty
               ? MasonryGridView.count(
-                  // controller: _scrollController,
+                  controller: _scrollController,
                   padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
                   crossAxisCount: 3,
                   mainAxisSpacing: 8.0,
