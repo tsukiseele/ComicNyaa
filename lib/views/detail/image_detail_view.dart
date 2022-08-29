@@ -147,16 +147,7 @@ class ImageDetailViewState extends State<ImageDetailView> {
         appBar: AppBar(
           title: Text(widget.title),
         ),
-        body:
-            // InkWell(
-            //     onDoubleTap: () {
-            //       print('object');
-            //       // setState(() {
-            //       //
-            //       //   scale = 1.2;
-            //       // });
-            //     },child:
-            ExtendedImageGesturePageView.builder(
+        body: ExtendedImageGesturePageView.builder(
           itemBuilder: (BuildContext context, int index) {
             var item = _images[index];
             if (item.isEmpty) {
@@ -205,14 +196,17 @@ class ImageDetailViewState extends State<ImageDetailView> {
                               event.expectedTotalBytes ?? 0),
                           style: const TextStyle(fontSize: 18),
                         ));
+                  case LoadState.failed:
+                    return const Center(child: Icon(Icons.image_not_supported, size: 64));
                   default:
                     return null;
                 }
               },
-              initGestureConfigHandler: (ExtendedImageState state) => GestureConfig(
-                  inPageView: true,
-                  initialScale: scale,
-                  cacheGesture: false),
+              initGestureConfigHandler: (ExtendedImageState state) =>
+                  GestureConfig(
+                      inPageView: true,
+                      initialScale: scale,
+                      cacheGesture: false),
             );
             image = InkWell(
               onLongPress: () {
