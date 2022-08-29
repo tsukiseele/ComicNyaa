@@ -8,6 +8,7 @@ import 'package:comic_nyaa/library/mio/model/base.dart';
 import 'package:comic_nyaa/views/settings_view.dart';
 import 'package:comic_nyaa/views/subscribe_view.dart';
 import 'package:comic_nyaa/widget/nyaa_tab_view.dart';
+import 'package:comic_nyaa/widget/simple_network_image.dart';
 import 'package:dio/dio.dart';
 import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
@@ -208,19 +209,23 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
                                 curve: Curves.ease,
                                 child: Row(children: [
                                   Container(
-                                      width: 40,
-                                      height: 40,
-                                      padding: EdgeInsets.only(
-                                          top: 8,
-                                          bottom: 8,
-                                          right: _currentTabIndex == index
-                                              ? 8
-                                              : 0),
-                                      child: CachedNetworkImage(
-                                        imageUrl:
-                                            _gallerys[index].site.icon ?? '',
+                                    width: 40,
+                                    height: 40,
+                                    padding: EdgeInsets.only(
+                                        top: 8,
+                                        bottom: 8,
+                                        right:
+                                            _currentTabIndex == index ? 8 : 0),
+                                    child: SimpleNetworkImage(
+                                        _gallerys[index].site.icon ?? '',
                                         fit: BoxFit.contain,
-                                      )),
+                                        clearMemoryCacheIfFailed: false),
+                                    // child: CachedNetworkImage(
+                                    //   imageUrl:
+                                    //       _gallerys[index].site.icon ?? '',
+                                    //   fit: BoxFit.contain,
+                                    // )
+                                  ),
                                   _currentTabIndex == index
                                       ? SizedBox(
                                           width: _currentTabIndex == index
@@ -318,17 +323,14 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
               child: SizedBox(
                   width: 24,
                   height: 24,
-                  child: CachedNetworkImage(
-                      imageUrl: _currentTab?.site.icon ?? '',
-                      errorWidget: (ctx, url, error) {
-                        return Text(
-                          _currentTab?.site.name?.substring(0, 1) ?? '?',
-                          style: const TextStyle(
-                              fontFamily: Config.uiFontFamily,
-                              fontSize: 18,
-                              color: Colors.teal),
-                        );
-                      }))),
+                  child: SimpleNetworkImage(_currentTab?.site.icon ?? '',
+                      error: Text(
+                        _currentTab?.site.name?.substring(0, 1) ?? '?',
+                        style: const TextStyle(
+                            fontFamily: Config.uiFontFamily,
+                            fontSize: 18,
+                            color: Colors.teal),
+                      )))),
         ],
         actions: [
           FloatingSearchBarAction(
@@ -449,70 +451,65 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
 
   Widget buildEndDrawer() {
     return Drawer(
-        width: 256,
-        elevation: 8,
-        child: ListView.builder(
-            padding: const EdgeInsets.only(top: 8),
-            itemCount: _sites.length + 1,
-            itemBuilder: (ctx, i) {
-              final index = i - 1;
-              if (index < 0) {
-                return CachedNetworkImage(
-                  imageUrl:
-                  'https://cdn.jsdelivr.net/gh/nyarray/LoliHost/images/7c4f1d7ea2dadd3ca835b9b2b9219681.webp',
-                  fit: BoxFit.cover,
-                  height: 120 + kToolbarHeight,
-                );
-              }
-              return Material(
-                  child: InkWell(
-                      onTap: () {
-                        setState(() {
-                          // _tabs.add(_sites[index]);
-                          addTab(_sites[index]);
-                          globalKey.currentState?.closeEndDrawer();
-                        });
-                        setState(() {});
-                      },
-                      child: ListTile(
-                        leading: SizedBox(
-                            width: 24,
-                            height: 24,
-                            child: CachedNetworkImage(
-                              imageUrl: _sites[index].icon ?? '',
-                              fit: BoxFit.cover,
-                              errorWidget: (ctx, url, error) =>
-                              const Icon(Icons.image_not_supported, size: 32),
-                            )),
-                        title: Text(
-                          _sites[index].name ?? '',
-                          style: const TextStyle(
-                            fontFamily: Config.uiFontFamily,
-                            fontSize: 18,
-                          ),
-                          textAlign: TextAlign.start,
+      width: 256,
+      elevation: 8,
+      child: ListView.builder(
+          padding: const EdgeInsets.only(top: 8),
+          itemCount: _sites.length + 1,
+          itemBuilder: (ctx, i) {
+            final index = i - 1;
+            if (index < 0) {
+              return const SimpleNetworkImage(
+                    'https://cdn.jsdelivr.net/gh/nyarray/LoliHost/images/7c4f1d7ea2dadd3ca835b9b2b9219681.webp',
+                fit: BoxFit.cover,
+                height: 120 + kToolbarHeight,
+              );
+            }
+            return Material(
+                child: InkWell(
+                    onTap: () {
+                      setState(() {
+                        // _tabs.add(_sites[index]);
+                        addTab(_sites[index]);
+                        globalKey.currentState?.closeEndDrawer();
+                      });
+                      setState(() {});
+                    },
+                    child: ListTile(
+                      leading: SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: SimpleNetworkImage(_sites[index].icon ?? '',
+                            fit: BoxFit.cover,
+                            error: const Icon(Icons.image_not_supported, size: 32),
+                          )),
+                      title: Text(
+                        _sites[index].name ?? '',
+                        style: const TextStyle(
+                          fontFamily: Config.uiFontFamily,
+                          fontSize: 18,
                         ),
-                        subtitle: Text(
-                          _sites[index].details ?? '',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                              fontSize: 14, color: Colors.black26),
-                        ),
-                        trailing: Icon(
-                            _sites[index].type == 'comic'
-                                ? Icons.photo_library
-                                : _sites[index].type == 'image'
-                                ? Icons.image
-                                : _sites[index].type == 'video'
-                                ? Icons.video_collection
-                                : Icons.quiz,
-                            color: Theme
-                                .of(context)
-                                .primaryColor),
-                      )));
-            }),
-      );
+                        textAlign: TextAlign.start,
+                      ),
+                      subtitle: Text(
+                        _sites[index].details ?? '',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                            fontSize: 14, color: Colors.black26),
+                      ),
+                      trailing: Icon(
+                          _sites[index].type == 'comic'
+                              ? Icons.photo_library
+                              : _sites[index].type == 'image'
+                                  ? Icons.image
+                                  : _sites[index].type == 'video'
+                                      ? Icons.video_collection
+                                      : Icons.quiz,
+                          color: Theme.of(context).primaryColor),
+                    )));
+          }),
+    );
   }
 
   Future<bool> onWillPop() {

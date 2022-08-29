@@ -32,6 +32,7 @@ class ImageDetailViewState extends State<ImageDetailView> with TickerProviderSta
   Site? _site;
   int _currentIndex = 0;
   bool isFailed = false;
+  double _scale = 1.0;
 
   void loadSingle(int index) async {
     if (_images[index].isNotEmpty) {
@@ -158,18 +159,12 @@ class ImageDetailViewState extends State<ImageDetailView> with TickerProviderSta
             if (item.isEmpty) {
               return Container(
                   alignment: Alignment.center,
-                  child: isFailed
-                      ? const Icon(
-                          Icons.image_not_supported,
-                          size: 64,
-                          color: Colors.redAccent,
-                        )
-                      : const SpinKitSpinningLines(
+                  child: const SpinKitSpinningLines(
                           color: Colors.teal,
                           size: 96,
                         ));
             }
-            double scale = 1.0;
+            _scale = 1.0;
             final controller = AnimationController(
                 value: 1,
                 duration: const Duration(milliseconds: 1000),
@@ -182,7 +177,11 @@ class ImageDetailViewState extends State<ImageDetailView> with TickerProviderSta
               opacity: controller,
               headers: _site?.headers,
               onDoubleTap: (state) {
-                scale = 1.25;
+                setState(() {
+                  print('SDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD');
+                  _scale = 1.5;
+                  print(_scale);
+                });
               },
               loadStateChanged: (state) {
                 switch (state.extendedImageLoadState) {
@@ -221,7 +220,7 @@ class ImageDetailViewState extends State<ImageDetailView> with TickerProviderSta
               initGestureConfigHandler: (ExtendedImageState state) =>
                   GestureConfig(
                       inPageView: true,
-                      initialScale: scale,
+                      initialScale: _scale,
                       cacheGesture: false),
             );
             image = InkWell(
