@@ -74,6 +74,7 @@ class ComicDetailViewState extends State<ComicDetailView> {
       }
       return item.coverUrl ?? item.sampleUrl ?? item.largerUrl ?? item.originUrl ?? '';
     } catch (e) {
+      rethrow;
       print('ERROR: $e');
     }
     return '';

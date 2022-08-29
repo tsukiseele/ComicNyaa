@@ -1,15 +1,13 @@
 import './site.dart';
 
-class Model<T> {
+abstract class Model<T> {
 
   String? type;
   // List<String>? sources;
-  List<T>? children;// 需要实现类序列化
+  List<T>? children;// 需要在子类序列化
   String? $children;
   Site? $site; // 不可序列化
   Section? $section; // 不可序列化
-
-  Model({this.type, this.children, this.$children, this.$site, this.$section});
 
   Model.fromJson(Map<String, dynamic> json) {
     type = json['type'];

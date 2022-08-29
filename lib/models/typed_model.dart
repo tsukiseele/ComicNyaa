@@ -8,8 +8,6 @@ class TypedModel extends Model<TypedModel> {
   String? largerUrl;
   String? sampleUrl;
 
-  TypedModel(this.title, this.tags, this.coverUrl, this.originUrl, this.largerUrl, this.sampleUrl);
-
   TypedModel.fromJson(Map<String, dynamic> json) : super.fromJson(json) {
     title = json['title'];
     tags = json['tags'];

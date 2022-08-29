@@ -30,31 +30,69 @@ class ImageDetailView extends StatefulWidget {
 
 class ImageDetailViewState extends State<ImageDetailView> {
   final PageController _pageController = PageController();
-  List<TypedModel>? _models;
+  late List<TypedModel> _models;
   List<String> _images = [];
   Site? _site;
   int currentIndex = 0;
   bool isFailed = false;
 
+  void loadSingle(int index) async {
+    if (_images[index].isNotEmpty) {
+      return;
+    }
+    TypedModel model = _models[index];
+    print('LOAD SINGLE:::: $model');
+    print('LOAD SINGLE:::: ${model.$section?.rules?[r'$children']?.selector}');
+    // return;
+    final results = await Mio(model.$site).parseChildrenDeep(model.toJson(), model.$section!.rules!);
+    final models = TypedModel.fromJson(results).children;
+    if (models == null) {
+      Fluttertoast.showToast(msg: '解析异常：没有可用数据');
+      return;
+    }
+    if (models.length == 1) {
+      final url = getUrl(model);
+      print('MMMMMMMMMMMMMMMMMMMMMMMMMMM === $model');
+
+      print('UUUUUUUUUUUUUUUUUUUUUUUUUUU === $url');
+      setState(() {
+        _images[index] = url;
+        _models[index] = model;
+      });
+    } else {
+      Fluttertoast.showToast(msg: '解析异常：预料之外的子数据集');
+      return;
+    }
+    // if (model.children != null) {
+    //   _updateModels(model.children ?? []);
+    // } else {
+    //   _updateModels([model]);
+    // }
+  }
+
   void loadImage() async {
     // print('INDEX: ${widget.index}, WIDGET.MODELS: ${widget.models}');
     try {
-      final models = widget.models;
-      _site = models.isNotEmpty ? models[0].$site : null;
-      // 只有一条数据，且无图片源，则请求解析
-      if (models.length == 1 && getUrl(models.first).isEmpty) {
-        var model = models.first;
-        // print('MODEL.SECTION: ${model.$section}');
-        final result = await Mio(model.$site).parseChildrenDeep(model.toJson(), model.$section!.rules!);
-        model = TypedModel.fromJson(result);
-        if (model.children != null) {
-          _updateModels(model.children ?? []);
-        } else {
-          _updateModels([model]);
-        }
-      } else {
-        _updateModels(models);
-      }
+      currentIndex = widget.index;
+      _models = widget.models;
+      _images = List.filled(_models.length, '');
+      _site = _models.isNotEmpty ? _models[0].$site : null;
+      // // 只有一条数据，且无图片源，则请求解析
+
+      loadSingle(currentIndex);
+      // if (models.length == 1 && getUrl(models.first).isEmpty) {
+      //   var model = models.first;
+      //   // print('MODEL.SECTION: ${model.$section}');
+      //   final result = await Mio(model.$site).parseChildrenDeep(model.toJson(), model.$section.rules!);
+      //   model = TypedModel.fromJson(result);
+      //   if (model.children != null) {
+      //     _updateModels(model.children ?? []);
+      //   } else {
+      //     _updateModels([model]);
+      //   }
+      // } else {
+      //   _updateModels(models);
+      // }
       setState(() {
         currentIndex = widget.index;
         isFailed = _images.length > currentIndex ? _images[currentIndex].isNotEmpty : true;
@@ -65,14 +103,15 @@ class ImageDetailViewState extends State<ImageDetailView> {
         }
       });
     } catch (e) {
-      print('ERROR: ${e.toString()}');
+      rethrow;
+      // print('ERROR: ${e.toString()}');
     }
   }
 
   _updateModels(List<TypedModel> models) {
     _models = models;
     _images = models.map((model) => getUrl(model)).toList();
-    print('HEADERS ================== ${_models?[0].$site?.headers}');
+    print('HEADERS ================== ${_models[0].$site?.headers}');
   }
 
   String getUrl(TypedModel? item) {
@@ -122,6 +161,9 @@ class ImageDetailViewState extends State<ImageDetailView> {
                 pageController: _pageController,
                 backgroundDecoration: const BoxDecoration(color: Colors.black87),
                 scrollPhysics: const BouncingScrollPhysics(),
+                onPageChanged: (index) {
+                  loadSingle(index);
+                },
                 builder: (BuildContext context, int index) {
                   return PhotoViewGalleryPageOptions(
                       // imageProvider: ExtendedImage.network(
