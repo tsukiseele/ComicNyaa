@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
+import '../../app/preference.dart';
 import '../../library/mio/model/site.dart';
 
 class ImageDetailView extends StatefulWidget {
@@ -135,12 +136,32 @@ class ImageDetailViewState extends State<ImageDetailView>
     return Uri.encodeFull(url);
   }
 
-  onDownload(String url) async {
+  void onDownload(TypedModel model) async {
     try {
+      final downloadLevel = (await NyaaPreferences.instance).downloadResourceLevel;
+      String? url;
+      switch (downloadLevel) {
+        case DownloadResourceLevel.low:
+          url = model.sampleUrl ?? model.largerUrl ?? model.originUrl;
+          break;
+        case DownloadResourceLevel.middle:
+          url = model.largerUrl ?? model.originUrl ?? model.sampleUrl;
+          break;
+        case DownloadResourceLevel.high:
+          url = model.originUrl ?? model.largerUrl ?? model.sampleUrl;
+          break;
+      }
+      if (url == null || url.trim().isEmpty) {
+        Fluttertoast.showToast(msg: '下载失败，无有效下载源');
+        return;
+      }
       String savePath =
           (await Config.downloadDir).join(Uri.parse(url).filename).path;
       Fluttertoast.showToast(msg: '下载已添加：$savePath');
       await Dio().download(url, savePath);
+
+
+      print('Download =====> $savePath');
     } catch (e) {
       print('DOWNLOAD ERROR: $e');
     }
@@ -292,8 +313,8 @@ class ImageDetailViewState extends State<ImageDetailView>
         );
         image = InkWell(
           onLongPress: () {
-            final url = _images[_currentIndex];
-            onDownload(url);
+            // final url = _images[_currentIndex];
+            onDownload(_models[_currentIndex]);
           },
           child: Container(
             padding: const EdgeInsets.all(0),
