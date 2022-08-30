@@ -1,7 +1,5 @@
 import 'package:extended_image/extended_image.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:shimmer/shimmer.dart';
 
 class SimpleNetworkImage extends StatefulWidget {
@@ -34,10 +32,16 @@ class SimpleNetworkImage extends StatefulWidget {
 
 class _SimpleNetworkImageState extends State<SimpleNetworkImage>
     with TickerProviderStateMixin<SimpleNetworkImage> {
+  AnimationController? animationController;
+
+  @override
+  void initState() {
+    super.initState();
+    animationController = AnimationController(duration: widget.duration, vsync: this);
+  }
+
   @override
   Widget build(BuildContext context) {
-    final animationController =
-        AnimationController(duration: widget.duration, vsync: this);
     return ExtendedImage.network(
       widget.url,
       width: widget.width,
@@ -49,24 +53,30 @@ class _SimpleNetworkImageState extends State<SimpleNetworkImage>
       loadStateChanged: (state) {
         switch (state.extendedImageLoadState) {
           case LoadState.loading:
-            animationController.reset();
-            return widget.placeholder ?? Center(child:  Shimmer.fromColors(
-                baseColor: const Color.fromRGBO(
-                    240, 240, 240, 1),
-                highlightColor: Colors.white,
-                child: Container(
-                    decoration: const BoxDecoration(
-                        color: Colors.white),
+            animationController?.reset();
+            return widget.placeholder ??
+                Center(
+                    child: Shimmer.fromColors(
+                  baseColor: const Color.fromRGBO(240, 240, 240, 1),
+                  highlightColor: Colors.white,
+                  child: Container(
+                    decoration: const BoxDecoration(color: Colors.white),
                   ),
                 ));
           case LoadState.failed:
-            animationController.forward();
+            animationController?.forward();
             return widget.error;
           case LoadState.completed:
-            animationController.forward();
+            animationController?.forward();
             return null;
         }
       },
     );
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    animationController?.dispose();
   }
 }

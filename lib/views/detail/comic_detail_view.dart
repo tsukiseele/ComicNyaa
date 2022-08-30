@@ -22,11 +22,12 @@ class ComicDetailView extends StatefulWidget {
   }
 }
 
-class ComicDetailViewState extends State<ComicDetailView> with TickerProviderStateMixin {
+class ComicDetailViewState extends State<ComicDetailView>
+    with TickerProviderStateMixin {
   final RefreshController _refreshController = RefreshController();
   final ScrollController _scrollController = ScrollController();
   final List<TypedModel> _children = [];
-  final List<String> _tags = [];
+  List<String> _tags = [];
   StreamSubscription<List<Map<String, dynamic>>>? _stream;
 
   void initialized() {
@@ -44,7 +45,7 @@ class ComicDetailViewState extends State<ComicDetailView> with TickerProviderSta
       }
     });
     final model = widget.model;
-    _tags.addAll(model.tags?.split(' ') ?? []);
+    _tags = model.tags?.split(' ') ?? [];
     _stream = Mio(model.$site)
         .parseChildren(model.toJson(), model.$section!.rules!)
         .listen((List<Map<String, dynamic>> data) {
@@ -56,6 +57,9 @@ class ComicDetailViewState extends State<ComicDetailView> with TickerProviderSta
   _getNext(List<Map<String, dynamic>> data) async {
     try {
       final models = data.map((item) => TypedModel.fromJson(item)).toList();
+      if (_tags.isEmpty && models.isNotEmpty && models[0].tags != null) {
+        _tags = models[0].tags!.split(' ');
+      }
       setState(() {
         _children.addAll(models);
       });
@@ -99,10 +103,15 @@ class ComicDetailViewState extends State<ComicDetailView> with TickerProviderSta
     Theme.of(context).primaryColor;
     final statusBarHeight = MediaQuery.of(context).viewPadding.top;
     return Scaffold(
-      // appBar: AppBar(
-      //   title: Text(widget.title),
-      // ),
-      body: SmartRefresher(
+        // appBar: AppBar(
+        //   title: Text(widget.title),
+        // ),
+        body: RawScrollbar(
+      controller: _scrollController,
+      thumbColor: Colors.pink[300],
+      radius: const Radius.circular(4),
+      thickness: 4,
+      child: SmartRefresher(
           controller: _refreshController,
           scrollController: _scrollController,
           header: SliverToBoxAdapter(
@@ -112,36 +121,48 @@ class ComicDetailViewState extends State<ComicDetailView> with TickerProviderSta
                     color: Theme.of(context).primaryColor.withOpacity(.75),
                     padding: EdgeInsets.only(
                         left: 8, top: statusBarHeight + 8, right: 8, bottom: 8),
-                    child: Column(children: [
-                      Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Material(
-                              elevation: 8,
-                              child: Padding(
-                                padding: const EdgeInsets.all(4),
-                                child: ExtendedImage.network(
-                                  widget.model.coverUrl ?? '',
-                                  height: 192,
+                    child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Material(
+                                  elevation: 8,
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(4),
+                                    child: ExtendedImage.network(
+                                      widget.model.coverUrl ?? '',
+                                      width: 128,
+                                    ),
+                                  ),
                                 ),
-                              ),
-                            ),
-                            Expanded(
-                              flex: 1,
-                              child: Container(
-                                  margin: const EdgeInsets.only(left: 8),
-                                  child: Text(
-                                    widget.model.title ?? 'Unknown',
-                                    style: const TextStyle(
-                                        color: Colors.white, fontSize: 20),
-                                  )),
-                            )
-                          ]),
-                      Wrap(
-                          children: List.generate(
-                              _tags.length, (i) => Text(_tags[i]))),
-                    ]))),
+                                Expanded(
+                                  flex: 1,
+                                  child: Container(
+                                      margin: const EdgeInsets.only(left: 8),
+                                      child: Text(
+                                        widget.model.title ?? 'Unknown',
+                                        style: const TextStyle(
+                                            color: Colors.white, fontSize: 20),
+                                      )),
+                                )
+                              ]),
+                          // const Spacer(),
+                          Container(
+                              margin: const EdgeInsets.only(top: 8),
+                              child: Wrap(
+                                  children: List.generate(
+                                      _tags.length,
+                                      (i) => Text(
+                                            _tags[i],
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 16,
+                                            ),
+                                          )))),
+                        ]))),
           ),
           child: _children.isNotEmpty
               ? MasonryGridView.count(
@@ -220,7 +241,7 @@ class ComicDetailViewState extends State<ComicDetailView> with TickerProviderSta
                   color: Colors.teal,
                   size: 64,
                 ))),
-    );
+    ));
   }
 
   @override

@@ -1,6 +1,4 @@
 import 'dart:async';
-import 'dart:io';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:collection/collection.dart';
 import 'package:comic_nyaa/data/subscribe_holder.dart';
 import 'package:comic_nyaa/library/mio/core/mio_loader.dart';
@@ -159,20 +157,18 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
                   ? NyaaTabView(
                       position: _currentTabIndex,
                       onPositionChange: (int index) {
-                        // Remove old scroll listener
-                        // _gallerys[_currentTabIndex].controller.scrollController?.removeListener(onGalleryScroll);
-                        print('POSITIONCHANGE::::::::::::::::::::: $index');
-
                         setState(() => _currentTabIndex = index);
-
+                        // Remove old scroll listener
+                        for (var item in _gallerys) {
+                          item.controller.scrollController?.removeListener(onGalleryScroll);
+                        }
                         // Add new scroll listener
                         WidgetsBinding.instance.addPostFrameCallback((_) {
                           if (mounted) {
-                            // _galleryScrollController = _currentTab?.controller.scrollController;
-                            // if (_galleryScrollController == null) return;
-                            // onGalleryScroll();
-                            // _galleryScrollController!.removeListener(onGalleryScroll);
-                            // _galleryScrollController!.addListener(onGalleryScroll);
+                            _galleryScrollController = _currentTab?.controller.scrollController;
+                            if (_galleryScrollController == null) return;
+                            onGalleryScroll();
+                            _galleryScrollController!.addListener(onGalleryScroll);
                           }
                         });
                       },
@@ -451,7 +447,7 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
 
   Widget buildEndDrawer() {
     return Drawer(
-      width: 256,
+      // width: 256,
       elevation: 8,
       child: ListView.builder(
           padding: const EdgeInsets.only(top: 8),
@@ -477,8 +473,8 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
                     },
                     child: ListTile(
                       leading: SizedBox(
-                          width: 24,
-                          height: 24,
+                          width: 32,
+                          height: 32,
                           child: SimpleNetworkImage(_sites[index].icon ?? '',
                             fit: BoxFit.cover,
                             error: const Icon(Icons.image_not_supported, size: 32),

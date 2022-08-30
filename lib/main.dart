@@ -5,6 +5,7 @@ import 'package:comic_nyaa/app/constant.dart';
 import 'package:comic_nyaa/utils/http.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_displaymode/flutter_displaymode.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:get/get.dart';
@@ -18,6 +19,12 @@ void main() async {
   //   final license = await rootBundle.loadString('google_fonts/OFL.txt');
   //   yield LicenseEntryWithLineBreaks(['google_fonts'], license);
   // });
+  // 隐藏状态栏
+  // SystemChrome.setEnabledSystemUIMode(SystemUiMode.leanBack);
+  // 透明状态栏
+  SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+    statusBarColor: Colors.transparent,
+  ));
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
   runApp(const GetMaterialApp(home: ComicNyaa()));
@@ -48,6 +55,7 @@ class _ComicNyaaState extends State<ComicNyaa> {
 
   @override
   void initState() {
+
     // 初始化显示模式
     setOptimalDisplayMode();
     // 初始化Mio

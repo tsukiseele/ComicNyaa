@@ -1,9 +1,4 @@
 import 'dart:async';
-import 'dart:io';
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:collection/collection.dart';
-import 'package:comic_nyaa/library/mio/core/mio_loader.dart';
-import 'package:comic_nyaa/utils/http.dart';
 import 'package:comic_nyaa/utils/uri_extensions.dart';
 import 'package:comic_nyaa/views/detail/comic_detail_view.dart';
 import 'package:comic_nyaa/views/detail/image_detail_view.dart';
@@ -47,7 +42,6 @@ class GalleryView extends StatefulWidget {
 
 class _GalleryViewState extends State<GalleryView>
     with AutomaticKeepAliveClientMixin<GalleryView>, TickerProviderStateMixin {
-  final globalKey = GlobalKey<ScaffoldState>();
   late final ScrollController _scrollController = ScrollController();
   final RefreshController _refreshController =
       RefreshController(initialRefresh: false);
@@ -257,7 +251,11 @@ class _GalleryViewState extends State<GalleryView>
     super.build(context);
     return Column(children: [
       Flexible(
-        child: Scrollbar(
+        child: RawScrollbar(
+          controller: _scrollController,
+            thumbColor: Colors.pink[300],
+            radius: const Radius.circular(4),
+            thickness: 4,
             child: SmartRefresher(
                 enablePullDown: true,
                 enablePullUp: true,
@@ -266,6 +264,7 @@ class _GalleryViewState extends State<GalleryView>
                   offset: _topOffset,
                 ),
                 controller: _refreshController,
+                scrollController: _scrollController,
                 onRefresh: () => _onRefresh(),
                 onLoading: () => _onNext(),
                 physics: const BouncingScrollPhysics(),
