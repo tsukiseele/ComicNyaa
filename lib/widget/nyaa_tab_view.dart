@@ -16,23 +16,23 @@ class NyaaTabView extends StatefulWidget {
   final BorderRadius tabBarBorderRadius;
   final EdgeInsets tabBarPadding;
 
-  const NyaaTabView({
-    Key? key,
-    required this.itemCount,
-    required this.tabBuilder,
-    required this.pageBuilder,
-    required this.onPositionChange,
-    required this.onScroll,
-    this.position,
-    this.isScrollToNewTab = false,
-    this.indicator,
-    this.stub,
-    this.color,
-    this.duration = const Duration(milliseconds: 1000),
-    this.elevation = 8,
-    this.tabBarBorderRadius = BorderRadius.zero,
-    this.tabBarPadding = const EdgeInsets.all(4)
-  }) : super(key: key);
+  const NyaaTabView(
+      {Key? key,
+      required this.itemCount,
+      required this.tabBuilder,
+      required this.pageBuilder,
+      required this.onPositionChange,
+      required this.onScroll,
+      this.position,
+      this.isScrollToNewTab = false,
+      this.indicator,
+      this.stub,
+      this.color,
+      this.duration = const Duration(milliseconds: 1000),
+      this.elevation = 8,
+      this.tabBarBorderRadius = BorderRadius.zero,
+      this.tabBarPadding = const EdgeInsets.all(4)})
+      : super(key: key);
 
   @override
   State<NyaaTabView> createState() => _NyaaTabsState();
@@ -73,9 +73,7 @@ class _NyaaTabsState extends State<NyaaTabView> with TickerProviderStateMixin {
         _currentPosition = _currentPosition < 0 ? 0 : _currentPosition;
       }
 
-      final transitionPostion = widget.isScrollToNewTab &&
-              widget.itemCount > _currentCount &&
-              widget.itemCount > 1
+      final transitionPostion = widget.isScrollToNewTab && widget.itemCount > _currentCount && widget.itemCount > 1
           ? widget.itemCount - 2
           : _currentPosition;
 
@@ -96,8 +94,7 @@ class _NyaaTabsState extends State<NyaaTabView> with TickerProviderStateMixin {
             if (widget.isScrollToNewTab) {
               _currentPosition = widget.itemCount - 1;
             }
-            controller?.animateTo(_currentPosition,
-                duration: const Duration(milliseconds: 1), curve: Curves.ease);
+            controller?.animateTo(_currentPosition, duration: const Duration(milliseconds: 1), curve: Curves.ease);
             // onPositionChange();
           }
         });
@@ -119,41 +116,37 @@ class _NyaaTabsState extends State<NyaaTabView> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     if (widget.itemCount < 1) return widget.stub ?? Container();
 
-    return Stack(children: [
-      AnimatedContainer(
-          color: widget.color,
-          duration: widget.duration,
-          child: TabBarView(
-            controller: controller,
-            children: List.generate(widget.itemCount,
-                (index) => widget.pageBuilder(context, index)),
-          )),
-      Positioned(
-          left: 0,
-          right: 0,
-          bottom: 0,
-          child: Material(
-              borderRadius: widget.tabBarBorderRadius,
-              clipBehavior: Clip.hardEdge,
-              color: Colors.transparent,
-              elevation: widget.elevation,
-              child: AnimatedContainer(
-                color: widget.color,
-                duration: widget.duration,
-                child: TabBar(
-                  padding: widget.tabBarPadding,
-                  isScrollable: true,
-                  controller: controller,
-                  labelColor: Theme.of(context).primaryColor,
-                  unselectedLabelColor: Theme.of(context).hintColor,
-                  enableFeedback: true,
-                  indicator: widget.indicator,
-                  tabs: List.generate(
-                    widget.itemCount,
-                    (index) => widget.tabBuilder(context, index),
-                  ),
-                ),
+    return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+      Expanded(
+          child: AnimatedContainer(
+              color: widget.color,
+              duration: widget.duration,
+              child: TabBarView(
+                controller: controller,
+                children: List.generate(widget.itemCount, (index) => widget.pageBuilder(context, index)),
               ))),
+      Material(
+          borderRadius: widget.tabBarBorderRadius,
+          clipBehavior: Clip.hardEdge,
+          color: Colors.transparent,
+          elevation: widget.elevation,
+          child: AnimatedContainer(
+            color: widget.color,
+            duration: widget.duration,
+            child: TabBar(
+              padding: widget.tabBarPadding,
+              isScrollable: true,
+              controller: controller,
+              labelColor: Theme.of(context).primaryColor,
+              unselectedLabelColor: Theme.of(context).hintColor,
+              enableFeedback: true,
+              indicator: widget.indicator,
+              tabs: List.generate(
+                widget.itemCount,
+                (index) => widget.tabBuilder(context, index),
+              ),
+            ),
+          )),
     ]);
   }
 
