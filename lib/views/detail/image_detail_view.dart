@@ -33,8 +33,10 @@ class ImageDetailViewState extends State<ImageDetailView> with TickerProviderSta
   int _currentIndex = 0;
   bool isFailed = false;
   double _scale = 1.0;
+  final Set<int> _cache = {};
 
-  void loadSingle(int index) async {
+  void loadImage(int index) async {
+    _cache.add(index);
     if (_images[index].isNotEmpty) {
       return;
     }
@@ -75,15 +77,27 @@ class ImageDetailViewState extends State<ImageDetailView> with TickerProviderSta
     //   _updateModels([model]);
     // }
   }
+  /// 预加载，默认预加载前后2页
+  void preload(int index, {int range = 2}) {
+    int start = index - range > 0 ? index - range : 0;
+    int end = index + range < _images.length ? index + range : _images.length - 1;
+    if (start < end) {
+      for(int i = start ; i <= end; i++) {
+        if (!_cache.contains(i)) loadImage(i);
+      }
+    } else {
+      loadImage(index);
+    }
+  }
 
-  void loadImage() async {
+  void initialized() async {
     try {
       _currentIndex = widget.index;
       _models = widget.models;
       _images = List.filled(_models.length, '');
       _site = _models[0].$site;
 
-      loadSingle(_currentIndex);
+      loadImage(_currentIndex);
 
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (_pageController.hasClients &&
@@ -118,15 +132,21 @@ class ImageDetailViewState extends State<ImageDetailView> with TickerProviderSta
   }
 
   onDownload(String url) async {
-    String savePath =
-        (await Config.downloadDir).join(Uri.parse(url).filename).path;
-    Fluttertoast.showToast(msg: '下载已添加：$savePath');
-    await Dio().download(url, savePath);
+
+    try {
+
+      String savePath =
+          (await Config.downloadDir).join(Uri.parse(url).filename).path;
+      Fluttertoast.showToast(msg: '下载已添加：$savePath');
+      await Dio().download(url, savePath);
+    }catch(e)  {
+      print('DOWNLOAD ERROR: $e');
+    }
   }
 
   @override
   void initState() {
-    loadImage();
+    initialized();
     super.initState();
   }
 
@@ -152,7 +172,8 @@ class ImageDetailViewState extends State<ImageDetailView> with TickerProviderSta
           ),
           onPageChanged: (int index) {
             _currentIndex = index;
-            loadSingle(index);
+            // 预加载
+            preload(index);
           },
           itemBuilder: (BuildContext context, int index) {
             var item = _images[index];
@@ -178,9 +199,7 @@ class ImageDetailViewState extends State<ImageDetailView> with TickerProviderSta
               headers: _site?.headers,
               onDoubleTap: (state) {
                 setState(() {
-                  print('SDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD');
                   _scale = 1.5;
-                  print(_scale);
                 });
               },
               loadStateChanged: (state) {

@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:get/get.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:shimmer/shimmer.dart';
 
@@ -61,7 +62,9 @@ class ComicDetailViewState extends State<ComicDetailView>
       final models = data.map((item) => TypedModel.fromJson(item)).toList();
       if (models.isNotEmpty) {
         for (var item in models) {
-          item.tags?.split(RegExp(r'[\s,]+')).forEach((tag) => _tags.add(tag));
+          item.tags?.split(RegExp(r'[\s,]+')).forEach((tag) {
+            if (tag.trim().isNotEmpty) _tags.add(tag);
+          });
         }
         // _tags = models[0].tags!.split(RegExp(r'[\s,]+'));
       }
@@ -107,6 +110,7 @@ class ComicDetailViewState extends State<ComicDetailView>
   Widget build(BuildContext context) {
     Theme.of(context).primaryColor;
     final statusBarHeight = MediaQuery.of(context).viewPadding.top;
+    final tags = _tags.toList();
     return Scaffold(
         // appBar: AppBar(
         //   title: Text(widget.title),
@@ -158,9 +162,9 @@ class ComicDetailViewState extends State<ComicDetailView>
                           Container(
                               margin: const EdgeInsets.only(top: 8),
                               child: NyaaTags(
-                                  itemCount: _tags.length,
+                                  itemCount: tags.length,
                                   builder: (context, index) =>
-                                      NyaaTagItem(text: _tags.toList()[index])))
+                                      NyaaTagItem(text: tags[index])))
                         ]))),
           ),
           child: _children.isNotEmpty
