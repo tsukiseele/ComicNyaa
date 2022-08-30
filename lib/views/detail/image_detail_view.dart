@@ -90,8 +90,8 @@ class ImageDetailViewState extends State<ImageDetailView>
       }
     }
 
-    print('D_IMAGE::: $image');
-    print('D_MODEL::: $model');
+    // print('D_IMAGE::: $image');
+    // print('D_MODEL::: $model');
     setState(() {
       _images[index] = image;
       _models[index] = model;
@@ -138,7 +138,8 @@ class ImageDetailViewState extends State<ImageDetailView>
 
   void onDownload(TypedModel model) async {
     try {
-      final downloadLevel = (await NyaaPreferences.instance).downloadResourceLevel;
+      final downloadLevel =
+          (await NyaaPreferences.instance).downloadResourceLevel;
       String? url;
       switch (downloadLevel) {
         case DownloadResourceLevel.low:
@@ -159,7 +160,6 @@ class ImageDetailViewState extends State<ImageDetailView>
           (await Config.downloadDir).join(Uri.parse(url).filename).path;
       Fluttertoast.showToast(msg: '下载已添加：$savePath');
       await Dio().download(url, savePath);
-
 
       print('Download =====> $savePath');
     } catch (e) {
@@ -184,152 +184,152 @@ class ImageDetailViewState extends State<ImageDetailView>
   AnimationController? _animationController;
   Animation<double>? _animation;
 
+  Widget buildLoading() {
+    return const Center(
+        child: SpinKitSpinningLines(
+      color: Colors.teal,
+      size: 96,
+    ));
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
         // appBar: AppBar(
         //   title: Text(widget.title),
         // ),
-        body: ExtendedImageGesturePageView.builder(
-      itemCount: _images.length,
-      scrollDirection: Axis.horizontal,
-      controller: ExtendedPageController(
-        initialPage: _currentIndex,
-      ),
-      onPageChanged: (int index) {
-        _currentIndex = index;
-        // 预加载
-        preload(index);
-      },
-      itemBuilder: (BuildContext context, int index) {
-        var item = _images[index];
-        if (item.isEmpty) {
-          return Container(
-              alignment: Alignment.center,
-              child: const SpinKitSpinningLines(
-                color: Colors.teal,
-                size: 96,
-              ));
-        }
-        void Function() animationListener = () {};
-        Widget image = ExtendedImage.network(
-          item,
-          fit: BoxFit.contain,
-          mode: ExtendedImageMode.gesture,
-          handleLoadingProgress: true,
-          headers: _site?.headers,
-          onDoubleTap: (state) {
-            // reset animation
-            _animation?.removeListener(animationListener);
-            _animationController?.stop();
-            _animationController?.reset();
-            // animation start
-            final image =
-                state.widget.extendedImageState.extendedImageInfo?.image;
-            final layout = state.gestureDetails?.layoutRect;
-            // final screen = MediaQuery.of(context).size;
-            final doubleTapScales = <double>[1.0];
-            // 计算全屏缩放比例
-            if (image != null && layout != null) {
-              // print('IMAGE_W: ${image.width}, IMAGE_H: ${image.height}');
-              // print('CONTAINER_SIZE: ${layout.width} x ${layout.height}');
-              // print('SCREEN_SIZE: ${screen.width} x ${screen.height}');
-              final widthScale = image.width / layout.width;
-              final heightScale = image.height / layout.height;
-              if (widthScale > heightScale) {
-                doubleTapScales.add(widthScale / heightScale);
-                doubleTapScales.add(widthScale);
-              } else {
-                doubleTapScales.add(heightScale / widthScale);
-                doubleTapScales.add(heightScale);
-              }
-            } else {
-              doubleTapScales.add(2.0);
-            }
-            // 默认尺寸
-            Offset? pointerDownPosition = state.pointerDownPosition;
-            double begin = state.gestureDetails?.totalScale ?? 1.0;
-            double end;
-
-            int currentScaleIndex =
-                doubleTapScales.indexWhere((item) => begin - item < 0.01);
-            end = doubleTapScales[currentScaleIndex + 1 < doubleTapScales.length
-                ? currentScaleIndex + 1
-                : 0];
-
-            print('SCALES::: $doubleTapScales');
-            print('begin: $begin, end: $end;');
-            animationListener = () {
-              state.handleDoubleTap(
-                  scale: _animation?.value,
-                  doubleTapPosition: pointerDownPosition);
-            };
-            _animation = Tween<double>(begin: begin, end: end).animate(
-                CurvedAnimation(
-                    parent: _animationController!, curve: Curves.ease));
-            _animation?.addListener(animationListener);
-            _animationController?.forward();
-          },
-          loadStateChanged: (state) {
-            switch (state.extendedImageLoadState) {
-              case LoadState.loading:
-                final event = state.loadingProgress;
-                if (event == null) {
-                  return const Center(child: Text('Loading...'));
+        body: Material(
+            color: Colors.black87,
+            child: ExtendedImageGesturePageView.builder(
+              itemCount: _images.length,
+              scrollDirection: Axis.horizontal,
+              controller: ExtendedPageController(
+                initialPage: _currentIndex,
+              ),
+              onPageChanged: (int index) {
+                _currentIndex = index;
+                // 预加载
+                preload(index);
+              },
+              itemBuilder: (BuildContext context, int index) {
+                var item = _images[index];
+                if (item.isEmpty) {
+                  return buildLoading();
                 }
-                double? progress;
-                if (event.expectedTotalBytes != null &&
-                    event.expectedTotalBytes! > 0) {
-                  progress =
-                      event.cumulativeBytesLoaded / (event.expectedTotalBytes!);
+                void Function() animationListener = () {};
+                Widget image = ExtendedImage.network(
+                  item,
+                  fit: BoxFit.contain,
+                  mode: ExtendedImageMode.gesture,
+                  handleLoadingProgress: true,
+                  headers: _site?.headers,
+                  onDoubleTap: (state) {
+                    // reset animation
+                    _animation?.removeListener(animationListener);
+                    _animationController?.stop();
+                    _animationController?.reset();
+                    // animation start
+                    final image = state
+                        .widget.extendedImageState.extendedImageInfo?.image;
+                    final layout = state.gestureDetails?.layoutRect;
+                    // final screen = MediaQuery.of(context).size;
+                    final doubleTapScales = <double>[1.0];
+                    // 计算全屏缩放比例
+                    if (image != null && layout != null) {
+                      // print('IMAGE_W: ${image.width}, IMAGE_H: ${image.height}');
+                      // print('CONTAINER_SIZE: ${layout.width} x ${layout.height}');
+                      // print('SCREEN_SIZE: ${screen.width} x ${screen.height}');
+                      final widthScale = image.width / layout.width;
+                      final heightScale = image.height / layout.height;
+                      if (widthScale > heightScale) {
+                        doubleTapScales.add(widthScale / heightScale);
+                        doubleTapScales.add(widthScale);
+                      } else {
+                        doubleTapScales.add(heightScale / widthScale);
+                        doubleTapScales.add(heightScale);
+                      }
+                    } else {
+                      doubleTapScales.add(2.0);
+                    }
+                    // 默认尺寸
+                    Offset? pointerDownPosition = state.pointerDownPosition;
+                    double begin = state.gestureDetails?.totalScale ?? 1.0;
+                    double end;
+
+                    int currentScaleIndex = doubleTapScales
+                        .indexWhere((item) => begin - item < 0.01);
+                    end = doubleTapScales[
+                        currentScaleIndex + 1 < doubleTapScales.length
+                            ? currentScaleIndex + 1
+                            : 0];
+                    // print('SCALES::: $doubleTapScales');
+                    // print('begin: $begin, end: $end;');
+                    animationListener = () {
+                      state.handleDoubleTap(
+                          scale: _animation?.value,
+                          doubleTapPosition: pointerDownPosition);
+                    };
+                    _animation = Tween<double>(begin: begin, end: end).animate(
+                        CurvedAnimation(
+                            parent: _animationController!, curve: Curves.ease));
+                    _animation?.addListener(animationListener);
+                    _animationController?.forward();
+                  },
+                  loadStateChanged: (state) {
+                    switch (state.extendedImageLoadState) {
+                      case LoadState.loading:
+                        final event = state.loadingProgress;
+                        if (event == null) {
+                          return buildLoading();
+                        }
+                        double? progress;
+                        if (event.expectedTotalBytes != null &&
+                            event.expectedTotalBytes! > 0) {
+                          progress = event.cumulativeBytesLoaded /
+                              (event.expectedTotalBytes!);
+                        }
+                        return CircularPercentIndicator(
+                            radius: 48,
+                            lineWidth: 8,
+                            progressColor: Colors.teal,
+                            animation: true,
+                            animateFromLastPercent: true,
+                            circularStrokeCap: CircularStrokeCap.round,
+                            percent: progress ?? 0,
+                            center: Text(
+                              _getProgressText(event.cumulativeBytesLoaded,
+                                  event.expectedTotalBytes ?? 0),
+                              style: const TextStyle(fontSize: 18),
+                            ));
+                      case LoadState.failed:
+                        return const Center(
+                            child: Icon(Icons.image_not_supported, size: 64));
+                      case LoadState.completed:
+                        return null;
+                    }
+                  },
+                  initGestureConfigHandler: (ExtendedImageState state) =>
+                      GestureConfig(
+                    minScale: 0.1,
+                    maxScale: double.infinity,
+                    inPageView: true,
+                    initialScale: 1.0,
+                    cacheGesture: false,
+                  ),
+                );
+                image = InkWell(
+                  onLongPress: () => onDownload(_models[_currentIndex]),
+                  child: image,
+                );
+                if (index == _currentIndex) {
+                  return Hero(
+                    tag: item + index.toString(),
+                    child: image,
+                  );
+                } else {
+                  return image;
                 }
-                return CircularPercentIndicator(
-                    radius: 48,
-                    lineWidth: 8,
-                    progressColor: Colors.teal,
-                    animation: true,
-                    animateFromLastPercent: true,
-                    circularStrokeCap: CircularStrokeCap.round,
-                    percent: progress ?? 0,
-                    center: Text(
-                      _getProgressText(event.cumulativeBytesLoaded,
-                          event.expectedTotalBytes ?? 0),
-                      style: const TextStyle(fontSize: 18),
-                    ));
-              case LoadState.failed:
-                return const Center(
-                    child: Icon(Icons.image_not_supported, size: 64));
-              case LoadState.completed:
-                return null;
-            }
-          },
-          initGestureConfigHandler: (ExtendedImageState state) => GestureConfig(
-            minScale: 0.1,
-            maxScale: double.infinity,
-            inPageView: true,
-            initialScale: 1.0,
-            cacheGesture: false,
-          ),
-        );
-        image = InkWell(
-          onLongPress: () {
-            // final url = _images[_currentIndex];
-            onDownload(_models[_currentIndex]);
-          },
-          child: Container(
-            padding: const EdgeInsets.all(0),
-            child: image,
-          ),
-        );
-        if (index == _currentIndex) {
-          return Hero(
-            tag: item + index.toString(),
-            child: image,
-          );
-        } else {
-          return image;
-        }
-      },
-    ));
+              },
+            )));
   }
 }

@@ -106,9 +106,79 @@ class ComicDetailViewState extends State<ComicDetailView>
     super.initState();
   }
 
+  Widget buildHeader(double statusBarHeight, List<String> tags) {
+    return Container(
+        color: Theme.of(context).primaryColor.withOpacity(.75),
+        padding: EdgeInsets.only(
+            top: statusBarHeight + 8, bottom: 8, left: 8, right: 8),
+        child: Column(children: [
+          SizedBox(
+              height: 192,
+              child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Material(
+                      elevation: 8,
+                      child: Padding(
+                        padding: const EdgeInsets.all(4),
+                        child: ExtendedImage.network(
+                          widget.model.coverUrl ?? '',
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: Container(
+                          margin: const EdgeInsets.only(left: 8),
+                          child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                Expanded(
+                                    child: Text(
+                                  widget.model.title ?? 'Unknown',
+                                  maxLines: 5,
+                                  style: const TextStyle(
+                                      color: Colors.white, fontSize: 20),
+                                )),
+                                // Spacer(),
+                                Row(children: [
+                                  Expanded(
+                                      child: Text('${_children.length}页',
+                                          style: const TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 18))),
+                                  IconButton(
+                                      padding: const EdgeInsets.all(4),
+                                      iconSize: 32,
+                                      onPressed: () {},
+                                      icon: const Icon(
+                                        Icons.remove_red_eye,
+                                        color: Colors.white,
+                                      )),
+                                  IconButton(
+                                      padding: const EdgeInsets.all(4),
+                                      iconSize: 32,
+                                      onPressed: () {
+                                        // DownloadManager();
+                                      },
+                                      icon: const Icon(
+                                        Icons.download,
+                                        color: Colors.white,
+                                      )),
+                                ])
+                              ])),
+                    )
+                  ])),
+          Container(
+              margin: const EdgeInsets.only(top: 16),
+              child: NyaaTags(
+                  itemCount: tags.length,
+                  builder: (context, index) => NyaaTagItem(text: tags[index])))
+        ]));
+  }
+
   @override
   Widget build(BuildContext context) {
-    Theme.of(context).primaryColor;
     final statusBarHeight = MediaQuery.of(context).viewPadding.top;
     final tags = _tags.toList();
     return Scaffold(
@@ -123,50 +193,7 @@ class ComicDetailViewState extends State<ComicDetailView>
       child: SmartRefresher(
           controller: _refreshController,
           scrollController: _scrollController,
-          header: SliverToBoxAdapter(
-            child: Material(
-                elevation: 4,
-                child: Container(
-                    color: Theme.of(context).primaryColor.withOpacity(.75),
-                    padding: EdgeInsets.only(
-                        left: 8, top: statusBarHeight + 8, right: 8, bottom: 8),
-                    child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Material(
-                                  elevation: 8,
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(4),
-                                    child: ExtendedImage.network(
-                                      widget.model.coverUrl ?? '',
-                                      width: 128,
-                                    ),
-                                  ),
-                                ),
-                                Expanded(
-                                  flex: 1,
-                                  child: Container(
-                                      margin: const EdgeInsets.only(left: 8),
-                                      child: Text(
-                                        widget.model.title ?? 'Unknown',
-                                        style: const TextStyle(
-                                            color: Colors.white, fontSize: 20),
-                                      )),
-                                )
-                              ]),
-                          // const Spacer(),
-                          Container(
-                              margin: const EdgeInsets.only(top: 8),
-                              child: NyaaTags(
-                                  itemCount: tags.length,
-                                  builder: (context, index) =>
-                                      NyaaTagItem(text: tags[index])))
-                        ]))),
-          ),
+          header: SliverToBoxAdapter(child: buildHeader(statusBarHeight, tags)),
           child: _children.isNotEmpty
               ? MasonryGridView.count(
                   controller: _scrollController,
