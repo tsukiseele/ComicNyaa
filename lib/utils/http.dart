@@ -13,8 +13,8 @@ class Http {
       connectTimeout: 15000,
       receiveTimeout: 20000,
     ));
-    _dio?.interceptors.add(QueuedInterceptor());
-    _dio?.interceptors.add(DioCacheManager(CacheConfig(defaultMaxAge: const Duration(seconds: 15))).interceptor);
+    // _dio?.interceptors.add(QueuedInterceptor());
+    // _dio?.interceptors.add(DioCacheManager(CacheConfig(defaultMaxAge: const Duration(seconds: 15))).interceptor);
     _dio?.interceptors.add(RetryInterceptor(
       dio: _dio!,
       logPrint: print, // specify log function (optional)

@@ -61,10 +61,9 @@ class _ComicNyaaState extends State<ComicNyaa> {
     // 初始化Mio
     // client.maxConnectionsPerHost = 3;
     Mio.setCustomRequest((url, {Map<String, String>? headers}) async {
-      if (headers != null) {
-        headers['user-agent'] = r'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36';
-      }
-
+      // if (headers != null) {
+        // headers['user-agent'] = r'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36';
+      // }
       final response = await Http.client()
           .get(url, options: Options(responseType: ResponseType.plain, headers: headers));
       return response.data.toString();
