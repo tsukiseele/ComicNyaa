@@ -28,13 +28,35 @@ class ImageDetailView extends StatefulWidget {
 class ImageDetailViewState extends State<ImageDetailView> with TickerProviderStateMixin {
   final PageController _pageController = PageController();
   late List<TypedModel> _models;
+  final Set<int> _cache = {};
   List<String> _images = [];
   Site? _site;
   int _currentIndex = 0;
   bool isFailed = false;
-  double _scale = 1.0;
-  final Set<int> _cache = {};
+  
+  void initialized() async {
+    _animationController = AnimationController(vsync: this, duration: const Duration(milliseconds: 250));
+    try {
+      _currentIndex = widget.index;
+      _models = widget.models;
+      _images = List.filled(_models.length, '');
+      _site = _models[0].$site;
 
+      loadImage(_currentIndex);
+
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (_pageController.hasClients &&
+            _images.isNotEmpty &&
+            widget.index < _images.length) {
+          _pageController.jumpToPage(widget.index);
+        }
+      });
+    } catch (e) {
+      Fluttertoast.showToast(msg: e.toString());
+      rethrow;
+    }
+  }
+  
   void loadImage(int index) async {
     _cache.add(index);
     if (_images[index].isNotEmpty) {
@@ -90,27 +112,7 @@ class ImageDetailViewState extends State<ImageDetailView> with TickerProviderSta
     }
   }
 
-  void initialized() async {
-    try {
-      _currentIndex = widget.index;
-      _models = widget.models;
-      _images = List.filled(_models.length, '');
-      _site = _models[0].$site;
 
-      loadImage(_currentIndex);
-
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (_pageController.hasClients &&
-            _images.isNotEmpty &&
-            widget.index < _images.length) {
-          _pageController.jumpToPage(widget.index);
-        }
-      });
-    } catch (e) {
-      Fluttertoast.showToast(msg: e.toString());
-      rethrow;
-    }
-  }
 
   String getUrl(TypedModel? item) {
     if (item == null) return '';
@@ -134,7 +136,6 @@ class ImageDetailViewState extends State<ImageDetailView> with TickerProviderSta
   onDownload(String url) async {
 
     try {
-
       String savePath =
           (await Config.downloadDir).join(Uri.parse(url).filename).path;
       Fluttertoast.showToast(msg: '下载已添加：$savePath');
@@ -158,12 +159,15 @@ class ImageDetailViewState extends State<ImageDetailView> with TickerProviderSta
     }
   }
 
+  AnimationController? _animationController;
+  Animation<double>? _animation;
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          title: Text(widget.title),
-        ),
+        // appBar: AppBar(
+        //   title: Text(widget.title),
+        // ),
         body: ExtendedImageGesturePageView.builder(
           itemCount: _images.length,
           scrollDirection: Axis.horizontal,
@@ -185,27 +189,61 @@ class ImageDetailViewState extends State<ImageDetailView> with TickerProviderSta
                           size: 96,
                         ));
             }
-            _scale = 1.0;
-            final controller = AnimationController(
-                value: 1,
-                duration: const Duration(milliseconds: 1000),
-                vsync: this);
+            void Function() animationListener = () {};
             Widget image = ExtendedImage.network(
               item,
               fit: BoxFit.contain,
               mode: ExtendedImageMode.gesture,
               handleLoadingProgress: true,
-              opacity: controller,
               headers: _site?.headers,
               onDoubleTap: (state) {
-                setState(() {
-                  _scale = 1.5;
-                });
+                // reset animation
+                _animation?.removeListener(animationListener);
+                _animationController?.stop();
+                _animationController?.reset();
+                // animation start
+                // ExtendedImage? image = state.widget.extendedImageState.imageWidget;
+                final image = state.widget.extendedImageState.extendedImageInfo?.image;
+                final layout = state.gestureDetails?.layoutRect;
+                final screen = MediaQuery.of(context).size;
+                final doubleTapScales = <double>[1.0];
+                // 计算全屏缩放比例
+                if (image == null || layout == null) return;
+                // print('IMAGE_W: ${image.width}, IMAGE_H: ${image.height}');
+                // print('CONTAINER_SIZE: ${layout.width} x ${layout.height}');
+                // print('SCREEN_SIZE: ${screen.width} x ${screen.height}');
+                final widthScale = image.width / layout.width;
+                final heightScale = image.height / layout.height;
+                if (widthScale > heightScale) {
+                  doubleTapScales.add(widthScale / heightScale);
+                  doubleTapScales.add(widthScale);
+                } else {
+                  doubleTapScales.add(heightScale / widthScale);
+                  doubleTapScales.add(heightScale);
+                }
+                // 默认尺寸
+                Offset? pointerDownPosition = state.pointerDownPosition;
+                double begin = state.gestureDetails?.totalScale ?? 1.0;
+                double end;
+
+                int currentScaleIndex = doubleTapScales.indexWhere((item) => begin - item < 0.01);
+                end = doubleTapScales[currentScaleIndex + 1 < doubleTapScales.length ? currentScaleIndex + 1 : 0];
+
+                print('SCALES::: $doubleTapScales');
+                print('begin: $begin, end: $end;');
+                animationListener = () {
+                  state.handleDoubleTap(
+                      scale: _animation?.value,
+                      doubleTapPosition: pointerDownPosition);
+                };
+                _animation = _animationController
+                    ?.drive(Tween<double>(begin: begin, end: end).chain(CurveTween(curve: Curves.ease)));
+                _animation?.addListener(animationListener);
+                _animationController?.forward();
               },
               loadStateChanged: (state) {
                 switch (state.extendedImageLoadState) {
                   case LoadState.loading:
-                    controller.reset();
                     final event = state.loadingProgress;
                     if (event == null) {
                       return const Center(child: Text('Loading...'));
@@ -232,17 +270,22 @@ class ImageDetailViewState extends State<ImageDetailView> with TickerProviderSta
                   case LoadState.failed:
                     return const Center(child: Icon(Icons.image_not_supported, size: 64));
                   case LoadState.completed:
-                    controller.forward();
                     return null;
                 }
               },
               initGestureConfigHandler: (ExtendedImageState state) =>
                   GestureConfig(
+                    minScale: 0.1,
+                    maxScale: double.infinity,
                       inPageView: true,
-                      initialScale: _scale,
-                      cacheGesture: false),
+                      initialScale: 1.0,
+                      // initialScale: _scale,
+                      cacheGesture: false,),
             );
             image = InkWell(
+              onDoubleTap: () {
+                print('DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD');
+              },
               onLongPress: () {
                 final url = _images[_currentIndex];
                 onDownload(url);
