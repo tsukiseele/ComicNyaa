@@ -1,12 +1,11 @@
-import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
-import 'package:shimmer/shimmer.dart';
 
 class NyaaTags extends StatefulWidget {
   const NyaaTags({
-    Key? key, required this.builder,
+    Key? key, required this.builder, required this.itemCount,
   }) : super(key: key);
   final IndexedWidgetBuilder builder;
+  final int itemCount;
 
   @override
   State<StatefulWidget> createState() {
@@ -16,23 +15,22 @@ class NyaaTags extends StatefulWidget {
 
 class _NyaaTagsState extends State<NyaaTags>
     with TickerProviderStateMixin<NyaaTags> {
-  AnimationController? animationController;
 
   @override
   void initState() {
     super.initState();
-    animationController =
-        AnimationController(duration: widget.duration, vsync: this);
   }
 
   @override
   Widget build(BuildContext context) {
-    return Wrap(children: widget.builder.);
+    return Wrap(children: List.generate(
+      widget.itemCount,
+          (index) => widget.builder(context, index),
+    ),);
   }
 
   @override
   void dispose() {
     super.dispose();
-    animationController?.dispose();
   }
 }

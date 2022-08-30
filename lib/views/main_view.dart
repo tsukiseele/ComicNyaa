@@ -37,7 +37,7 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
   List<Site> _sites = [];
   List<String> _autosuggest = [];
   int _currentTabIndex = 0;
-  DateTime? currentBackPressTime = DateTime.now();
+  DateTime? _currentBackPressTime = DateTime.now();
   int _lastScrollPosition = 0;
 
   final colorList = [
@@ -47,13 +47,6 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
     Colors.amber[100],
     Colors.pink[100]
   ];
-  final textColorList = [
-    Colors.blue[300],
-    Colors.green[300],
-    Colors.purple[300],
-    Colors.amber[300],
-    Colors.pink[300]
-  ];
 
   Future<void> _initialize() async {
     await _checkUpdate();
@@ -61,15 +54,7 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
       _sites = RuleLoader.sites.values.toList();
       // 打开默认标签
       addTab(_sites.firstWhereOrNull((site) => site.id == 920) ?? _sites[0]);
-
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) {
-          // _galleryScrollController = _currentTab?.controller.scrollController;
-          //   if (_galleryScrollController == null) return;
-          //   _galleryScrollController!.removeListener(onGalleryScroll);
-          //   _galleryScrollController!.addListener(onGalleryScroll);
-        }
-      });
+      listenCurrentTabScroll();
     });
   }
 
@@ -115,8 +100,27 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
       }
     });
   }
+  void listenCurrentTabScroll() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        // Remove old scroll listener
+        for (var item in _gallerys) {
+          item.controller.scrollController?.removeListener(onGalleryScroll);
+        }
+        // Add new scroll listener
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            _galleryScrollController = _currentTab?.controller.scrollController;
+            if (_galleryScrollController == null) return;
+            onGalleryScroll();
+            _galleryScrollController!.addListener(onGalleryScroll);
+          }
+        });
+      }
+    });
+  }
 
-  onGalleryScroll() {
+  void onGalleryScroll() {
     if (_galleryScrollController == null) return;
     // if (_galleryScrollController!.positions.isEmpty) _galleryScrollController!.dispose();
     if (_galleryScrollController!.position.pixels < 128) {
@@ -157,20 +161,7 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
                   ? NyaaTabView(
                       position: _currentTabIndex,
                       onPositionChange: (int index) {
-                        setState(() => _currentTabIndex = index);
-                        // Remove old scroll listener
-                        for (var item in _gallerys) {
-                          item.controller.scrollController?.removeListener(onGalleryScroll);
-                        }
-                        // Add new scroll listener
-                        WidgetsBinding.instance.addPostFrameCallback((_) {
-                          if (mounted) {
-                            _galleryScrollController = _currentTab?.controller.scrollController;
-                            if (_galleryScrollController == null) return;
-                            onGalleryScroll();
-                            _galleryScrollController!.addListener(onGalleryScroll);
-                          }
-                        });
+                        setState(() => _currentTabIndex = index);listenCurrentTabScroll();
                       },
                       onScroll: (double value) {},
                       itemCount: _gallerys.length,
@@ -216,11 +207,6 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
                                         _gallerys[index].site.icon ?? '',
                                         fit: BoxFit.contain,
                                         clearMemoryCacheIfFailed: false),
-                                    // child: CachedNetworkImage(
-                                    //   imageUrl:
-                                    //       _gallerys[index].site.icon ?? '',
-                                    //   fit: BoxFit.contain,
-                                    // )
                                   ),
                                   _currentTabIndex == index
                                       ? SizedBox(
@@ -238,10 +224,6 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
                                                   style: const TextStyle(
                                                       fontSize: 16,
                                                       color: Colors.black87
-                                                      // color: textColorList[
-                                                      //     _currentTabIndex %
-                                                      //         colorList
-                                                      //             .length]
                                                       ))))
                                       : Container()
                                 ])));
@@ -307,11 +289,7 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
             print('_autosuggest: $_autosuggest');
           });
         },
-
-        // Specify a custom transition to be used for
-        // animating between opened and closed stated.
         transition: CircularFloatingSearchBarTransition(),
-        // transition: SlideFadeFloatingSearchBarTransition(),
         leadingActions: [
           FloatingSearchBarAction.hamburgerToBack(),
           FloatingSearchBarAction(
@@ -332,15 +310,12 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
           FloatingSearchBarAction(
             showIfOpened: false,
             child: CircularButton(
-              // icon: const Icon(CupertinoIcons.square_grid_2x2),
               icon: const Icon(Icons.extension),
-              // icon: const Icon( CupertinoIcons.square_stack_3d_up),
               onPressed: () {
                 globalKey.currentState?.openEndDrawer();
               },
             ),
           ),
-          // FloatingSearchBarAction.icon(icon: Icon., onTap: onTap)
           FloatingSearchBarAction.searchToClear(
             showIfClosed: false,
           ),
@@ -518,9 +493,9 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
       return Future.value(false);
     }
     DateTime now = DateTime.now();
-    if (currentBackPressTime == null ||
-        now.difference(currentBackPressTime!) > const Duration(seconds: 2)) {
-      currentBackPressTime = now;
+    if (_currentBackPressTime == null ||
+        now.difference(_currentBackPressTime!) > const Duration(seconds: 2)) {
+      _currentBackPressTime = now;
       ScaffoldMessenger.of(context)
           .showSnackBar(const SnackBar(content: Text('再按一次退出')));
       return Future.value(false);

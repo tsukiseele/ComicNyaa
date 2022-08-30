@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:comic_nyaa/library/mio/core/mio.dart';
 import 'package:comic_nyaa/models/typed_model.dart';
 import 'package:comic_nyaa/views/detail/image_detail_view.dart';
+import 'package:comic_nyaa/widget/nyaa_tag_item.dart';
+import 'package:comic_nyaa/widget/nyaa_tags.dart';
 import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
@@ -27,7 +29,7 @@ class ComicDetailViewState extends State<ComicDetailView>
   final RefreshController _refreshController = RefreshController();
   final ScrollController _scrollController = ScrollController();
   final List<TypedModel> _children = [];
-  List<String> _tags = [];
+  Set<String> _tags = {};
   StreamSubscription<List<Map<String, dynamic>>>? _stream;
 
   void initialized() {
@@ -45,7 +47,7 @@ class ComicDetailViewState extends State<ComicDetailView>
       }
     });
     final model = widget.model;
-    _tags = model.tags?.split(' ') ?? [];
+    _tags.addAll(model.tags?.split(' ').toSet() ?? {});
     _stream = Mio(model.$site)
         .parseChildren(model.toJson(), model.$section!.rules!)
         .listen((List<Map<String, dynamic>> data) {
@@ -57,8 +59,11 @@ class ComicDetailViewState extends State<ComicDetailView>
   _getNext(List<Map<String, dynamic>> data) async {
     try {
       final models = data.map((item) => TypedModel.fromJson(item)).toList();
-      if (_tags.isEmpty && models.isNotEmpty && models[0].tags != null) {
-        _tags = models[0].tags!.split(' ');
+      if (models.isNotEmpty) {
+        for (var item in models) {
+          item.tags?.split(RegExp(r'[\s,]+')).forEach((tag) => _tags.add(tag));
+        }
+        // _tags = models[0].tags!.split(RegExp(r'[\s,]+'));
       }
       setState(() {
         _children.addAll(models);
@@ -152,16 +157,10 @@ class ComicDetailViewState extends State<ComicDetailView>
                           // const Spacer(),
                           Container(
                               margin: const EdgeInsets.only(top: 8),
-                              child: Wrap(
-                                  children: List.generate(
-                                      _tags.length,
-                                      (i) => Text(
-                                            _tags[i],
-                                            style: const TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 16,
-                                            ),
-                                          )))),
+                              child: NyaaTags(
+                                  itemCount: _tags.length,
+                                  builder: (context, index) =>
+                                      NyaaTagItem(text: _tags.toList()[index])))
                         ]))),
           ),
           child: _children.isNotEmpty

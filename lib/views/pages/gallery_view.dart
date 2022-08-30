@@ -253,7 +253,7 @@ class _GalleryViewState extends State<GalleryView>
       Flexible(
         child: RawScrollbar(
           controller: _scrollController,
-            thumbColor: Colors.pink[300],
+            thumbColor: Colors.purpleAccent[100],
             radius: const Radius.circular(4),
             thickness: 4,
             child: SmartRefresher(
