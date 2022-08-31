@@ -17,5 +17,4 @@ class _DownloadViewState extends State<DownloadView> {
   Widget build(BuildContext context) {
     return Material(child: ListView(children: List.generate(_downloadList.length, (index) => ListTile()),));
   }
-
 }
