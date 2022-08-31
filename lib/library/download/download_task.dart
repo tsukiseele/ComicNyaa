@@ -1,4 +1,3 @@
-import 'package:comic_nyaa/utils/download/downloadable.dart';
 
 class DownloadTask extends Downloadable {
   DownloadTask(String url, String path) : super(url, path);

@@ -1,9 +1,11 @@
-
+import '../../models/typed_model.dart';
 import 'download_task.dart';
 import 'downloadable.dart';
 
 class DownloadTaskQueue extends DownloadableQueue<DownloadTask> {
-  DownloadTaskQueue(super.queue);
+  DownloadTaskQueue(this.items);
+
+  List<TypedModel> items;
 
   @override
   Future<void> start() async {

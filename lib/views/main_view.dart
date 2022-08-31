@@ -19,6 +19,7 @@ import 'package:material_floating_search_bar/material_floating_search_bar.dart';
 
 import '../app/global.dart';
 import '../models/typed_model.dart';
+import '../utils/download/nyaa_download_tasks.dart';
 import '../utils/string_extensions.dart';
 import '../widget/marquee_widget.dart';
 import 'pages/gallery_view.dart';
@@ -74,7 +75,7 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
     List<TypedModel> items = _currentTab!.controller.selects.values.toList();
     Fluttertoast.showToast(msg: '${items.length}个任务已添加');
 
-    DownloadManager.instance.add(DownloadTaskQueue());
+    DownloadManager.instance.add(DownloadTaskQueue(items));
   }
 
   @override

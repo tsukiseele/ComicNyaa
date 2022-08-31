@@ -6,7 +6,7 @@ class DownloadManager {
   static DownloadManager? _instance;
   static DownloadManager get instance => _instance ??= DownloadManager._();
 
-  Map<String, Downloadable> tasks = {};
+  Map<String, DownloadableQueue> tasks = {};
   TaskRunner taskRunner = TaskRunner<DownloadableQueue, void>((task) async {
     try {
       await task.start();
@@ -15,7 +15,8 @@ class DownloadManager {
     } finally {}
   });
 
-  void add(Downloadable downloadable) {
+  void add(DownloadableQueue downloadable) {
+
     taskRunner.add(downloadable);
   }
 }

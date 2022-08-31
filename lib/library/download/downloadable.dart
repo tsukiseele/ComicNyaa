@@ -27,11 +27,11 @@ abstract class Downloadable<T> {
 }
 
 abstract class DownloadableQueue<T extends Downloadable> extends Downloadable {
-  DownloadableQueue(this._queue) : super('', '');
+  DownloadableQueue() : super('', '');
 
   @override
   String get path => super.path;
-  final Queue<T> _queue;
+  final Queue<T> _queue = Queue();
 
   int length() {
     return _queue.length;
@@ -39,6 +39,10 @@ abstract class DownloadableQueue<T extends Downloadable> extends Downloadable {
 
   void add(T downloadable) {
     _queue.add(downloadable);
+  }
+
+  void addAll(Iterable<T> iterable) {
+    _queue.addAll(iterable);
   }
 
   bool remove(T downloadable) {
