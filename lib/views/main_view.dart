@@ -3,6 +3,8 @@ import 'package:collection/collection.dart';
 import 'package:comic_nyaa/data/subscribe_holder.dart';
 import 'package:comic_nyaa/library/mio/core/mio_loader.dart';
 import 'package:comic_nyaa/library/mio/model/base.dart';
+import 'package:comic_nyaa/utils/download/download_manager.dart';
+import 'package:comic_nyaa/utils/download/download_task_queue.dart';
 import 'package:comic_nyaa/views/settings_view.dart';
 import 'package:comic_nyaa/views/subscribe_view.dart';
 import 'package:comic_nyaa/widget/nyaa_tab_view.dart';
@@ -16,6 +18,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:material_floating_search_bar/material_floating_search_bar.dart';
 
 import '../app/global.dart';
+import '../models/typed_model.dart';
 import '../utils/string_extensions.dart';
 import '../widget/marquee_widget.dart';
 import 'pages/gallery_view.dart';
@@ -65,6 +68,13 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
     if (RuleLoader.sites.isEmpty) {
       await SubscribeHolder().updateAllSubscribe();
     }
+  }
+
+  Future<void> downloadSelections() async {
+    List<TypedModel> items = _currentTab!.controller.selects.values.toList();
+    Fluttertoast.showToast(msg: '${items.length}个任务已添加');
+
+    DownloadManager.instance.add(DownloadTaskQueue());
   }
 
   @override
@@ -136,10 +146,8 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
     _currentTab?.controller.onItemSelect = _onGalleryItemSelected;
   }
 
-  void _onGalleryItemSelected(selects) {
-    setState(() {
-
-    });
+  void _onGalleryItemSelected(Map<int, TypedModel> selects) {
+    setState(() {});
   }
 
   @override
@@ -230,9 +238,10 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
             ],
           )),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+      floatingActionButtonAnimator: FloatingActionButtonAnimator.scaling,
       floatingActionButton: Container(
           margin: const EdgeInsets.only(bottom: 48),
-          child: _currentTab?.controller.selects?.isEmpty == true
+          child: _currentTab?.controller.selects.isEmpty == true
               ? FloatingActionButton(
                   onPressed: () => _currentTab?.controller.scrollController
                       ?.animateTo(0,
@@ -243,7 +252,10 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
                 )
               : FloatingActionButton(
                   onPressed: () {
-                    Fluttertoast.showToast(msg: 'DOWNLOAD');
+                    setState(() {
+                      _currentTab?.controller.clearSelection();
+                    });
+                    downloadSelections();
                   },
                   tooltip: 'Download',
                   child: const Icon(Icons.download),

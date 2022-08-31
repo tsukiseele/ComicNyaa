@@ -1,6 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
-import 'dart:io';
 import 'package:comic_nyaa/app/constant.dart';
 import 'package:comic_nyaa/utils/http.dart';
 import 'package:dio/dio.dart';
@@ -8,9 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_displaymode/flutter_displaymode.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
-import 'package:get/get.dart';
-
-import 'app/global.dart';
 import 'library/mio/core/mio.dart';
 import 'views/main_view.dart';
 
@@ -27,7 +22,8 @@ void main() async {
   ));
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
-  runApp(const GetMaterialApp(home: ComicNyaa()));
+  runApp(const MaterialApp(home: ComicNyaa()));
+  // runApp(const GetMaterialApp(home: ComicNyaa()));
   FlutterNativeSplash.remove();
 }
 

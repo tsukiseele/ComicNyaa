@@ -1,37 +1,35 @@
 import 'dart:async';
-import 'dart:math';
 import 'package:comic_nyaa/utils/uri_extensions.dart';
 import 'package:comic_nyaa/views/detail/comic_detail_view.dart';
 import 'package:comic_nyaa/views/detail/image_detail_view.dart';
 import 'package:comic_nyaa/views/detail/video_detail_view.dart';
 import 'package:comic_nyaa/widget/triangle_painter.dart';
-import 'package:extended_image/extended_image.dart';
-import 'package:flutter/material.dart';
-
 import 'package:comic_nyaa/library/mio/model/site.dart';
 import 'package:comic_nyaa/library/mio/core/mio.dart';
 import 'package:comic_nyaa/models/typed_model.dart';
+import 'package:extended_image/extended_image.dart';
+import 'package:flutter/material.dart';
+
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:shimmer/shimmer.dart';
 
-import '../../app/global.dart';
 import '../../models/typed_model.dart';
 
 class GalleryController {
   String keywords = '';
-  List<TypedModel> models = [];
+  List<TypedModel> items = [];
   ScrollController? scrollController;
-  Set<int>? selects = {};
-  ValueChanged<Set<int>>? onItemSelect;
+  Map<int, TypedModel> selects = {};
+  ValueChanged<Map<int, TypedModel>>? onItemSelect;
   void Function(String keywords)? search;
   void Function()? refresh;
+  late void Function() clearSelection;
 }
 
 class GalleryView extends StatefulWidget {
-  GalleryView({Key? key, required this.site})
-      : super(key: key);
+  GalleryView({Key? key, required this.site}) : super(key: key);
   final Site site;
   final GalleryController controller = GalleryController();
 
@@ -45,22 +43,22 @@ class _GalleryViewState extends State<GalleryView>
   final RefreshController _refreshController =
       RefreshController(initialRefresh: false);
   final Map<int, double> _heightCache = {};
-  final Set<int> _selects = {};
+  Map<int, TypedModel> _selects = {};
+  List<TypedModel> _items = [];
+  List<TypedModel> _preloadItems = [];
   double _topOffset = 0;
-  List<TypedModel> _models = [];
-  List<TypedModel> _preloadModels = [];
   int _page = 1;
   String _keywords = '';
   bool _isLoading = false;
 
   Future<void> _initialize() async {
-    // _scrollController = widget.scrollController ?? ScrollController();
     widget.controller.scrollController = _scrollController;
     widget.controller.refresh = _refreshController.requestRefresh;
     widget.controller.search = (String kwds) {
       _keywords = kwds;
       _refreshController.requestRefresh();
     };
+    widget.controller.clearSelection = _clearSelections;
     setState(() {});
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -86,22 +84,30 @@ class _GalleryViewState extends State<GalleryView>
     });
   }
 
+  void _clearSelections() {
+    setState(() {
+      print('CCCCCCCCCCCCCCCCCCCCCCCC');
+      _selects.clear();
+      widget.controller.onItemSelect!(_selects);
+    });
+  }
+
   /// 加载列表
   Future<List<TypedModel>> _load(
       {bool isNext = false, bool isReset = false}) async {
-    print('LIST SIZE: ${_models.length}');
+    print('LIST SIZE: ${_items.length}');
     if (_isLoading) return [];
     try {
       // 重置状态
       if (isReset) {
-        _preloadModels = [];
+        _preloadItems = [];
       }
       // 试图获取预加载内容
-      if (_preloadModels.isNotEmpty) {
+      if (_preloadItems.isNotEmpty) {
         // print('READ PRELOAD ====================== SIZE = ${_preloadModels.length}');
-        final models = _preloadModels;
+        final models = _preloadItems;
         _page++;
-        _preloadModels = [];
+        _preloadItems = [];
         _preload();
         return models;
       }
@@ -143,20 +149,20 @@ class _GalleryViewState extends State<GalleryView>
 
   /// 预加载列表
   Future<void> _preload() async {
-    if (_preloadModels.isNotEmpty) return;
+    if (_preloadItems.isNotEmpty) return;
     final page = _page + 1;
     try {
-      _preloadModels = await _getModels(page: page);
+      _preloadItems = await _getModels(page: page);
       // 为空则返回
-      if (_preloadModels.isEmpty) return;
+      if (_preloadItems.isEmpty) return;
       // 页码改变则返回
       if (page == _page + 1) {
         // print('CURRENT PAGE: $_page ===> PRELOAD PAGE: $page');
       } else {
-        _preloadModels = [];
+        _preloadItems = [];
         return;
       }
-      for (var model in _preloadModels) {
+      for (var model in _preloadItems) {
         ExtendedImage.network(model.coverUrl ?? '');
         // DynamicCacheImageProvider(model.coverUrl ?? '').resolve(const ImageConfiguration());
       }
@@ -169,23 +175,24 @@ class _GalleryViewState extends State<GalleryView>
     if (_isLoading) return [];
     final models = await _load(isNext: true);
     _refreshController.loadComplete();
-    setState(() => _models.addAll(models));
-    widget.controller.models = _models;
+    setState(() => _items.addAll(models));
+    widget.controller.items = _items;
     return models;
   }
 
   Future<List<TypedModel>> _onSearch(String keywords) async {
     setState(() {
-      _models = [];
+      _items = [];
       _heightCache.clear();
+      _clearSelections();
     });
 
     _page = 1;
     _keywords = keywords;
     final models = await _load(isReset: true);
     _refreshController.refreshCompleted();
-    setState(() => _models = models);
-    widget.controller.models = _models;
+    setState(() => _items = models);
+    widget.controller.items = _items;
     return models;
   }
 
@@ -212,9 +219,10 @@ class _GalleryViewState extends State<GalleryView>
   }
 
   void _onItemSelect(int index) {
-    setState(() => _selects.contains(index)
+    final item = _items[index];
+    setState(() => _selects.containsKey(index)
         ? _selects.remove(index)
-        : _selects.add(index));
+        : _selects[index] = item);
     widget.controller.selects = _selects;
     if (widget.controller.onItemSelect != null) {
       widget.controller.onItemSelect!(_selects);
@@ -275,7 +283,7 @@ class _GalleryViewState extends State<GalleryView>
                     crossAxisCount: 3,
                     mainAxisSpacing: 8.0,
                     crossAxisSpacing: 8.0,
-                    itemCount: _models.length,
+                    itemCount: _items.length,
                     controller: _scrollController,
                     // physics: const BouncingScrollPhysics(),
                     itemBuilder: (context, index) {
@@ -290,7 +298,7 @@ class _GalleryViewState extends State<GalleryView>
                           borderRadius:
                               const BorderRadius.all(Radius.circular(4.0)),
                           child: InkWell(
-                              onTap: () => _jump(_models[index]),
+                              onTap: () => _jump(_items[index]),
                               onLongPress: () => _onItemSelect(index),
                               child: Stack(
                                 alignment: Alignment.center,
@@ -298,7 +306,7 @@ class _GalleryViewState extends State<GalleryView>
                                   // Column(
                                   //   children: [
                                   ExtendedImage.network(
-                                      _models[index].coverUrl?.asUrl() ?? '',
+                                      _items[index].coverUrl?.asUrl() ?? '',
                                       headers: _currentSite?.headers,
                                       height: _heightCache[index],
                                       opacity: controller,
@@ -346,7 +354,7 @@ class _GalleryViewState extends State<GalleryView>
                                   // )
                                   //   ],
                                   // ),
-                                  _selects.contains(index)
+                                  _selects.containsKey(index)
                                       ? Positioned(
                                           right: 0,
                                           bottom: 0,
@@ -380,7 +388,7 @@ class _GalleryViewState extends State<GalleryView>
       print(
           'didUpdateWidget:::::: NAME: ${oldWidget.site.name} >>>>>>>> ${widget.site.name}');
       print(
-          'didUpdateWidget:::::: DATA: ${widget.controller.models} <<<<<<<< ${oldWidget.controller.models}');
+          'didUpdateWidget:::::: DATA: ${widget.controller.items} <<<<<<<< ${oldWidget.controller.items}');
       // 销毁被旧的滚动控制器
       // oldWidget.controller.scrollController?.dispose();
       setState(() {
