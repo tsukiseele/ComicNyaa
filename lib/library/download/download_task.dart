@@ -1,4 +1,6 @@
 
+import 'downloadable.dart';
+
 class DownloadTask extends Downloadable {
   DownloadTask(String url, String path) : super(url, path);
 

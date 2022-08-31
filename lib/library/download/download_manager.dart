@@ -1,5 +1,7 @@
-import 'package:comic_nyaa/utils/download/downloadable.dart';
-import 'package:comic_nyaa/utils/download/task_runner.dart';
+
+import 'package:comic_nyaa/library/download/task_runner.dart';
+
+import 'downloadable.dart';
 
 class DownloadManager {
   DownloadManager._();
