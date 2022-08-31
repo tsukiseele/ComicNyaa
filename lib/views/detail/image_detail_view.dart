@@ -26,8 +26,7 @@ class ImageDetailView extends StatefulWidget {
   }
 }
 
-class ImageDetailViewState extends State<ImageDetailView>
-    with TickerProviderStateMixin {
+class ImageDetailViewState extends State<ImageDetailView> with TickerProviderStateMixin {
   final PageController _pageController = PageController();
   late List<TypedModel> _models;
   final Set<int> _cache = {};
@@ -37,8 +36,7 @@ class ImageDetailViewState extends State<ImageDetailView>
   bool isFailed = false;
 
   void initialized() async {
-    _animationController = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 250));
+    _animationController = AnimationController(vsync: this, duration: const Duration(milliseconds: 250));
     try {
       _currentIndex = widget.index;
       _models = widget.models;
@@ -48,9 +46,7 @@ class ImageDetailViewState extends State<ImageDetailView>
       loadImage(_currentIndex);
 
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (_pageController.hasClients &&
-            _images.isNotEmpty &&
-            widget.index < _images.length) {
+        if (_pageController.hasClients && _images.isNotEmpty && widget.index < _images.length) {
           _pageController.jumpToPage(widget.index);
         }
       });
@@ -68,8 +64,7 @@ class ImageDetailViewState extends State<ImageDetailView>
     TypedModel model = _models[index];
     String image = getUrl(model);
     if (image.isEmpty) {
-      final results = await Mio(model.$site)
-          .parseAllChildren(model.toJson(), model.$section!.rules!);
+      final results = await Mio(model.$site).parseAllChildren(model.toJson(), model.$section!.rules!);
       final m = TypedModel.fromJson(results);
       if (m.children?.isNotEmpty == true) {
         final models = m.children;
@@ -106,8 +101,7 @@ class ImageDetailViewState extends State<ImageDetailView>
   /// 预加载，默认预加载前后2页
   void preload(int index, {int range = 2}) {
     int start = index - range > 0 ? index - range : 0;
-    int end =
-        index + range < _images.length ? index + range : _images.length - 1;
+    int end = index + range < _images.length ? index + range : _images.length - 1;
     if (start < end) {
       for (int i = start; i <= end; i++) {
         if (!_cache.contains(i)) loadImage(i);
@@ -123,10 +117,7 @@ class ImageDetailViewState extends State<ImageDetailView>
     try {
       final children = item.children != null ? item.children![0] : null;
       if (children != null) {
-        url = children.sampleUrl ??
-            children.largerUrl ??
-            children.originUrl ??
-            '';
+        url = children.sampleUrl ?? children.largerUrl ?? children.originUrl ?? '';
         return url;
       }
       url = item.sampleUrl ?? item.largerUrl ?? item.originUrl ?? '';
@@ -138,8 +129,7 @@ class ImageDetailViewState extends State<ImageDetailView>
 
   void onDownload(TypedModel model) async {
     try {
-      final downloadLevel =
-          (await NyaaPreferences.instance).downloadResourceLevel;
+      final downloadLevel = (await NyaaPreferences.instance).downloadResourceLevel;
       String? url;
       switch (downloadLevel) {
         case DownloadResourceLevel.low:
@@ -156,8 +146,7 @@ class ImageDetailViewState extends State<ImageDetailView>
         Fluttertoast.showToast(msg: '下载失败，无有效下载源');
         return;
       }
-      String savePath =
-          (await Config.downloadDir).join(Uri.parse(url).filename).path;
+      String savePath = (await Config.downloadDir).join(Uri.parse(url).filename).path;
       Fluttertoast.showToast(msg: '下载已添加：$savePath');
       await Dio().download(url, savePath);
 
@@ -229,8 +218,7 @@ class ImageDetailViewState extends State<ImageDetailView>
                     _animationController?.stop();
                     _animationController?.reset();
                     // animation start
-                    final image = state
-                        .widget.extendedImageState.extendedImageInfo?.image;
+                    final image = state.widget.extendedImageState.extendedImageInfo?.image;
                     final layout = state.gestureDetails?.layoutRect;
                     // final screen = MediaQuery.of(context).size;
                     final doubleTapScales = <double>[1.0];
@@ -256,22 +244,15 @@ class ImageDetailViewState extends State<ImageDetailView>
                     double begin = state.gestureDetails?.totalScale ?? 1.0;
                     double end;
 
-                    int currentScaleIndex = doubleTapScales
-                        .indexWhere((item) => begin - item < 0.01);
-                    end = doubleTapScales[
-                        currentScaleIndex + 1 < doubleTapScales.length
-                            ? currentScaleIndex + 1
-                            : 0];
+                    int currentScaleIndex = doubleTapScales.indexWhere((item) => (begin - item).abs() < 0.01);
+                    end = doubleTapScales[currentScaleIndex + 1 < doubleTapScales.length ? currentScaleIndex + 1 : 0];
                     // print('SCALES::: $doubleTapScales');
                     // print('begin: $begin, end: $end;');
                     animationListener = () {
-                      state.handleDoubleTap(
-                          scale: _animation?.value,
-                          doubleTapPosition: pointerDownPosition);
+                      state.handleDoubleTap(scale: _animation?.value, doubleTapPosition: pointerDownPosition);
                     };
-                    _animation = Tween<double>(begin: begin, end: end).animate(
-                        CurvedAnimation(
-                            parent: _animationController!, curve: Curves.ease));
+                    _animation = Tween<double>(begin: begin, end: end)
+                        .animate(CurvedAnimation(parent: _animationController!, curve: Curves.ease));
                     _animation?.addListener(animationListener);
                     _animationController?.forward();
                   },
@@ -283,10 +264,8 @@ class ImageDetailViewState extends State<ImageDetailView>
                           return buildLoading();
                         }
                         double? progress;
-                        if (event.expectedTotalBytes != null &&
-                            event.expectedTotalBytes! > 0) {
-                          progress = event.cumulativeBytesLoaded /
-                              (event.expectedTotalBytes!);
+                        if (event.expectedTotalBytes != null && event.expectedTotalBytes! > 0) {
+                          progress = event.cumulativeBytesLoaded / (event.expectedTotalBytes!);
                         }
                         return CircularPercentIndicator(
                             radius: 48,
@@ -297,19 +276,16 @@ class ImageDetailViewState extends State<ImageDetailView>
                             circularStrokeCap: CircularStrokeCap.round,
                             percent: progress ?? 0,
                             center: Text(
-                              _getProgressText(event.cumulativeBytesLoaded,
-                                  event.expectedTotalBytes ?? 0),
-                              style: const TextStyle(fontSize: 18),
+                              _getProgressText(event.cumulativeBytesLoaded, event.expectedTotalBytes ?? 0),
+                              style: const TextStyle(fontSize: 18, color: Colors.white70),
                             ));
                       case LoadState.failed:
-                        return const Center(
-                            child: Icon(Icons.image_not_supported, size: 64));
+                        return const Center(child: Icon(Icons.image_not_supported, size: 64));
                       case LoadState.completed:
                         return null;
                     }
                   },
-                  initGestureConfigHandler: (ExtendedImageState state) =>
-                      GestureConfig(
+                  initGestureConfigHandler: (ExtendedImageState state) => GestureConfig(
                     minScale: 0.1,
                     maxScale: double.infinity,
                     inPageView: true,
