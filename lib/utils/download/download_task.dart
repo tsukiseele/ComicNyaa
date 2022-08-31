@@ -1,30 +1,14 @@
 import 'package:comic_nyaa/utils/download/downloadable.dart';
 
 class DownloadTask extends Downloadable {
-  DownloadTask(this.url): super(false);
-
-  String url;
+  DownloadTask(String url, String path) : super(url, path);
 
   @override
-  void start() {
+  Future<void> start() async {
   }
 
   @override
-  void stop() {
-    // TODO: implement stop
-  }
-}
-
-class DownloadTaskQueue extends DownloadableQueue<DownloadTask> {
-  DownloadTaskQueue(super.queue);
-
-  @override
-  void start() {
-    // TODO: implement start
-  }
-
-  @override
-  void stop() {
+  Future<void> stop() async {
     // TODO: implement stop
   }
 }

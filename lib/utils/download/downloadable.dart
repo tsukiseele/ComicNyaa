@@ -1,10 +1,9 @@
-
 import 'dart:collection';
 
 enum DownloadStatus { idle, loading, failed, successful }
 
 class DownloadProgress {
-  DownloadProgress(this.totalByteLength, { this.completesByteLength = 0 });
+  DownloadProgress(this.totalByteLength, {this.completesByteLength = 0});
 
   int completesByteLength;
   int totalByteLength;
@@ -15,19 +14,23 @@ class DownloadProgress {
 }
 
 abstract class Downloadable<T> {
-  Downloadable();
+  Downloadable(this.url, this.path);
 
   DownloadStatus status = DownloadStatus.idle;
   DownloadProgress? pregress;
+  String url;
+  String path;
 
-  void start();
+  Future<T> start();
 
-  void stop();
+  Future<T> stop();
 }
 
 abstract class DownloadableQueue<T extends Downloadable> extends Downloadable {
-  DownloadableQueue(this._queue);
+  DownloadableQueue(this._queue) : super('', '');
 
+  @override
+  String get path => super.path;
   final Queue<T> _queue;
 
   int length() {

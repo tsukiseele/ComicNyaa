@@ -1,8 +1,10 @@
 import 'dart:async';
+import 'dart:math';
 import 'package:comic_nyaa/utils/uri_extensions.dart';
 import 'package:comic_nyaa/views/detail/comic_detail_view.dart';
 import 'package:comic_nyaa/views/detail/image_detail_view.dart';
 import 'package:comic_nyaa/views/detail/video_detail_view.dart';
+import 'package:comic_nyaa/widget/triangle_painter.dart';
 import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
 
@@ -21,19 +23,16 @@ class GalleryController {
   String keywords = '';
   List<TypedModel> models = [];
   ScrollController? scrollController;
+  Set<int>? selects = {};
+  ValueChanged<Set<int>>? onItemSelect;
   void Function(String keywords)? search;
   void Function()? refresh;
-  void Function(double offset,
-      {required Duration duration, required Curve curve})? animateTo;
 }
 
 class GalleryView extends StatefulWidget {
-  GalleryView({Key? key, required this.site /*, this.scrollController*/
-      })
+  GalleryView({Key? key, required this.site})
       : super(key: key);
   final Site site;
-
-  // final ScrollController? scrollController;
   final GalleryController controller = GalleryController();
 
   @override
@@ -46,7 +45,8 @@ class _GalleryViewState extends State<GalleryView>
   final RefreshController _refreshController =
       RefreshController(initialRefresh: false);
   final Map<int, double> _heightCache = {};
-   double _topOffset = 0;
+  final Set<int> _selects = {};
+  double _topOffset = 0;
   List<TypedModel> _models = [];
   List<TypedModel> _preloadModels = [];
   int _page = 1;
@@ -61,18 +61,11 @@ class _GalleryViewState extends State<GalleryView>
       _keywords = kwds;
       _refreshController.requestRefresh();
     };
-
-    // await _checkUpdate();
-    // final sites = await RuleLoader.loadFormDirectory(await Config.ruleDir);
-    // sites.forEachIndexed((i, element) => print('$i: [${element.id}]${element.name}'));
-    setState(() {
-      // _sites = sites;
-      // _currentSiteId = _currentSiteId < 0 ? _sites[0].id! : _currentSiteId;
-    });
+    setState(() {});
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
       _refreshController.requestRefresh();
-      // widget.controller.animateTo = _scrollController.animateTo;
       _scrollController.addListener(() {
         if (_scrollController.position.pixels >=
             _scrollController.position.maxScrollExtent) {
@@ -218,8 +211,17 @@ class _GalleryViewState extends State<GalleryView>
     }
   }
 
+  void _onItemSelect(int index) {
+    setState(() => _selects.contains(index)
+        ? _selects.remove(index)
+        : _selects.add(index));
+    widget.controller.selects = _selects;
+    if (widget.controller.onItemSelect != null) {
+      widget.controller.onItemSelect!(_selects);
+    }
+  }
+
   Site? get _currentSite {
-    // return _sites.firstWhereOrNull((site) => site.id == _currentSiteId);
     return widget.site;
   }
 
@@ -229,7 +231,8 @@ class _GalleryViewState extends State<GalleryView>
     super.initState();
   }
 
-  Future<ImageInfo> getImageInfo(ImageProvider image) async {
+/*
+  Future<ImageInfo> _getImageInfo(ImageProvider image) async {
     final c = Completer<ImageInfo>();
     ImageStream imageStream = image.resolve(const ImageConfiguration());
     imageStream.addListener(
@@ -238,13 +241,11 @@ class _GalleryViewState extends State<GalleryView>
   }
 
   void cacheHeight(ImageProvider image, int index) async {
-    ImageInfo imageInfo = await getImageInfo(image);
-    // _heightCache[index] = imageInfo.image.height.toDouble();
-    _heightCache[index] = imageInfo.image.width / imageInfo.image.height;
-
+    ImageInfo imageInfo = await _getImageInfo(image);
+    _heightCache[index] = imageInfo.image.height.toDouble();
     print('CAHCE HEIGHT: ${_heightCache[index]}');
   }
-
+*/
   @override
   Widget build(BuildContext context) {
     _topOffset = kToolbarHeight + MediaQuery.of(context).viewPadding.top;
@@ -252,7 +253,7 @@ class _GalleryViewState extends State<GalleryView>
     return Column(children: [
       Flexible(
         child: RawScrollbar(
-          controller: _scrollController,
+            controller: _scrollController,
             thumbColor: Colors.purpleAccent[100],
             radius: const Radius.circular(4),
             thickness: 4,
@@ -290,8 +291,12 @@ class _GalleryViewState extends State<GalleryView>
                               const BorderRadius.all(Radius.circular(4.0)),
                           child: InkWell(
                               onTap: () => _jump(_models[index]),
-                              child: Column(
+                              onLongPress: () => _onItemSelect(index),
+                              child: Stack(
+                                alignment: Alignment.center,
                                 children: [
+                                  // Column(
+                                  //   children: [
                                   ExtendedImage.network(
                                       _models[index].coverUrl?.asUrl() ?? '',
                                       headers: _currentSite?.headers,
@@ -339,6 +344,28 @@ class _GalleryViewState extends State<GalleryView>
                                   //     maxLines: 3,
                                   //   ),
                                   // )
+                                  //   ],
+                                  // ),
+                                  _selects.contains(index)
+                                      ? Positioned(
+                                          right: 0,
+                                          bottom: 0,
+                                          child: CustomPaint(
+                                              painter: TrianglePainter(
+                                                  strokeColor: Theme.of(context)
+                                                      .primaryColor),
+                                              child: Container(
+                                                width: 32,
+                                                height: 32,
+                                                padding: const EdgeInsets.only(
+                                                    left: 10, top: 10),
+                                                child: const Icon(
+                                                  Icons.check_rounded,
+                                                  color: Colors.white,
+                                                  size: 18,
+                                                ),
+                                              )))
+                                      : Container()
                                 ],
                               )));
                     }))),

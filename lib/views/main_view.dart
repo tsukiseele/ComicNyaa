@@ -30,24 +30,32 @@ class MainView extends StatefulWidget {
 
 class _MainViewState extends State<MainView> with TickerProviderStateMixin {
   final globalKey = GlobalKey<ScaffoldState>();
-  final FloatingSearchBarController _floatingSearchBarController = FloatingSearchBarController();
+  final FloatingSearchBarController _floatingSearchBarController =
+      FloatingSearchBarController();
   final List<GalleryView> _gallerys = [];
   ScrollController? _galleryScrollController;
   List<Site> _sites = [];
   List<String> _autosuggest = [];
-  int _currentTabIndex = 0;
   DateTime? _currentBackPressTime = DateTime.now();
+  int _currentTabIndex = 0;
   int _lastScrollPosition = 0;
 
-  final colorList = [Colors.blue[100], Colors.green[100], Colors.purple[100], Colors.amber[100], Colors.pink[100]];
+  final tabColors = [
+    Colors.blue[100],
+    Colors.green[100],
+    Colors.purple[100],
+    Colors.amber[100],
+    Colors.pink[100]
+  ];
 
   Future<void> _initialize() async {
     await _checkUpdate();
     setState(() {
       _sites = RuleLoader.sites.values.toList();
       // 打开默认标签
-      addTab(_sites.firstWhereOrNull((site) => site.id == 920) ?? _sites[0]);
-      listenCurrentTabScroll();
+      _addTab(_sites.firstWhereOrNull((site) => site.id == 920) ?? _sites[0]);
+      _listenGalleryScroll();
+      _currentTab?.controller.onItemSelect = _onGalleryItemSelected;
     });
   }
 
@@ -69,24 +77,12 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
     return _gallerys.isNotEmpty ? _gallerys[_currentTabIndex] : null;
   }
 
-  void addTab(Site site) {
+  void _addTab(Site site) {
     _gallerys.add(GalleryView(site: site));
-    // WidgetsBinding.instance.addPostFrameCallback((_) {
-    //   _currentTabIndex = _gallerys.length - 1;
-    // });
   }
 
-  void removeTab(int index) {
-    // final temp = _gallerys[index];
-    // _gallerys.removeAt(index);
-    // _gallerys.add(temp);
+  void _removeTab(int index) {
     setState(() {
-      print('REMOVE::::: ${_gallerys[index].site.name}');
-      // try {
-      //   _gallerys[index].controller.scrollController?.dispose();
-      // } catch (e) {
-      //   print(e);
-      // }
       _gallerys.removeAt(index);
       if (_currentTabIndex > _gallerys.length - 1) {
         _currentTabIndex = _gallerys.length - 1;
@@ -94,38 +90,56 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
     });
   }
 
-  void listenCurrentTabScroll() {
+  void _listenGalleryScroll() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         // Remove old scroll listener
         for (var item in _gallerys) {
-          item.controller.scrollController?.removeListener(onGalleryScroll);
+          item.controller.scrollController?.removeListener(_onGalleryScroll);
         }
         // Add new scroll listener
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (mounted) {
             _galleryScrollController = _currentTab?.controller.scrollController;
             if (_galleryScrollController == null) return;
-            onGalleryScroll();
-            _galleryScrollController!.addListener(onGalleryScroll);
+            _onGalleryScroll();
+            _galleryScrollController!.addListener(_onGalleryScroll);
           }
         });
       }
     });
   }
 
-  void onGalleryScroll() {
+  void _onGalleryScroll() {
     if (_galleryScrollController == null) return;
     // if (_galleryScrollController!.positions.isEmpty) _galleryScrollController!.dispose();
     if (_galleryScrollController!.position.pixels < 128) {
-      _floatingSearchBarController.isHidden ? _floatingSearchBarController.show() : null;
-    } else if (_galleryScrollController!.position.pixels > _lastScrollPosition + 64) {
+      _floatingSearchBarController.isHidden
+          ? _floatingSearchBarController.show()
+          : null;
+    } else if (_galleryScrollController!.position.pixels >
+        _lastScrollPosition + 64) {
       _lastScrollPosition = _galleryScrollController!.position.pixels.toInt();
-      _floatingSearchBarController.isVisible ? _floatingSearchBarController.hide() : null;
-    } else if (_galleryScrollController!.position.pixels < _lastScrollPosition - 64) {
+      _floatingSearchBarController.isVisible
+          ? _floatingSearchBarController.hide()
+          : null;
+    } else if (_galleryScrollController!.position.pixels <
+        _lastScrollPosition - 64) {
       _lastScrollPosition = _galleryScrollController!.position.pixels.toInt();
-      _floatingSearchBarController.isHidden ? _floatingSearchBarController.show() : null;
+      _floatingSearchBarController.isHidden
+          ? _floatingSearchBarController.show()
+          : null;
     }
+  }
+
+  void _listenGalleryItemSelected() {
+    _currentTab?.controller.onItemSelect = _onGalleryItemSelected;
+  }
+
+  void _onGalleryItemSelected(selects) {
+    setState(() {
+
+    });
   }
 
   @override
@@ -148,26 +162,26 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
                       position: _currentTabIndex,
                       onPositionChange: (int index) {
                         setState(() => _currentTabIndex = index);
-                        listenCurrentTabScroll();
+                        _listenGalleryScroll();
+                        _listenGalleryItemSelected();
                       },
                       onScroll: (double value) {},
                       itemCount: _gallerys.length,
                       isScrollToNewTab: true,
-                      color: colorList[_currentTabIndex % colorList.length],
+                      color: tabColors[_currentTabIndex % tabColors.length],
                       indicator: const BoxDecoration(
                           color: Colors.white70,
-                          boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 8)],
-                          // color: colorList[_currentTabIndex % colorList.length]
-                          //     ?.withOpacity(.6),
-                          borderRadius: BorderRadius.all(Radius.circular(20))
-                          // borderRadius: BorderRadius.only(bottomLeft:Radius.circular(12), bottomRight: Radius.circular(12)),
-                          ),
-                      pageBuilder: (BuildContext context, int index) => _gallerys[index],
+                          boxShadow: [
+                            BoxShadow(color: Colors.black12, blurRadius: 8)
+                          ],
+                          borderRadius: BorderRadius.all(Radius.circular(20))),
+                      pageBuilder: (BuildContext context, int index) =>
+                          _gallerys[index],
                       tabBuilder: (BuildContext context, int index) {
                         return InkWell(
                             onLongPress: () {
                               if (_gallerys.length > 1) {
-                                setState(() => removeTab(index));
+                                setState(() => _removeTab(index));
                               } else {
                                 Fluttertoast.showToast(msg: '您不能删除最后一个标签页');
                               }
@@ -182,19 +196,32 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
                                   Container(
                                     width: 40,
                                     height: 40,
-                                    padding: EdgeInsets.only(top: 8, bottom: 8, right: _currentTabIndex == index ? 8 : 0),
-                                    child: SimpleNetworkImage(_gallerys[index].site.icon ?? '',
-                                        fit: BoxFit.contain, clearMemoryCacheIfFailed: false),
+                                    padding: EdgeInsets.only(
+                                        top: 8,
+                                        bottom: 8,
+                                        right:
+                                            _currentTabIndex == index ? 8 : 0),
+                                    child: SimpleNetworkImage(
+                                        _gallerys[index].site.icon ?? '',
+                                        fit: BoxFit.contain,
+                                        clearMemoryCacheIfFailed: false),
                                   ),
                                   _currentTabIndex == index
                                       ? SizedBox(
-                                          width: _currentTabIndex == index ? 96.0 : null,
+                                          width: _currentTabIndex == index
+                                              ? 96.0
+                                              : null,
                                           child: MarqueeWidget(
                                               direction: Axis.horizontal,
-                                              child: Text(_gallerys[index].site.name ?? 'unknown',
-                                                  overflow: TextOverflow.ellipsis,
+                                              child: Text(
+                                                  _gallerys[index].site.name ??
+                                                      'unknown',
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
                                                   maxLines: 1,
-                                                  style: const TextStyle(fontSize: 16, color: Colors.black87))))
+                                                  style: const TextStyle(
+                                                      fontSize: 16,
+                                                      color: Colors.black87))))
                                       : Container()
                                 ])));
                       })
@@ -205,17 +232,28 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       floatingActionButton: Container(
           margin: const EdgeInsets.only(bottom: 48),
-          child: FloatingActionButton(
-            onPressed: () =>
-                _currentTab?.controller.animateTo!(0, duration: const Duration(milliseconds: 1000), curve: Curves.ease),
-            tooltip: 'Top',
-            child: const Icon(Icons.arrow_upward),
-          )),
+          child: _currentTab?.controller.selects?.isEmpty == true
+              ? FloatingActionButton(
+                  onPressed: () => _currentTab?.controller.scrollController
+                      ?.animateTo(0,
+                          duration: const Duration(milliseconds: 1000),
+                          curve: Curves.ease),
+                  tooltip: 'Top',
+                  child: const Icon(Icons.arrow_upward),
+                )
+              : FloatingActionButton(
+                  onPressed: () {
+                    Fluttertoast.showToast(msg: 'DOWNLOAD');
+                  },
+                  tooltip: 'Download',
+                  child: const Icon(Icons.download),
+                )),
     );
   }
 
   Widget buildFloatingSearchBar() {
-    final isPortrait = MediaQuery.of(context).orientation == Orientation.portrait;
+    final isPortrait =
+        MediaQuery.of(context).orientation == Orientation.portrait;
 
     return FloatingSearchBar(
         title: Text(
@@ -223,7 +261,9 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
           style: TextStyle(
               fontFamily: Config.uiFontFamily,
               fontSize: 16,
-              color: isEmpty(_currentTab?.controller.keywords == null) ? Colors.black26 : Colors.black87),
+              color: isEmpty(_currentTab?.controller.keywords == null)
+                  ? Colors.black26
+                  : Colors.black87),
         ),
         controller: _floatingSearchBarController,
         automaticallyImplyDrawerHamburger: false,
@@ -239,14 +279,19 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
         width: isPortrait ? 600 : 500,
         debounceDelay: const Duration(milliseconds: 500),
         // clearQueryOnClose: false,
-        hintStyle: const TextStyle(fontFamily: Config.uiFontFamily, fontSize: 16, color: Colors.black26),
-        queryStyle: const TextStyle(fontFamily: Config.uiFontFamily, fontSize: 16),
+        hintStyle: const TextStyle(
+            fontFamily: Config.uiFontFamily,
+            fontSize: 16,
+            color: Colors.black26),
+        queryStyle:
+            const TextStyle(fontFamily: Config.uiFontFamily, fontSize: 16),
         onQueryChanged: (query) async {
-          final value = await Dio()
-              .get('https://danbooru.donmai.us/autocomplete.json?search[query]=$query&search[type]=tag_query&limit=10');
+          final value = await Dio().get(
+              'https://danbooru.donmai.us/autocomplete.json?search[query]=$query&search[type]=tag_query&limit=10');
           final result = List<Map<String, dynamic>>.from(value.data);
           setState(() {
-            _autosuggest = result.map((item) => item['value'] as String).toList();
+            _autosuggest =
+                result.map((item) => item['value'] as String).toList();
             print('_autosuggest: $_autosuggest');
           });
         },
@@ -261,7 +306,10 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
                   child: SimpleNetworkImage(_currentTab?.site.icon ?? '',
                       error: Text(
                         _currentTab?.site.name?.substring(0, 1) ?? '?',
-                        style: const TextStyle(fontFamily: Config.uiFontFamily, fontSize: 18, color: Colors.teal),
+                        style: const TextStyle(
+                            fontFamily: Config.uiFontFamily,
+                            fontSize: 18,
+                            color: Colors.teal),
                       )))),
         ],
         actions: [
@@ -298,7 +346,8 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
                         },
                         title: Text(
                           query,
-                          style: const TextStyle(fontFamily: Config.uiFontFamily, fontSize: 14),
+                          style: const TextStyle(
+                              fontFamily: Config.uiFontFamily, fontSize: 14),
                         )))
                     .toList(),
               ),
@@ -321,20 +370,27 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
               child: Container(
                   decoration: BoxDecoration(
                       color: Colors.white,
-                      gradient: LinearGradient(begin: FractionalOffset.topCenter, end: FractionalOffset.bottomCenter, colors: [
-                        Colors.grey.withOpacity(0.0),
-                        Colors.black45,
-                      ], stops: const [
-                        0.0,
-                        1.0
-                      ])),
+                      gradient: LinearGradient(
+                          begin: FractionalOffset.topCenter,
+                          end: FractionalOffset.bottomCenter,
+                          colors: [
+                            Colors.grey.withOpacity(0.0),
+                            Colors.black45,
+                          ],
+                          stops: const [
+                            0.0,
+                            1.0
+                          ])),
                   padding: const EdgeInsets.all(8),
                   alignment: Alignment.bottomLeft,
-                  child: Text("Os iustī meditabitur sapientiam, Et lingua eius loquetur iudicium.",
+                  child: Text(
+                      "Os iustī meditabitur sapientiam, Et lingua eius loquetur iudicium.",
                       // "ポトフちゃんとワトラちゃんがすごくかわいいです！",
                       style: TextStyle(color: Colors.teal[200], fontSize: 18,
                           // fontWeight: FontWeight.bold,
-                          shadows: [Shadow(color: Colors.teal[100]!, blurRadius: 8)]))),
+                          shadows: [
+                            Shadow(color: Colors.teal[100]!, blurRadius: 8)
+                          ]))),
               // child: const Text('ポトフちゃんとワトラちゃんがすごくかわいいです！',
               //     style: TextStyle(color: Colors.white, fontSize: 16))),
             ),
@@ -349,15 +405,21 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
       ListTile(
           title: const Text('订阅'),
           onTap: () {
-            Navigator.push(context, MaterialPageRoute(builder: (ctx) => const SubscribeView()));
+            Navigator.push(context,
+                MaterialPageRoute(builder: (ctx) => const SubscribeView()));
           },
           iconColor: Colors.black87,
           leading: const Icon(Icons.collections_bookmark)),
-      ListTile(title: const Text('下载'), onTap: () {}, iconColor: Colors.black87, leading: const Icon(Icons.download)),
+      ListTile(
+          title: const Text('下载'),
+          onTap: () {},
+          iconColor: Colors.black87,
+          leading: const Icon(Icons.download)),
       ListTile(
           title: const Text('设置'),
           onTap: () {
-            Navigator.push(context, MaterialPageRoute(builder: (ctx) => const SettingsView()));
+            Navigator.push(context,
+                MaterialPageRoute(builder: (ctx) => const SettingsView()));
           },
           iconColor: Colors.black87,
           leading: const Icon(Icons.tune))
@@ -387,7 +449,7 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
                     onTap: () {
                       setState(() {
                         // _tabs.add(_sites[index]);
-                        addTab(_sites[index]);
+                        _addTab(_sites[index]);
                         globalKey.currentState?.closeEndDrawer();
                       });
                       setState(() {});
@@ -399,7 +461,8 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
                           child: SimpleNetworkImage(
                             _sites[index].icon ?? '',
                             fit: BoxFit.cover,
-                            error: const Icon(Icons.image_not_supported, size: 32),
+                            error:
+                                const Icon(Icons.image_not_supported, size: 32),
                           )),
                       title: Text(
                         _sites[index].name ?? '',
@@ -413,7 +476,8 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
                         _sites[index].details ?? '',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(fontSize: 14, color: Colors.black26),
+                        style: const TextStyle(
+                            fontSize: 14, color: Colors.black26),
                       ),
                       trailing: Icon(
                           _sites[index].type == 'comic'
@@ -439,9 +503,11 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
       return Future.value(false);
     }
     DateTime now = DateTime.now();
-    if (_currentBackPressTime == null || now.difference(_currentBackPressTime!) > const Duration(seconds: 2)) {
+    if (_currentBackPressTime == null ||
+        now.difference(_currentBackPressTime!) > const Duration(seconds: 2)) {
       _currentBackPressTime = now;
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('再按一次退出')));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('再按一次退出')));
       return Future.value(false);
     }
     return Future.value(true);
