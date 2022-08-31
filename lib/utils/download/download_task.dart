@@ -15,6 +15,16 @@ class DownloadTask extends Downloadable {
   }
 }
 
-class DownloadTaskGroup extends Downloadable {
+class DownloadTaskQueue extends DownloadableQueue<DownloadTask> {
+  DownloadTaskQueue(super.queue);
 
+  @override
+  void start() {
+    // TODO: implement start
+  }
+
+  @override
+  void stop() {
+    // TODO: implement stop
+  }
 }
