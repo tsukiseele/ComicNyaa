@@ -25,9 +25,6 @@ class Mio<T extends Model> {
   String? keywords;
   static Future<String> Function(String url, {Map<String, String>? headers})
       _request = (url, {Map<String, String>? headers}) async {
-    // final response = await Http.client()
-    //     .get(url, options: Options(responseType: ResponseType.plain, headers: headers));
-    // return response.data.toString();
     HttpClientRequest request = await HttpClient().getUrl(Uri.parse(url));
     headers?.forEach((key, value) => request.headers.add(key, value));
     HttpClientResponse response = await request.close();

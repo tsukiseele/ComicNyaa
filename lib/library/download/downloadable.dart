@@ -25,35 +25,3 @@ abstract class Downloadable<T> {
 
   Future<T> stop();
 }
-
-abstract class DownloadableQueue<T extends Downloadable> extends Downloadable {
-  DownloadableQueue() : super('', '');
-
-  @override
-  String get path => super.path;
-  final Queue<T> _queue = Queue();
-
-  int length() {
-    return _queue.length;
-  }
-
-  void add(T downloadable) {
-    _queue.add(downloadable);
-  }
-
-  void addAll(Iterable<T> iterable) {
-    _queue.addAll(iterable);
-  }
-
-  bool remove(T downloadable) {
-    return _queue.remove(downloadable);
-  }
-
-  T removeFirst() {
-    return _queue.removeFirst();
-  }
-
-  T removeLast() {
-    return _queue.removeLast();
-  }
-}

@@ -16,7 +16,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:material_floating_search_bar/material_floating_search_bar.dart';
 
 import '../app/global.dart';
-import '../data/download/DyaaDownloadManager.dart';
+import '../data/download/nyaa_download_manager.dart';
 import '../library/download/download_manager.dart';
 import '../models/typed_model.dart';
 import '../utils/string_extensions.dart';
@@ -75,6 +75,9 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
     Fluttertoast.showToast(msg: '${items.length}个任务已添加');
 
     NyaaDownloadManager.instance.addAll(items);
+    setState(() {
+      _currentTab?.controller.clearSelection();
+    });
   }
 
   @override
@@ -252,9 +255,6 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
                 )
               : FloatingActionButton(
                   onPressed: () {
-                    setState(() {
-                      _currentTab?.controller.clearSelection();
-                    });
                     downloadSelections();
                   },
                   tooltip: 'Download',

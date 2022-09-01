@@ -298,8 +298,20 @@ class _GalleryViewState extends State<GalleryView>
                           borderRadius:
                               const BorderRadius.all(Radius.circular(4.0)),
                           child: InkWell(
-                              onTap: () => _jump(_items[index]),
-                              onLongPress: () => _onItemSelect(index),
+                              onTap: () {
+                                if (_selects.isEmpty) {
+                                  _jump(_items[index]);
+                                } else {
+                                  _onItemSelect(index);
+                                }
+                              },
+                              onLongPress: () {
+                                if (_selects.isEmpty) {
+                                  _onItemSelect(index);
+                                } else {
+                                  _clearSelections();
+                                }
+                              },
                               child: Stack(
                                 alignment: Alignment.center,
                                 children: [

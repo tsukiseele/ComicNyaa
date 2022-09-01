@@ -1,7 +1,7 @@
 
 import 'package:comic_nyaa/library/download/task_runner.dart';
 
-import 'downloadable.dart';
+import 'downloadable_queue.dart';
 
 class DownloadManager {
   DownloadManager._();
@@ -18,7 +18,6 @@ class DownloadManager {
   });
 
   void add(DownloadableQueue downloadable) {
-
     taskRunner.add(downloadable);
   }
 }
