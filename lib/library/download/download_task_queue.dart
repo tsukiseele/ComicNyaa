@@ -13,7 +13,7 @@ class DownloadTaskQueue extends DownloadableQueue<DownloadTask> {
       final task = queue.removeFirst();
       await task.start();
       finishTasks.add(task);
-      progress = DownloadProgress(finishTasks.length, queue.length);
+      progress = DownloadProgress(finishTasks.length, length + finishTasks.length);
     }
     status = DownloadStatus.successful;
   }

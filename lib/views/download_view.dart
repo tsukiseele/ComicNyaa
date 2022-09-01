@@ -48,7 +48,7 @@ class _DownloadViewState extends State<DownloadView> {
           //
           // }
           return ListTile(
-              title: Text(title), subtitle: Text(queue.status.toString()));
+              title: Text(title), subtitle: Text('${queue.status.toString()} - ${queue.progress?.completesByteLength} / ${queue.progress?.totalByteLength}'));
         }),
       )),
     );
