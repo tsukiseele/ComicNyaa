@@ -7,7 +7,10 @@ import 'package:flutter/material.dart';
 import '../data/download/nyaa_download_task_queue.dart';
 
 class DownloadView extends StatefulWidget {
-  const DownloadView({Key? key}) : super(key: key);
+  const DownloadView(
+      {Key? key, this.updateInterval = const Duration(seconds: 1)})
+      : super(key: key);
+  final Duration updateInterval;
 
   @override
   State<StatefulWidget> createState() {
@@ -26,16 +29,7 @@ class _DownloadViewState extends State<DownloadView> {
   }
 
   void loopUpdateStatus() {
-    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      setState(() {});
-    });
-  }
-
-  @override
-  void dispose() {
-    // TODO: implement dispose
-    super.dispose();
-    _timer?.cancel();
+    _timer = Timer.periodic(widget.updateInterval, (timer) => setState(() {}));
   }
 
   @override
@@ -58,5 +52,11 @@ class _DownloadViewState extends State<DownloadView> {
         }),
       )),
     );
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _timer?.cancel();
   }
 }

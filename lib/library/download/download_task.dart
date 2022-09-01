@@ -30,6 +30,6 @@ class DownloadTask extends Downloadable {
 
   factory DownloadTask.fromUrl(Directory downloadDir, String url) {
     final path = downloadDir.join(Uri.parse(url).filename).path;
-    return DownloadTask(path, url);
+    return DownloadTask(url, path);
   }
 }
