@@ -1,4 +1,8 @@
+import 'dart:io';
+
+import 'package:comic_nyaa/app/global.dart';
 import 'package:comic_nyaa/utils/http.dart';
+import 'package:comic_nyaa/utils/uri_extensions.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
 import 'downloadable.dart';
@@ -13,7 +17,7 @@ class DownloadTask extends Downloadable {
       await Http.client().download(url, path,
           onReceiveProgress: (received, total) {
         status = DownloadStatus.loading;
-        pregress = DownloadProgress(total, completesByteLength: received);
+        progress = DownloadProgress(received, total);
       });
     } catch (e) {
       status = DownloadStatus.failed;
@@ -22,7 +26,10 @@ class DownloadTask extends Downloadable {
   }
 
   @override
-  Future<void> stop() async {
+  Future<void> stop() async {}
 
+  factory DownloadTask.fromUrl(Directory downloadDir, String url) {
+    final path = downloadDir.join(Uri.parse(url).filename).path;
+    return DownloadTask(path, url);
   }
 }

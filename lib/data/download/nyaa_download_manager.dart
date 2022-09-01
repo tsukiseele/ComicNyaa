@@ -1,3 +1,4 @@
+import 'package:comic_nyaa/data/download/nyaa_download_task_queue.dart';
 import 'package:comic_nyaa/library/download/download_manager.dart';
 import 'package:comic_nyaa/library/download/download_task_queue.dart';
 import 'package:comic_nyaa/utils/extensions.dart';
@@ -29,27 +30,28 @@ class NyaaDownloadManager {
   static NyaaDownloadManager? _instance;
   static NyaaDownloadManager get instance => _instance ??= NyaaDownloadManager._();
 
+  final List<NyaaDownloadTaskQueue> _tasks = [];
+
+  List<NyaaDownloadTaskQueue> get tasks => _tasks;
+
   Future<void> addAll(Iterable<TypedModel> items) async {
-    final List<DownloadTaskQueue> tasks = [];
+    final List<NyaaDownloadTaskQueue> tasks = [];
     final results = await Future.wait(items.map((item) => Mio(item.$site).parseAllChildren(item.toJson(), item.$section!.rules!)));
     final downloadDir = await Config.downloadDir;
     final downloadLevel = (await NyaaPreferences.instance).downloadResourceLevel;
     tasks.addAll(results.map((json) {
-      DownloadTaskQueue queue = DownloadTaskQueue();
       final item = TypedModel.fromJson(json);
+      NyaaDownloadTaskQueue queue = NyaaDownloadTaskQueue(item.title ?? '');
       if (item.children?.isEmpty == true) {
-        final url = item.getUrl(downloadLevel);
-        final path = downloadDir.join(Uri.parse(url).filename).path;
-        queue.add(DownloadTask(url, path));
+        queue.add(DownloadTask.fromUrl(downloadDir, item.getUrl(downloadLevel)));
       } else {
-        for (var child in item.children!){
-          final url = child.getUrl(downloadLevel);
-          final path = downloadDir.join(Uri.parse(url).filename).path;
-          queue.add(DownloadTask(url, path));
+        for (var child in item.children!) {
+          queue.add(DownloadTask.fromUrl(downloadDir, child.getUrl(downloadLevel)));
         }
       }
       return queue;
     }));
+    _tasks.addAll(tasks);
     for (var task in tasks) {
       DownloadManager.instance.add(task);
     }

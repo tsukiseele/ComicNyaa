@@ -3,6 +3,7 @@ import 'package:collection/collection.dart';
 import 'package:comic_nyaa/data/subscribe_holder.dart';
 import 'package:comic_nyaa/library/mio/core/mio_loader.dart';
 import 'package:comic_nyaa/library/mio/model/base.dart';
+import 'package:comic_nyaa/views/download_view.dart';
 import 'package:comic_nyaa/views/settings_view.dart';
 import 'package:comic_nyaa/views/subscribe_view.dart';
 import 'package:comic_nyaa/widget/nyaa_tab_view.dart';
@@ -424,7 +425,10 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
           leading: const Icon(Icons.collections_bookmark)),
       ListTile(
           title: const Text('下载'),
-          onTap: () {},
+          onTap: () {
+            Navigator.push(context,
+                MaterialPageRoute(builder: (ctx) => const DownloadView()));
+          },
           iconColor: Colors.black87,
           leading: const Icon(Icons.download)),
       ListTile(

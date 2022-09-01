@@ -32,4 +32,10 @@ abstract class DownloadableQueue<T> extends Downloadable {
   T removeLast() {
     return queue.removeLast();
   }
+
+  isSingle() {
+    return queue.length == 1;
+  }
+
+  T get first => queue.first;
 }
