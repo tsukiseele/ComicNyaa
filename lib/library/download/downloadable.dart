@@ -31,6 +31,7 @@ abstract class Downloadable<T> {
   Object? error;
   String url;
   String path;
+  Map<String, String>? headers;
 
   Future<T> start();
 

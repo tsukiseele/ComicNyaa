@@ -14,6 +14,8 @@ class NyaaDownloadTaskQueue extends DownloadTaskQueue {
   final Directory directory;
   final DownloadResourceLevel level;
   String name;
+  String cover;
+
 
   Future<NyaaDownloadTaskQueue> initialize() async {
     status = DownloadStatus.init;
@@ -34,9 +36,6 @@ class NyaaDownloadTaskQueue extends DownloadTaskQueue {
     }
     return this;
   }
-
-  @override
-  Future<void> start() async {}
 
   NyaaDownloadTaskQueue({
     required this.parent,

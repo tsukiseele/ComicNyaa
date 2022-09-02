@@ -32,6 +32,7 @@ class _DownloadViewState extends State<DownloadView> {
     _timer = Timer.periodic(widget.updateInterval, (timer) => setState(() {}));
   }
 
+
   @override
   Widget build(BuildContext context) {
     _downloadList = NyaaDownloadManager.instance.tasks;
