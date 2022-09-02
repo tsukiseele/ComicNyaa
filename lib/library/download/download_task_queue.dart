@@ -10,7 +10,8 @@ class DownloadTaskQueue extends DownloadableQueue<DownloadTask> {
   Future<void> start() async {
     status = DownloadStatus.loading;
     while (queue.isNotEmpty) {
-      final task = queue.removeFirst();
+      if (status == DownloadStatus.pause) return;
+      final task = removeFirst();
       await task.start();
       finishTasks.add(task);
       progress = DownloadProgress(finishTasks.length, length + finishTasks.length);
@@ -19,5 +20,13 @@ class DownloadTaskQueue extends DownloadableQueue<DownloadTask> {
   }
 
   @override
-  Future<void> stop() async {}
+  Future<void> stop() async {
+    pause();
+    queue.clear();
+  }
+
+  @override
+  Future<void> pause() async {
+    status = DownloadStatus.pause;
+  }
 }

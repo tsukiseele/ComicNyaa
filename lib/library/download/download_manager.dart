@@ -20,4 +20,8 @@ class DownloadManager {
   void add(DownloadableQueue downloadable) {
     taskRunner.add(downloadable);
   }
+
+  void addAll(Iterable<DownloadableQueue> downloadables) {
+    taskRunner.addAll(downloadables);
+  }
 }

@@ -1,10 +1,12 @@
+import 'package:collection/collection.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class DownloadResourceLevel {
-  DownloadResourceLevel._();
-  static const low = 'low';
-  static const middle = 'middle';
-  static const high = 'high';
+enum DownloadResourceLevel {
+  low('LOW'),
+  medium('MEDIUM'),
+  high('HIGH');
+  const DownloadResourceLevel(this.value);
+  final String value;
 }
 
 class NyaaPreferences {
@@ -13,11 +15,12 @@ class NyaaPreferences {
   static Future<NyaaPreferences> get instance async {
     return _instance ??= NyaaPreferences._(await SharedPreferences.getInstance());
   }
-  static const defaultDownloadResourceLevel = DownloadResourceLevel.middle;
+  static const defaultDownloadResourceLevel = DownloadResourceLevel.medium;
 
   final SharedPreferences preferences;
 
-  String get downloadResourceLevel {
-    return preferences.getString('download_resource_level') ?? defaultDownloadResourceLevel;
+  DownloadResourceLevel get downloadResourceLevel {
+    final level = preferences.getString('download_resource_level');
+    return DownloadResourceLevel.values.singleWhereOrNull((item) => item.value == level) ?? defaultDownloadResourceLevel;
   }
 }

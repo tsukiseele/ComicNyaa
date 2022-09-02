@@ -3,8 +3,6 @@ import 'dart:io';
 import 'package:comic_nyaa/app/global.dart';
 import 'package:comic_nyaa/utils/http.dart';
 import 'package:comic_nyaa/utils/uri_extensions.dart';
-import 'package:fluttertoast/fluttertoast.dart';
-
 import 'downloadable.dart';
 
 class DownloadTask extends Downloadable {
@@ -31,5 +29,10 @@ class DownloadTask extends Downloadable {
   factory DownloadTask.fromUrl(Directory downloadDir, String url) {
     final path = downloadDir.join(Uri.parse(url).filename).path;
     return DownloadTask(url, path);
+  }
+
+  @override
+  Future<void> pause() async {
+    status = DownloadStatus.pause;
   }
 }

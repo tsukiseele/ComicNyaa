@@ -1,6 +1,16 @@
 import 'dart:collection';
 
-enum DownloadStatus { idle, loading, failed, successful }
+enum DownloadStatus {
+  idle('IDLE'),
+  init('INIT'),
+  loading('LOADING'),
+  pause('PAUSE'),
+  failed('FAILED'),
+  successful('SUCCESSFUL');
+
+  const DownloadStatus(this.value);
+  final String value;
+}
 
 class DownloadProgress {
   DownloadProgress(this.completesByteLength, this.totalByteLength);
@@ -18,10 +28,17 @@ abstract class Downloadable<T> {
 
   DownloadStatus status = DownloadStatus.idle;
   DownloadProgress? progress;
+  Object? error;
   String url;
   String path;
 
   Future<T> start();
 
   Future<T> stop();
+
+  Future<T> pause();
+
+  bool isFailed() {
+    return status == DownloadStatus.failed;
+  }
 }

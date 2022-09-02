@@ -145,7 +145,7 @@ class ImageDetailViewState extends State<ImageDetailView>
         case DownloadResourceLevel.low:
           url = model.sampleUrl ?? model.largerUrl ?? model.originUrl;
           break;
-        case DownloadResourceLevel.middle:
+        case DownloadResourceLevel.medium:
           url = model.largerUrl ?? model.originUrl ?? model.sampleUrl;
           break;
         case DownloadResourceLevel.high:
