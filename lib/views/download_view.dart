@@ -8,7 +8,7 @@ import '../data/download/nyaa_download_task_queue.dart';
 
 class DownloadView extends StatefulWidget {
   const DownloadView(
-      {Key? key, this.updateInterval = const Duration(seconds: 1)})
+      {Key? key, this.updateInterval = const Duration(milliseconds: 500)})
       : super(key: key);
   final Duration updateInterval;
 
