@@ -42,5 +42,8 @@ class NyaaDownloadTaskQueue extends DownloadTaskQueue {
     this.level = DownloadResourceLevel.medium,
     this.name = '',
     this.cover = ''
-  });
+  }) {
+    headers = parent.$site?.headers;
+    cover = parent.coverUrl ?? '';
+  }
 }

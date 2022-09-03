@@ -1,6 +1,6 @@
 import 'dart:isolate';
 
-import 'package:comic_nyaa/app/global.dart';
+import 'package:comic_nyaa/app/config.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart' as cache;
 import 'package:fluttertoast/fluttertoast.dart';

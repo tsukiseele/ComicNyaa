@@ -1,11 +1,11 @@
 import 'dart:async';
-import 'package:comic_nyaa/app/constant.dart';
 import 'package:comic_nyaa/utils/http.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_displaymode/flutter_displaymode.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
+import 'app/config.dart';
 import 'library/mio/core/mio.dart';
 import 'views/main_view.dart';
 
@@ -40,7 +40,7 @@ class _ComicNyaaState extends State<ComicNyaa> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: Constant.appName,
+      title: Config.appName,
       theme: ThemeData(
         fontFamily: 'ComicNeue',
         primarySwatch: Colors.teal,

@@ -1,7 +1,8 @@
 import 'package:collection/collection.dart';
+import 'package:comic_nyaa/utils/extensions.dart';
 import 'package:comic_nyaa/utils/uri_extensions.dart';
 
-import '../app/global.dart';
+import '../app/config.dart';
 import '../library/mio/core/mio_loader.dart';
 import '../utils/http.dart';
 

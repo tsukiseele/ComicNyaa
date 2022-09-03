@@ -1,7 +1,7 @@
 import 'package:comic_nyaa/data/download/nyaa_download_task_queue.dart';
 import 'package:comic_nyaa/library/download/download_manager.dart';
 
-import '../../app/global.dart';
+import '../../app/config.dart';
 import '../../app/preference.dart';
 import '../../models/typed_model.dart';
 
