@@ -51,7 +51,8 @@ class ComicDetailViewState extends State<ComicDetailView>
     _origin = model.getOrigin();
     _tags.addAll(model.tags?.split(' ').toSet() ?? {});
     _stream = Mio(_origin.site)
-        .parseChildren(model.toJson(), _origin.section.rules!)
+        .parseChildren(item: model.toJson())
+        // .parseChildren(model.toJson(), _origin.section.rules!)
         .listen((List<Map<String, dynamic>> data) {
       _stream?.pause();
       _getNext(data);

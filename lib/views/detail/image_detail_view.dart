@@ -71,7 +71,7 @@ class ImageDetailViewState extends State<ImageDetailView>
     String image = getUrl(model);
     if (image.isEmpty) {
       final results = await Mio(_origin.site)
-          .parseAllChildren(model.toJson(), _origin.section.rules!);
+          .parseAllChildren(model.toJson());
       final m = TypedModel.fromJson(results);
       if (m.children?.isNotEmpty == true) {
         final models = m.children;

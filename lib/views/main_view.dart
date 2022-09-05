@@ -64,7 +64,7 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
 
   Future<void> _checkUpdate() async {
     final ruleDir = (await Config.ruleDir);
-    await MioLoader.loadFormDirectory(ruleDir);
+    await MioLoader.loadFromDirectory(ruleDir);
     if (MioLoader.sites.isEmpty) {
       await SubscribeHolder().updateAllSubscribe();
     }

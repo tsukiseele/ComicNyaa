@@ -2,13 +2,15 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:collection/collection.dart';
+import 'package:comic_nyaa/library/mio/core/mio_loader.dart';
 import 'package:comic_nyaa/library/mio/model/data_origin.dart';
 import 'package:html/parser.dart';
 import 'package:html/dom.dart';
 import '../model/model.dart';
 import '../model/site.dart';
 
-/// 站点内容解析器，通过加载JSON配置抓取网页内容，并封装成数据集
+/// 站点内容解析器，通过加载JSON配置抓取网页内容，并返回JSON数据
+/// （因为Flutter不支持运行时反射，故不使用反射构建）
 ///
 /// @author tsukiseele
 /// @date 2022.8.8
@@ -71,37 +73,44 @@ class Mio<T extends Model> {
   Future<List<Map<String, dynamic>>> parseSection(Site site, String sectionName,
       [bool isParseChildren = false]) async {
     final section = site.sections![sectionName];
-    if (section == null) throw Exception('Not found avaliable section: $sectionName');
+    if (section == null) {
+      throw Exception('Not found avaliable section: $sectionName');
+    }
     // 复用规则
     if (section.reuse != null) {
       section.rules = site.sections?['${section.reuse}']?.rules;
     }
     final result = await parseRules(section.index!, section.rules!);
     for (var item in result) {
-      // item[r'$section'] = section;
-      // item[r'$site'] = site;
       item[r'$origin'] = DataOriginInfo(site.id!, sectionName).toJson();
     }
     if (isParseChildren && section.rules?[r'$children'] != null) {
-      await parseChildrenOfList(result, section.rules!);
+      await parseAllChildrenOfList(result, section.rules!);
     }
     // print('RESULT: $result');
     return result;
   }
 
-  Future<void> parseChildrenOfList(
+  Future<void> parseAllChildrenOfList(
       List<Map<String, dynamic>> list, Rules rules) async {
-    await Future.wait(list.map((item) => parseAllChildren(item, rules)));
-// await Promise.allSettled(list.map((item) => this.parseChildrenConcurrency(item, rules)))
+    await Future.wait(list.map((item) => parseAllChildren(item)));
   }
 
-  /// 解析Children，自动检测末尾，自动继承父级，自动拉平单节点子级
+  /// 递归解析可用的子数据集合，可能会发送大量的网络请求
+  /// 自动检测末尾，自动继承父级，自动拉平单节点子级
+  ///
   /// @param {*} item
   /// @param {*} rules
   /// @return {Promise<T extends Meta>}
-  Future<Map<String, dynamic>> parseAllChildren(
-      Map<String, dynamic> item, Rules rules,
+  Future<Map<String, dynamic>> parseAllChildren(Map<String, dynamic> item,
       {Future<bool> Function(List<Map<String, dynamic>>)? callback}) async {
+    final Model model = Model.fromJson(item);
+    final DataOriginInfo dataOriginInfo =
+        DataOriginInfo.fromJson(item[r'$origin']);
+    final depth = dataOriginInfo.depth ?? 0;
+    final DataOrigin dataOrigin = model.getOrigin();
+    final section = getChildSectionByDepth(dataOrigin.section, depth);
+    final rules = section.rules!;
     if (item[r'$children'] != null && rules[r'$children'] != null) {
       int page = 0;
       Selector $children = rules[r'$children']!;
@@ -109,25 +118,33 @@ class Mio<T extends Model> {
       List<String> keys = [];
       final isMulitPage = url.contains(REG_PAGE_MATCH);
       do {
-        final children =
-            await parseRules(url, $children.rules!, page = page, _keywords = '');
-        print('CHILDREN::: $children');
+        final children = await parseRules(
+            url, $children.rules!, page = page, _keywords = '');
         page++;
+        // 获取唯一键，用于判断
         List<String> newKeys = isMulitPage
             ? children.map((item) => item[r'$key'].toString()).toList()
             : [];
-        // print('EQ: [$url] $keys == $newKeys');
+        // 判断解析末尾
         if (isMulitPage &&
             keys.length == newKeys.length &&
             keys.equals(newKeys)) break;
         keys = newKeys;
+        // 生成新的数据源
+        final newOriginInfo = DataOriginInfo(
+                dataOriginInfo.siteId, dataOriginInfo.sectionName,
+                depth: depth + 1)
+            .toJson();
+        // 递归解析Children
         if (children.isNotEmpty) {
-          // 解析下级子节点
           final nextChildren = rules[r'$children']?.rules;
           if (children.first[r'$children'] != null && nextChildren != null) {
-            await Future.wait(
-                children.map((child) => parseAllChildren(child, nextChildren)));
+            await Future.wait(children.map((child) {
+              child[r'$origin'] = newOriginInfo;
+              return parseAllChildren(child);
+            }));
           }
+          // 操作参数处理
           print('SELECTOR: ${$children.toJson().toString()}');
           // 判断是否拉平子节点，否则追加到子节点下
           if ($children.flat != null && $children.flat == true) {
@@ -160,40 +177,55 @@ class Mio<T extends Model> {
         a.length;
   }
 
-  ///
-  ///
+  /// 解析可用的子数据集合<br />
+  /// 若<strong>deep = true</strong>，会递归解析。<br />
+  /// 返回JSON数据流
   Stream<List<Map<String, dynamic>>> parseChildren(
-      Map<String, dynamic> item, Rules rules,
-      {bool deep = false}) async* {
+      {required Map<String, dynamic> item, bool deep = false}) async* {
+    final Model model = Model.fromJson(item);
+    final DataOriginInfo dataOriginInfo =
+        DataOriginInfo.fromJson(item[r'$origin']);
+    final DataOrigin dataOrigin = model.getOrigin();
+    final depth = dataOriginInfo.depth ?? 0;
+    final site = dataOrigin.site;
+    final section = getChildSectionByDepth(dataOrigin.section, depth);
+    final rules = section.rules!;
+    // print('parseChildren(): RULES: ${rules.toJson().toString()}');
     if (item[r'$children'] != null && rules[r'$children'] != null) {
       int page = 0;
       Selector $children = rules[r'$children']!;
       String urlTemplate = item[r'$children'];
       List<String> keys = [];
       final isMulitPage = urlTemplate.contains(REG_PAGE_MATCH);
-
       do {
         final url = _parseUrlTemplate(urlTemplate, page, '');
+        // print('parseChildren(): URL: $url');
         // 发送请求
-        final html = await _requestText(url, headers: _site?.headers);
+        final html = await _requestText(url, headers: site.headers);
         // print('PARSE CHILDREN START =======================================');
         List<Map<String, dynamic>> children =
             parseRulesFromHtml(html, $children.rules!);
         if (children.isEmpty) break;
-        // print('PARSE CHILDREN LENGTH ======================================= ${children.length}');
+        // print('parseChildren(): PARSE CHILDREN LENGTH ======================================= ${children.length}');
         List<String> newKeys = isMulitPage
             ? children.map((item) => item[r'$key'].toString()).toList()
             : [];
-        // print('PARSE EQ ======================================= $keys === $newKeys');
+        // print('parseChildren(): PARSE EQ ======================================= $keys === $newKeys');
         if (isMulitPage && equalsKeys(keys, newKeys)) break;
         keys = newKeys;
         page++;
+        final newOriginInfo = DataOriginInfo(
+                dataOriginInfo.siteId, dataOriginInfo.sectionName,
+                depth: depth + 1)
+            .toJson();
         // 解析下级子节点
         if (deep) {
           final nextChildren = rules[r'$children']?.rules;
           if (children.first[r'$children'] != null && nextChildren != null) {
-            await Future.wait(
-                children.map((child) => parseAllChildren(child, nextChildren)));
+            await Future.wait(children.map((child) {
+              child[r'$origin'] = newOriginInfo;
+              return parseChildren(item: child).toList();
+            }));
           }
         }
         // 判断是否拉平子节点(并终止获取)，否则追加到子节点下，
@@ -202,17 +234,12 @@ class Mio<T extends Model> {
           yield [item];
           break;
         } else {
+          // 构建解析状态
+          children.forEachIndexed((i, child) => child[r'$origin'] = newOriginInfo);
+          // 判断是否继承父节点字段
           if ($children.extend == true) {
-            // 判断并继承父节点字段
             // extend && children.forEach((child, index) => (children[index] = Object.assign({}, item, child)))
           }
-          // 构建解析状态
-          children.forEachIndexed((i, child) {
-            children[i][r'$site'] = _site;
-            children[i][r'$section'] = Section(
-                index: children[i][r'$children'] ?? '', rules: $children.rules);
-          });
-
           item['children'] != null
               ? item['children']?.addAll(children)
               : (item['children'] = children);
@@ -222,6 +249,15 @@ class Mio<T extends Model> {
         }
       } while (isMulitPage && keys.isNotEmpty);
     }
+  }
+
+  Section getChildSectionByDepth(Section section, int depth) {
+    Section childSection = section;
+    for (int i = depth; i > 0; i--) {
+      Rules? childRules = section.rules?[r'$children']?.rules;
+      childSection = Section(rules: childRules);
+    }
+    return childSection;
   }
 
   bool isEmpty(Object? o) {
@@ -302,8 +338,8 @@ class Mio<T extends Model> {
   Future<List<Map<String, dynamic>>> parseRules(String indexUrl, Rules rule,
       [int? page, String? keywords]) async {
     // 生成URL
-    final url = _parseUrlTemplate(
-        indexUrl, page ?? _page, keywords ?? _keywords);
+    final url =
+        _parseUrlTemplate(indexUrl, page ?? _page, keywords ?? _keywords);
     print('REQUEEST: $url');
     print('REQUEEST RULES: ${rule.keys}');
 
@@ -321,29 +357,23 @@ class Mio<T extends Model> {
   /// @param {String} url 链接
   /// @param {Object} options 操作
   /// @returns {Promise<String>} 响应文本
-  Future<String> _requestText(String url, {Map<String, String>? headers}) async {
+  Future<String> _requestText(String url,
+      {Map<String, String>? headers}) async {
     return await _request(url, headers: headers);
   }
 
   /// 获取当前板块
   /// @returns {Section}
   String? get currentSectionName {
-    if (_site == null) throw Exception('site cannot be empty!');
-    // final section =
-    //     keywords != null ? site?.sections!['search'] : site?.sections!['home'];
-// 复用规则
-// if (section.reuse) {
-//   section.rules = this.site.sections[section.reuse].rules
-// }
-//     return section;
-  return _sectionName ?? (_keywords == null ? 'home' : 'search');
+    return _sectionName ?? (_keywords == null ? 'home' : 'search');
   }
 
   /// 遍历选择器
   /// @param {cheerio.CheerioAPI} $ 文档上下文
   /// @param {string} selector 选择器
   /// @param {function} each (content: string, index: number) => void
-  selectEach(Document doc, String selector, Function(String content, int index) each) {
+  selectEach(
+      Document doc, String selector, Function(String content, int index) each) {
     final matches = REG_SELECTOR_TEMPLATE.allMatches(selector);
     if (matches.isEmpty) return;
     final match = matches.first;
@@ -425,7 +455,6 @@ class Mio<T extends Model> {
 
       // print('BEFORE FINAL PAGE: [$p] offset: [$offset], range: [$range]');
       p = (p + offset) * range;
-
       // print('AFTER FINAL PAGE: [$p] offset: [$offset], range: [$range]');
     }
     return template

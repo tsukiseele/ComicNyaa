@@ -11,30 +11,33 @@ class MioLoader {
   static final Map<String, List<Site>> _targetInfo = {};
 
   MioLoader._();
-
+  /// 获取所有Site的集合
   static Map<int, Site> get sites {
     return _sites;
   }
-
+  /// 获取所有指定类型的Site集合
   static List<Site> getSitesByType(String type) {
     return sites.values
         .where((element) => element.type == type)
         .toList();
   }
-
+  /// 从SiteID获取Site对象
   static Site? getSiteById(int id) {
     return _sites[id];
   }
-
-  static Site? getSiteByOrigin(DataOriginInfo dataOrigin) {
+  /// 从来源信息获取Site对象
+  ///
+  static Site? getSiteByOriginInfo(DataOriginInfo dataOrigin) {
     return getSiteById(dataOrigin.siteId!);
   }
-
+  /// 规则的源信息，包括路径或者URL信息
+  ///
   static Map<String, List<Site>> get targetInfo {
     return _targetInfo;
   }
-
-  static Future<List<Site>> loadFormDirectory(Directory dir,
+  /// 从目录加载规则，默认加载所有.zip文件（不递归）
+  ///
+  static Future<List<Site>> loadFromDirectory(Directory dir,
       {String suffix = '.zip'}) async {
     final sites = <Site>[];
     await for (final file in dir.list()) {
