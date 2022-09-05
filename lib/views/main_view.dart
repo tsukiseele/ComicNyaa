@@ -1,8 +1,7 @@
 import 'dart:async';
 import 'package:collection/collection.dart';
-import 'package:comic_nyaa/data/subscribe_holder.dart';
-import 'package:comic_nyaa/library/mio/core/mio_loader.dart';
-import 'package:comic_nyaa/library/mio/model/base.dart';
+import 'package:comic_nyaa/data/subscribe_provider.dart';
+import 'package:comic_nyaa/library/mio/core/site_manager.dart';
 import 'package:comic_nyaa/views/download_view.dart';
 import 'package:comic_nyaa/views/settings_view.dart';
 import 'package:comic_nyaa/views/subscribe_view.dart';
@@ -54,7 +53,7 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
   Future<void> _initialize() async {
     await _checkUpdate();
     setState(() {
-      _sites = MioLoader.sites.values.toList();
+      _sites = SiteManager.sites.values.toList();
       // 打开默认标签
       _addTab(_sites.firstWhereOrNull((site) => site.id == 920) ?? _sites[0]);
       _listenGalleryScroll();
@@ -64,9 +63,9 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
 
   Future<void> _checkUpdate() async {
     final ruleDir = (await Config.ruleDir);
-    await MioLoader.loadFromDirectory(ruleDir);
-    if (MioLoader.sites.isEmpty) {
-      await SubscribeHolder().updateAllSubscribe();
+    await SiteManager.loadFromDirectory(ruleDir);
+    if (SiteManager.sites.isEmpty) {
+      await SubscribeProvider().updateAllSubscribe();
     }
   }
 
@@ -273,7 +272,7 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
           style: TextStyle(
               fontFamily: Config.uiFontFamily,
               fontSize: 16,
-              color: isEmpty(_currentTab?.controller.keywords == null)
+              color: StringUtil.value(_currentTab?.controller.keywords, '').isEmpty
                   ? Colors.black26
                   : Colors.black87),
         ),

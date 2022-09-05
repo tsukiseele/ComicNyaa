@@ -6,11 +6,11 @@ import 'package:comic_nyaa/library/mio/model/data_origin.dart';
 
 import '../model/site.dart';
 
-class MioLoader {
+class SiteManager {
   static final Map<int, Site> _sites = {};
   static final Map<String, List<Site>> _targetInfo = {};
 
-  MioLoader._();
+  SiteManager._();
   /// 获取所有Site的集合
   static Map<int, Site> get sites {
     return _sites;

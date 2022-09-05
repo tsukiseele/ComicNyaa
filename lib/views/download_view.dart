@@ -32,7 +32,6 @@ class _DownloadViewState extends State<DownloadView> {
     _timer = Timer.periodic(widget.updateInterval, (timer) => setState(() {}));
   }
 
-
   @override
   Widget build(BuildContext context) {
     _downloadList = NyaaDownloadManager.instance.tasks;
@@ -43,14 +42,16 @@ class _DownloadViewState extends State<DownloadView> {
         children: List.generate(_downloadList.length, (index) {
           final queue = _downloadList[index];
           String title = queue.name;
-          // if (queue.isSingle()) {
-          //   title = queue.name;
-          // } else {
-          //
-          // }
           return ListTile(
-            leading: SimpleNetworkImage(queue.cover, headers: queue.headers, width: 48, height: 48,),
-              title: Text(title), subtitle: Text('${queue.status.toString()} - ${queue.progress?.completesByteLength} / ${queue.progress?.totalByteLength}'));
+              leading: SimpleNetworkImage(
+                queue.cover,
+                headers: queue.headers,
+                width: 48,
+                height: 48,
+              ),
+              title: Text(title),
+              subtitle: Text(
+                  '${queue.status.toString()} - ${queue.progress?.completedLength} / ${queue.progress?.totalLength}'));
         }),
       )),
     );

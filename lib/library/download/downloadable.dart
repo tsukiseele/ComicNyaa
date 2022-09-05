@@ -12,13 +12,13 @@ enum DownloadStatus {
 }
 
 class DownloadProgress {
-  DownloadProgress(this.completesByteLength, this.totalByteLength);
+  DownloadProgress(this.completedLength, this.totalLength);
 
-  int completesByteLength;
-  int totalByteLength;
+  int completedLength;
+  int totalLength;
 
   double get progress {
-    return totalByteLength > 0 ? completesByteLength / totalByteLength : -1.0;
+    return totalLength > 0 ? completedLength / totalLength : -1.0;
   }
 }
 

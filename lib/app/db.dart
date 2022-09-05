@@ -18,9 +18,8 @@ class Db {
         onCreate: (Database db, int version) async {
           // When creating the db, create the table
           await db.execute(
-              'CREATE TABLE Download (id INTEGER PRIMARY KEY, name TEXT, cover TEXT, url TEXT, path TEXT)');
+              'CREATE TABLE Download (id INTEGER PRIMARY KEY, name TEXT, cover TEXT, url TEXT, path TEXT, model TEXT)');
         });
     return Db._();
   }
-
 }

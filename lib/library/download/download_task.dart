@@ -26,8 +26,8 @@ class DownloadTask extends Downloadable {
   @override
   Future<void> stop() async {}
 
-  factory DownloadTask.fromUrl(Directory downloadDir, String url) {
-    final path = downloadDir.join(Uri.parse(url).filename).path;
+  factory DownloadTask.fromUrl(String downloadDir, String url) {
+    final path = Directory(downloadDir).join(Uri.parse(url).filename).path;
     return DownloadTask(url, path);
   }
 

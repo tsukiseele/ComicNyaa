@@ -3,15 +3,15 @@ import 'package:comic_nyaa/utils/extensions.dart';
 import 'package:comic_nyaa/utils/uri_extensions.dart';
 
 import '../app/config.dart';
-import '../library/mio/core/mio_loader.dart';
+import '../library/mio/core/site_manager.dart';
 import '../utils/http.dart';
 
-class SubscribeHolder {
-  SubscribeHolder._();
+class SubscribeProvider {
+  SubscribeProvider._();
 
-  static final SubscribeHolder _instance = SubscribeHolder._();
+  static final SubscribeProvider _instance = SubscribeProvider._();
 
-  factory SubscribeHolder() {
+  factory SubscribeProvider() {
     return _instance;
   }
 
@@ -49,7 +49,7 @@ class SubscribeHolder {
     final dir = await Config.ruleDir;
     final savePath = dir.join(Uri.parse(url).filename).path;
     await Http.client().download(url, savePath);
-    await MioLoader.loadFromDirectory(dir);
+    await SiteManager.loadFromDirectory(dir);
   }
 
   Future<void> updateSubscribeFromUrl(String url) async {

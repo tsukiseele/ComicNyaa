@@ -7,7 +7,7 @@ import 'package:video_player/video_player.dart';
 
 class MixDetailView extends StatefulWidget {
   const MixDetailView({Key? key, required this.model}) : super(key: key);
-  final title = '画廊';
+  final title = '混合视图';
   final TypedModel model;
 
   @override

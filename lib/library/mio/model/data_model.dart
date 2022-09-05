@@ -1,4 +1,4 @@
-import '../core/mio_loader.dart';
+import '../core/site_manager.dart';
 import 'data_origin.dart';
 class DataModel<T> {
   String? type;
@@ -28,7 +28,7 @@ class DataModel<T> {
     if (origin == null || !origin.isAvaliable()) {
       throw Exception('Unavailable data origin!');
     }
-    final site = MioLoader.getSiteByOriginInfo(origin)!;
+    final site = SiteManager.getSiteByOriginInfo(origin)!;
     final section = site.sections![origin.sectionName]!;
     return DataOrigin(site, section);
   }

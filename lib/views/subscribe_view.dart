@@ -1,9 +1,10 @@
-import 'package:comic_nyaa/library/mio/core/mio_loader.dart';
+import 'package:comic_nyaa/data/subscribe_provider.dart';
+import 'package:comic_nyaa/library/mio/core/site_manager.dart';
 import 'package:comic_nyaa/utils/uri_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
-import '../data/subscribe_holder.dart';
+import '../data/subscribe_provider.dart';
 
 class SubscribeView extends StatefulWidget {
   const SubscribeView({Key? key}) : super(key: key);
@@ -13,7 +14,7 @@ class SubscribeView extends StatefulWidget {
 }
 
 class _SubscribeViewState extends State<SubscribeView> {
-  final List<Subscribe> _subscribes = SubscribeHolder().subscribes;
+  final List<Subscribe> _subscribes = SubscribeProvider().subscribes;
 
   @override
   Widget build(BuildContext context) {
@@ -44,10 +45,10 @@ class _SubscribeViewState extends State<SubscribeView> {
   }
   
   void onViewSubscibe(Subscribe subscribe) {
-    final path = MioLoader.targetInfo.keys.singleWhere((path) =>
+    final path = SiteManager.targetInfo.keys.singleWhere((path) =>
     Uri.parse(subscribe.url).filename ==
         Uri.parse(path).filename);
-    final sites = MioLoader.targetInfo[path] ?? [];
+    final sites = SiteManager.targetInfo[path] ?? [];
     print('SITE COUNT: ${sites.length}');
     showDialog(
         context: context,
@@ -82,7 +83,7 @@ class _SubscribeViewState extends State<SubscribeView> {
                     child: const Text("Updating...")),
               ]));
         });
-    await SubscribeHolder().addSubscribe(subscribe);
+    await SubscribeProvider().addSubscribe(subscribe);
     Fluttertoast.showToast(msg: '规则已更新');
     ns?.pop();
   }
@@ -163,7 +164,7 @@ class _SubscribeViewState extends State<SubscribeView> {
             ),
             TextButton(
               onPressed: () async {
-                await SubscribeHolder().removeSubscribe(subscribe);
+                await SubscribeProvider().removeSubscribe(subscribe);
                 ns?.pop();
                 setState(() {});
               },

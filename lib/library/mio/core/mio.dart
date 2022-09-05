@@ -5,7 +5,6 @@ import 'package:collection/collection.dart';
 import 'package:comic_nyaa/library/mio/core/template_parser.dart';
 import 'package:comic_nyaa/library/mio/model/data_origin.dart';
 import 'package:html/parser.dart';
-import 'package:html/dom.dart';
 import '../model/data_model.dart';
 import '../model/site.dart';
 
@@ -15,13 +14,7 @@ import '../model/site.dart';
 /// @author tsukiseele
 /// @date 2022.8.8
 /// @license Apache License 2.0
-
-// final REG_PAGE_TEMPLATE = RegExp(r"\{page\s*?:\s*?(-?\d*)[,\s]*?(-?\d*?)\}");
-// final REG_PAGE_MATCH = RegExp(r"\{page\s*?:.*?\}");
-// final REG_KEYWORD_TEMPLATE = RegExp(r"\{keywords\s*?:\s*?(.*?)\}");
-// final REG_KEYWORD_MATCH = RegExp(r"\{keywords\s*?:.*?\}");
-// final REG_SELECTOR_TEMPLATE = RegExp(r"\$\((.+?)\)\.(\w+?)\((.*?)\)");
-
+///
 class Mio<T extends DataModel> {
   final Site? _site;
   int _page = 1;
@@ -358,5 +351,4 @@ class Mio<T extends DataModel> {
   String? get currentSectionName {
     return _sectionName ?? (_keywords == null ? 'home' : 'search');
   }
-
 }
