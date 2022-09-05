@@ -1,5 +1,6 @@
 import 'package:chewie/chewie.dart';
 import 'package:comic_nyaa/library/mio/core/mio.dart';
+import 'package:comic_nyaa/library/mio/model/data_origin.dart';
 import 'package:comic_nyaa/models/typed_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
@@ -20,6 +21,7 @@ class VideoDetailViewState extends State<VideoDetailView> {
   TypedModel? model;
   VideoPlayerController? _controller;
   ChewieController? _chewieController;
+  late DataOrigin _origin;
 
   Future<void> play(String url) async {
     if (url == '') return;
@@ -41,10 +43,10 @@ class VideoDetailViewState extends State<VideoDetailView> {
   void getChildren() async {
     // try {
     final parent = widget.model;
-    print('model.\$section: ${parent.$section}');
-    final dynamicResult = await Mio(parent.$site).parseAllChildren(parent.toJson(), parent.$section!.rules!);
+    _origin = parent.getOrigin();
+    print('model.\$section: ${_origin.section}');
+    final dynamicResult = await Mio(_origin.site).parseAllChildren(parent.toJson(), _origin.section.rules!);
     final model = TypedModel.fromJson(dynamicResult);
-
     // 加载视频
     await play(getUrl(model));
 

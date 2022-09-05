@@ -46,10 +46,10 @@ class _SubscribeViewState extends State<SubscribeView> {
   }
   
   void onViewSubscibe(Subscribe subscribe) {
-    final path = RuleLoader.targetInfo.keys.singleWhere((path) =>
+    final path = MioLoader.targetInfo.keys.singleWhere((path) =>
     Uri.parse(subscribe.url).filename ==
         Uri.parse(path).filename);
-    final sites = RuleLoader.targetInfo[path] ?? [];
+    final sites = MioLoader.targetInfo[path] ?? [];
     print('SITE COUNT: ${sites.length}');
     showDialog(
         context: context,

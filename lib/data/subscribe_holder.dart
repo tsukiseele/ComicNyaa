@@ -48,7 +48,7 @@ class SubscribeHolder {
     final dir = await Config.ruleDir;
     final savePath = dir.join(Uri.parse(url).filename).path;
     await Http.client().download(url, savePath);
-    await RuleLoader.loadFormDirectory(dir);
+    await MioLoader.loadFormDirectory(dir);
   }
 
   Future<void> updateSubscribeFromUrl(String url) async {

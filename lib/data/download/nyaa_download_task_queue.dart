@@ -19,8 +19,9 @@ class NyaaDownloadTaskQueue extends DownloadTaskQueue {
   Future<NyaaDownloadTaskQueue> initialize() async {
     status = DownloadStatus.init;
     try {
-      parent = TypedModel.fromJson(await Mio(parent.$site)
-          .parseAllChildren(parent.toJson(), parent.$section!.rules!));
+      final origin = parent.getOrigin();
+      parent = TypedModel.fromJson(await Mio(origin.site)
+          .parseAllChildren(parent.toJson(), origin.section.rules!));
       if (name.isEmpty) name = parent.title ?? '';
       if (parent.children?.isEmpty == true) {
         queue.add(DownloadTask.fromUrl(directory, parent.getUrl(level)));

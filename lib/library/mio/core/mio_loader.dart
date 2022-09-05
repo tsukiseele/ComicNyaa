@@ -2,28 +2,32 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:archive/archive.dart';
+import 'package:comic_nyaa/library/mio/model/data_origin.dart';
 
 import '../model/site.dart';
 
-class RuleLoader {
+class MioLoader {
   static final Map<int, Site> _sites = {};
   static final Map<String, List<Site>> _targetInfo = {};
 
-  RuleLoader._();
+  MioLoader._();
 
   static Map<int, Site> get sites {
     return _sites;
+  }
+
+  static List<Site> getSitesByType(String type) {
+    return sites.values
+        .where((element) => element.type == type)
+        .toList();
   }
 
   static Site? getSiteById(int id) {
     return _sites[id];
   }
 
-  static List<Site> getSitesByType(String type) {
-    return sites.values
-        .toList()
-        .where((element) => element.type == type)
-        .toList();
+  static Site? getSiteByOrigin(DataOriginInfo dataOrigin) {
+    return getSiteById(dataOrigin.siteId!);
   }
 
   static Map<String, List<Site>> get targetInfo {

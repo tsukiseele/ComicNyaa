@@ -1,5 +1,6 @@
 import 'package:comic_nyaa/app/global.dart';
 import 'package:comic_nyaa/library/mio/core/mio.dart';
+import 'package:comic_nyaa/library/mio/model/data_origin.dart';
 import 'package:comic_nyaa/models/typed_model.dart';
 import 'package:comic_nyaa/utils/num_extensions.dart';
 import 'package:comic_nyaa/utils/uri_extensions.dart';
@@ -32,7 +33,8 @@ class ImageDetailViewState extends State<ImageDetailView>
   late List<TypedModel> _models;
   final Set<int> _cache = {};
   List<String> _images = [];
-  Site? _site;
+  // Site? _site;
+  late DataOrigin _origin;
   int _currentIndex = 0;
   bool isFailed = false;
 
@@ -43,7 +45,7 @@ class ImageDetailViewState extends State<ImageDetailView>
       _currentIndex = widget.index;
       _models = widget.models;
       _images = List.filled(_models.length, '');
-      _site = _models[0].$site;
+      _origin = _models[0].getOrigin();
 
       loadImage(_currentIndex);
 
@@ -68,8 +70,8 @@ class ImageDetailViewState extends State<ImageDetailView>
     TypedModel model = _models[index];
     String image = getUrl(model);
     if (image.isEmpty) {
-      final results = await Mio(model.$site)
-          .parseAllChildren(model.toJson(), model.$section!.rules!);
+      final results = await Mio(_origin.site)
+          .parseAllChildren(model.toJson(), _origin.section.rules!);
       final m = TypedModel.fromJson(results);
       if (m.children?.isNotEmpty == true) {
         final models = m.children;
@@ -222,7 +224,7 @@ class ImageDetailViewState extends State<ImageDetailView>
                   fit: BoxFit.contain,
                   mode: ExtendedImageMode.gesture,
                   handleLoadingProgress: true,
-                  headers: _site?.headers,
+                  headers: _origin.site.headers,
                   onDoubleTap: (state) {
                     // reset animation
                     _animation?.removeListener(animationListener);

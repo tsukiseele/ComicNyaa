@@ -55,7 +55,7 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
   Future<void> _initialize() async {
     await _checkUpdate();
     setState(() {
-      _sites = RuleLoader.sites.values.toList();
+      _sites = MioLoader.sites.values.toList();
       // 打开默认标签
       _addTab(_sites.firstWhereOrNull((site) => site.id == 920) ?? _sites[0]);
       _listenGalleryScroll();
@@ -65,8 +65,8 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
 
   Future<void> _checkUpdate() async {
     final ruleDir = (await Config.ruleDir);
-    await RuleLoader.loadFormDirectory(ruleDir);
-    if (RuleLoader.sites.isEmpty) {
+    await MioLoader.loadFormDirectory(ruleDir);
+    if (MioLoader.sites.isEmpty) {
       await SubscribeHolder().updateAllSubscribe();
     }
   }

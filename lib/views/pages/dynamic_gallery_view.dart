@@ -55,7 +55,7 @@ class _DynamicGalleryViewState extends State<DynamicGalleryView> with TickerProv
     };
 
     await _checkUpdate();
-    final sites = await RuleLoader.loadFormDirectory(await Config.ruleDir);
+    final sites = await MioLoader.loadFormDirectory(await Config.ruleDir);
     sites.forEachIndexed((i, element) => print('$i: [${element.id}]${element.name}'));
     setState(() {
       _sites = sites;
@@ -212,8 +212,8 @@ class _DynamicGalleryViewState extends State<DynamicGalleryView> with TickerProv
 
   _checkUpdate() async {
     final ruleDir = (await Config.ruleDir);
-    await RuleLoader.loadFormDirectory(ruleDir);
-    if (RuleLoader.sites.isEmpty) {
+    await MioLoader.loadFormDirectory(ruleDir);
+    if (MioLoader.sites.isEmpty) {
       await _updateSubscribe(ruleDir);
     }
   }
@@ -221,7 +221,7 @@ class _DynamicGalleryViewState extends State<DynamicGalleryView> with TickerProv
   Future<void> _updateSubscribe(Directory dir) async {
     final savePath = dir.join('rules.zip').path;
     await Http.client().download('https://hlo.li/static/rules.zip', savePath);
-    await RuleLoader.loadFormDirectory(dir);
+    await MioLoader.loadFormDirectory(dir);
   }
 
   @override

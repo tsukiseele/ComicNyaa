@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:collection/collection.dart';
+import 'package:comic_nyaa/library/mio/model/data_origin.dart';
 import 'package:html/parser.dart';
 import 'package:html/dom.dart';
 import '../model/model.dart';
@@ -20,9 +21,11 @@ final REG_KEYWORD_MATCH = RegExp(r"\{keywords\s*?:.*?\}");
 final REG_SELECTOR_TEMPLATE = RegExp(r"\$\((.+?)\)\.(\w+?)\((.*?)\)");
 
 class Mio<T extends Model> {
-  Site? site;
-  int page = 1;
-  String? keywords;
+  final Site? _site;
+  int _page = 1;
+  String? _keywords;
+  String? _sectionName;
+
   static Future<String> Function(String url, {Map<String, String>? headers})
       _request = (url, {Map<String, String>? headers}) async {
     HttpClientRequest request = await HttpClient().getUrl(Uri.parse(url));
@@ -37,37 +40,47 @@ class Mio<T extends Model> {
     _request = request;
   }
 
-  Mio(this.site);
+  Mio(this._site);
 
   void setPage(int page) {
-    this.page = page;
+    _page = page;
   }
 
   void setKeywords(String keywords) {
-    this.keywords = keywords;
+    _keywords = keywords;
+  }
+
+  void setSectionName(String sectionName) {
+    _sectionName = sectionName;
   }
 
   /// 解析Site对象，返回结果集
   /// @returns {Promise<<T extends Meta>[]>}
   Future<List<Map<String, dynamic>>> parseSite(
       [bool isParseChildren = false]) async {
-    return await parseSection(getCurrentSection()!, isParseChildren);
+    final site = _site;
+    final sectionName = currentSectionName;
+    if (site == null) throw Exception('site cannot be empty!');
+    if (sectionName == null) throw Exception('site cannot be empty!');
+    return await parseSection(site, sectionName, isParseChildren);
   }
 
   /// 解析Section对象，返回结果集
   /// @param [Section] section 站点板块
   /// @return [bool] isParseChildren
-  Future<List<Map<String, dynamic>>> parseSection(Section section,
+  Future<List<Map<String, dynamic>>> parseSection(Site site, String sectionName,
       [bool isParseChildren = false]) async {
-    if (site == null) throw Exception('site cannot be empty!');
+    final section = site.sections![sectionName];
+    if (section == null) throw Exception('Not found avaliable section: $sectionName');
     // 复用规则
     if (section.reuse != null) {
-      section.rules = site?.sections?['${section.reuse}']?.rules;
+      section.rules = site.sections?['${section.reuse}']?.rules;
     }
     final result = await parseRules(section.index!, section.rules!);
     for (var item in result) {
-      item[r'$section'] = section;
-      item[r'$site'] = site;
+      // item[r'$section'] = section;
+      // item[r'$site'] = site;
+      item[r'$origin'] = DataOriginInfo(site.id!, sectionName);
     }
     if (isParseChildren && section.rules?[r'$children'] != null) {
       await parseChildrenOfList(result, section.rules!);
@@ -97,7 +110,7 @@ class Mio<T extends Model> {
       final isMulitPage = url.contains(REG_PAGE_MATCH);
       do {
         final children =
-            await parseRules(url, $children.rules!, page = page, keywords = '');
+            await parseRules(url, $children.rules!, page = page, _keywords = '');
         print('CHILDREN::: $children');
         page++;
         List<String> newKeys = isMulitPage
@@ -162,7 +175,7 @@ class Mio<T extends Model> {
       do {
         final url = _parseUrlTemplate(urlTemplate, page, '');
         // 发送请求
-        final html = await _requestText(url, headers: site?.headers);
+        final html = await _requestText(url, headers: _site?.headers);
         // print('PARSE CHILDREN START =======================================');
         List<Map<String, dynamic>> children =
             parseRulesFromHtml(html, $children.rules!);
@@ -195,7 +208,7 @@ class Mio<T extends Model> {
           }
           // 构建解析状态
           children.forEachIndexed((i, child) {
-            children[i][r'$site'] = site;
+            children[i][r'$site'] = _site;
             children[i][r'$section'] = Section(
                 index: children[i][r'$children'] ?? '', rules: $children.rules);
           });
@@ -277,7 +290,7 @@ class Mio<T extends Model> {
     print('RESULT SET === $resultSet');
     // 注入类型
     for (var item in resultSet) {
-      item['type'] = site?.type ?? 'unknown';
+      item['type'] = _site?.type ?? 'unknown';
     }
     return resultSet;
   }
@@ -290,12 +303,12 @@ class Mio<T extends Model> {
       [int? page, String? keywords]) async {
     // 生成URL
     final url = _parseUrlTemplate(
-        indexUrl, page ?? this.page, keywords ?? this.keywords);
+        indexUrl, page ?? this._page, keywords ?? this._keywords);
     print('REQUEEST: $url');
     print('REQUEEST RULES: ${rule.keys}');
 
     // 发送请求
-    final html = await _requestText(url, headers: site?.headers);
+    final html = await _requestText(url, headers: _site?.headers);
 
     // 检查无效响应
     if (html.trim().isEmpty) return [];
@@ -314,15 +327,16 @@ class Mio<T extends Model> {
 
   /// 获取当前板块
   /// @returns {Section}
-  Section? getCurrentSection() {
-    if (site == null) throw Exception('site cannot be empty!');
-    final section =
-        keywords != null ? site?.sections!['search'] : site?.sections!["home"];
+  String? get currentSectionName {
+    if (_site == null) throw Exception('site cannot be empty!');
+    // final section =
+    //     keywords != null ? site?.sections!['search'] : site?.sections!['home'];
 // 复用规则
 // if (section.reuse) {
 //   section.rules = this.site.sections[section.reuse].rules
 // }
-    return section;
+//     return section;
+  return _keywords == null ? 'home' : _sectionName ?? 'search';
   }
 
   /// 遍历选择器

@@ -1,5 +1,6 @@
 import 'package:chewie/chewie.dart';
 import 'package:comic_nyaa/library/mio/core/mio.dart';
+import 'package:comic_nyaa/library/mio/model/data_origin.dart';
 import 'package:comic_nyaa/models/typed_model.dart';
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
@@ -19,12 +20,14 @@ class MixDetailViewState extends State<MixDetailView> {
   Map<String, dynamic>? children;
   VideoPlayerController? _controller;
   ChewieController? _chewieController;
+  late DataOrigin _origin;
 
   void getChildren() async {
     try {
       final model = widget.model;
-      print('model.\$section: ${model.$section}');
-      final dynamicResult = await Mio(model.$site).parseAllChildren(model.toJson(), model.$section!.rules!);
+      _origin = model.getOrigin();
+      print('model.\$section: ${_origin.section}');
+      final dynamicResult = await Mio(_origin.site).parseAllChildren(model.toJson(), _origin.section.rules!);
 
       print('data: $dynamicResult');
       // print('URL: ${getUrl(dynamicResult)}');

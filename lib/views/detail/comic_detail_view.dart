@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:comic_nyaa/library/mio/core/mio.dart';
+import 'package:comic_nyaa/library/mio/core/mio_loader.dart';
+import 'package:comic_nyaa/library/mio/model/data_origin.dart';
 import 'package:comic_nyaa/models/typed_model.dart';
 import 'package:comic_nyaa/views/detail/image_detail_view.dart';
 import 'package:comic_nyaa/widget/nyaa_tag_item.dart';
@@ -10,7 +12,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:get/get.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:shimmer/shimmer.dart';
 
@@ -31,6 +32,7 @@ class ComicDetailViewState extends State<ComicDetailView>
   final ScrollController _scrollController = ScrollController();
   final List<TypedModel> _children = [];
   Set<String> _tags = {};
+  late DataOrigin _origin;
   StreamSubscription<List<Map<String, dynamic>>>? _stream;
 
   void initialized() {
@@ -42,15 +44,15 @@ class ComicDetailViewState extends State<ComicDetailView>
             'SCROLL POSITION: ${_scrollController.position.pixels} >= ${_scrollController.position.maxScrollExtent - offset}');
         while (_stream?.isPaused == true) {
           print('STREAM RESUME >>>>>>>>>>>>>>>>>> ');
-
           _stream?.resume();
         }
       }
     });
     final model = widget.model;
+    _origin = model.getOrigin();
     _tags.addAll(model.tags?.split(' ').toSet() ?? {});
-    _stream = Mio(model.$site)
-        .parseChildren(model.toJson(), model.$section!.rules!)
+    _stream = Mio(_origin.site)
+        .parseChildren(model.toJson(), _origin.section.rules!)
         .listen((List<Map<String, dynamic>> data) {
       _stream?.pause();
       _getNext(data);
@@ -227,7 +229,7 @@ class ComicDetailViewState extends State<ComicDetailView>
                             child: Column(
                               children: [
                                 ExtendedImage.network(getUrl(_children[index]),
-                                    headers: widget.model.$site?.headers,
+                                    headers: _origin.site.headers,
                                     height: 160,
                                     fit: BoxFit.cover,
                                     opacity: controller,
