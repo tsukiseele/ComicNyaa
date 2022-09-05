@@ -60,8 +60,8 @@ class Mio<T extends Model> {
       [bool isParseChildren = false]) async {
     final site = _site;
     final sectionName = currentSectionName;
-    if (site == null) throw Exception('site cannot be empty!');
-    if (sectionName == null) throw Exception('site cannot be empty!');
+    if (site == null) throw Exception('Site cannot be null!');
+    if (sectionName == null) throw Exception('Section cannot be null!');
     return await parseSection(site, sectionName, isParseChildren);
   }
 
@@ -80,7 +80,7 @@ class Mio<T extends Model> {
     for (var item in result) {
       // item[r'$section'] = section;
       // item[r'$site'] = site;
-      item[r'$origin'] = DataOriginInfo(site.id!, sectionName);
+      item[r'$origin'] = DataOriginInfo(site.id!, sectionName).toJson();
     }
     if (isParseChildren && section.rules?[r'$children'] != null) {
       await parseChildrenOfList(result, section.rules!);
@@ -336,7 +336,7 @@ class Mio<T extends Model> {
 //   section.rules = this.site.sections[section.reuse].rules
 // }
 //     return section;
-  return _keywords == null ? 'home' : _sectionName ?? 'search';
+  return _sectionName ?? (_keywords == null ? 'home' : 'search');
   }
 
   /// 遍历选择器

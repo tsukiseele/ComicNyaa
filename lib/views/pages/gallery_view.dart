@@ -71,22 +71,12 @@ class _GalleryViewState extends State<GalleryView>
             _onNext();
           }
         }
-        // if (_scrollController.position.pixels < 128) {
-        //   _floatingSearchBarController.isHidden ? _floatingSearchBarController.show() : null;
-        // } else if (_scrollController.position.pixels > _lastScrollPosition + 64) {
-        //   _lastScrollPosition = _scrollController.position.pixels.toInt();
-        //   _floatingSearchBarController.isVisible ? _floatingSearchBarController.hide() : null;
-        // } else if (_scrollController.position.pixels < _lastScrollPosition - 64) {
-        //   _lastScrollPosition = _scrollController.position.pixels.toInt();
-        //   _floatingSearchBarController.isHidden ? _floatingSearchBarController.show() : null;
-        // }
       });
     });
   }
 
   void _clearSelections() {
     setState(() {
-      print('CCCCCCCCCCCCCCCCCCCCCCCC');
       _selects.clear();
       widget.controller.onItemSelect!(_selects);
     });
@@ -239,21 +229,6 @@ class _GalleryViewState extends State<GalleryView>
     super.initState();
   }
 
-/*
-  Future<ImageInfo> _getImageInfo(ImageProvider image) async {
-    final c = Completer<ImageInfo>();
-    ImageStream imageStream = image.resolve(const ImageConfiguration());
-    imageStream.addListener(
-        ImageStreamListener((ImageInfo i, bool _) => c.complete(i)));
-    return c.future;
-  }
-
-  void cacheHeight(ImageProvider image, int index) async {
-    ImageInfo imageInfo = await _getImageInfo(image);
-    _heightCache[index] = imageInfo.image.height.toDouble();
-    print('CAHCE HEIGHT: ${_heightCache[index]}');
-  }
-*/
   @override
   Widget build(BuildContext context) {
     _topOffset = kToolbarHeight + MediaQuery.of(context).viewPadding.top;
@@ -285,7 +260,6 @@ class _GalleryViewState extends State<GalleryView>
                     crossAxisSpacing: 8.0,
                     itemCount: _items.length,
                     controller: _scrollController,
-                    // physics: const BouncingScrollPhysics(),
                     itemBuilder: (context, index) {
                       final controller = AnimationController(
                           value: 1,

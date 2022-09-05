@@ -15,8 +15,6 @@ class SubscribeView extends StatefulWidget {
 class _SubscribeViewState extends State<SubscribeView> {
   final List<Subscribe> _subscribes = SubscribeHolder().subscribes;
 
-
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
