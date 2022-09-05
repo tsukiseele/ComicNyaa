@@ -1,13 +1,13 @@
 import '../core/mio_loader.dart';
 import 'data_origin.dart';
-class Model<T> {
+class DataModel<T> {
   String? type;
   // List<String>? sources;
   List<T>? children; // 需要在子类实现序列化
   String? $children;
   DataOriginInfo? $origin;
 
-  Model.fromJson(Map<String, dynamic> json) {
+  DataModel.fromJson(Map<String, dynamic> json) {
     type = json['type'];
     $children = json[r'$children'];
     $origin = json[r'$origin'] != null

@@ -1,6 +1,6 @@
-import 'package:comic_nyaa/library/mio/model/model.dart';
+import 'package:comic_nyaa/library/mio/model/data_model.dart';
 
-class TypedModel extends Model<TypedModel> {
+class TypedModel extends DataModel<TypedModel> {
   String? title;
   String? tags;
   String? coverUrl;

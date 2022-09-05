@@ -1,5 +1,21 @@
 import 'package:comic_nyaa/library/mio/model/site.dart';
 
+class DataOrigin {
+  Site site;
+  Section section;
+
+  DataOrigin(this.site, this.section);
+
+  Section getChildSectionByDepth(int depth) {
+    Section childSection = section;
+    for (int i = depth; i > 0; i--) {
+      Rules? childRules = section.rules?[r'$children']?.rules;
+      childSection = Section(rules: childRules);
+    }
+    return childSection;
+  }
+}
+
 class DataOriginInfo {
   int? siteId;
   String? sectionName;
@@ -24,11 +40,4 @@ class DataOriginInfo {
   bool isAvaliable() {
     return siteId != null && sectionName != null && sectionName!.isNotEmpty;
   }
-}
-
-class DataOrigin {
-  Site site;
-  Section section;
-
-  DataOrigin(this.site, this.section);
 }

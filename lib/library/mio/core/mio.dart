@@ -2,11 +2,11 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:collection/collection.dart';
-import 'package:comic_nyaa/library/mio/core/mio_loader.dart';
+import 'package:comic_nyaa/library/mio/core/template_parser.dart';
 import 'package:comic_nyaa/library/mio/model/data_origin.dart';
 import 'package:html/parser.dart';
 import 'package:html/dom.dart';
-import '../model/model.dart';
+import '../model/data_model.dart';
 import '../model/site.dart';
 
 /// 站点内容解析器，通过加载JSON配置抓取网页内容，并返回JSON数据
@@ -16,13 +16,13 @@ import '../model/site.dart';
 /// @date 2022.8.8
 /// @license Apache License 2.0
 
-final REG_PAGE_TEMPLATE = RegExp(r"\{page\s*?:\s*?(-?\d*)[,\s]*?(-?\d*?)\}");
-final REG_PAGE_MATCH = RegExp(r"\{page\s*?:.*?\}");
-final REG_KEYWORD_TEMPLATE = RegExp(r"\{keywords\s*?:\s*?(.*?)\}");
-final REG_KEYWORD_MATCH = RegExp(r"\{keywords\s*?:.*?\}");
-final REG_SELECTOR_TEMPLATE = RegExp(r"\$\((.+?)\)\.(\w+?)\((.*?)\)");
+// final REG_PAGE_TEMPLATE = RegExp(r"\{page\s*?:\s*?(-?\d*)[,\s]*?(-?\d*?)\}");
+// final REG_PAGE_MATCH = RegExp(r"\{page\s*?:.*?\}");
+// final REG_KEYWORD_TEMPLATE = RegExp(r"\{keywords\s*?:\s*?(.*?)\}");
+// final REG_KEYWORD_MATCH = RegExp(r"\{keywords\s*?:.*?\}");
+// final REG_SELECTOR_TEMPLATE = RegExp(r"\$\((.+?)\)\.(\w+?)\((.*?)\)");
 
-class Mio<T extends Model> {
+class Mio<T extends DataModel> {
   final Site? _site;
   int _page = 1;
   String? _keywords;
@@ -104,19 +104,19 @@ class Mio<T extends Model> {
   /// @return {Promise<T extends Meta>}
   Future<Map<String, dynamic>> parseAllChildren(Map<String, dynamic> item,
       {Future<bool> Function(List<Map<String, dynamic>>)? callback}) async {
-    final Model model = Model.fromJson(item);
+    final DataModel model = DataModel.fromJson(item);
     final DataOriginInfo dataOriginInfo =
         DataOriginInfo.fromJson(item[r'$origin']);
-    final depth = dataOriginInfo.depth ?? 0;
     final DataOrigin dataOrigin = model.getOrigin();
-    final section = getChildSectionByDepth(dataOrigin.section, depth);
+    final depth = dataOriginInfo.depth ?? 0;
+    final section = dataOrigin.getChildSectionByDepth(depth);
     final rules = section.rules!;
     if (item[r'$children'] != null && rules[r'$children'] != null) {
       int page = 0;
       Selector $children = rules[r'$children']!;
       String url = item[r'$children'];
       List<String> keys = [];
-      final isMulitPage = url.contains(REG_PAGE_MATCH);
+      final isMulitPage = url.contains(TemplateParser.REG_PAGE_MATCH);
       do {
         final children = await parseRules(
             url, $children.rules!, page = page, _keywords = '');
@@ -182,13 +182,13 @@ class Mio<T extends Model> {
   /// 返回JSON数据流
   Stream<List<Map<String, dynamic>>> parseChildren(
       {required Map<String, dynamic> item, bool deep = false}) async* {
-    final Model model = Model.fromJson(item);
+    final DataModel model = DataModel.fromJson(item);
     final DataOriginInfo dataOriginInfo =
         DataOriginInfo.fromJson(item[r'$origin']);
     final DataOrigin dataOrigin = model.getOrigin();
     final depth = dataOriginInfo.depth ?? 0;
     final site = dataOrigin.site;
-    final section = getChildSectionByDepth(dataOrigin.section, depth);
+    final section = dataOrigin.getChildSectionByDepth(depth);
     final rules = section.rules!;
     // print('parseChildren(): RULES: ${rules.toJson().toString()}');
     if (item[r'$children'] != null && rules[r'$children'] != null) {
@@ -196,9 +196,9 @@ class Mio<T extends Model> {
       Selector $children = rules[r'$children']!;
       String urlTemplate = item[r'$children'];
       List<String> keys = [];
-      final isMulitPage = urlTemplate.contains(REG_PAGE_MATCH);
+      final isMulitPage = TemplateParser.isMultiple(urlTemplate);
       do {
-        final url = _parseUrlTemplate(urlTemplate, page, '');
+        final url = TemplateParser.parseUrl(urlTemplate, page, '');
         // print('parseChildren(): URL: $url');
         // 发送请求
         final html = await _requestText(url, headers: site.headers);
@@ -251,14 +251,6 @@ class Mio<T extends Model> {
     }
   }
 
-  Section getChildSectionByDepth(Section section, int depth) {
-    Section childSection = section;
-    for (int i = depth; i > 0; i--) {
-      Rules? childRules = section.rules?[r'$children']?.rules;
-      childSection = Section(rules: childRules);
-    }
-    return childSection;
-  }
 
   bool isEmpty(Object? o) {
     return o == null || o == "";
@@ -286,7 +278,7 @@ class Mio<T extends Model> {
         // 匹配选择器内容
         if (exp.selector != null) {
           // 此处的选择器只应选择一个元素，否则result会被刷新为最后一个
-          selectEach(doc, exp.selector!, (result, index) => (content = result));
+          TemplateParser.eachSelector(doc, exp.selector!, (result, index) => (content = result));
         }
         // 匹配正则内容
         final regexp = RegExp(exp.regex ?? '');
@@ -294,15 +286,15 @@ class Mio<T extends Model> {
 
         groups.forEachIndexed((i, item) {
           final match = item.groupCount > 0 ? item.group(1) : item.group(0);
-          final value = _parseRegex(match ?? '', exp.capture, exp.replacement);
+          final value = TemplateParser.parseRegex(match ?? '', exp.capture, exp.replacement);
           props.add(value);
         });
         // 使用选择器匹配
       } else if (exp.selector != null) {
-        selectEach(doc, exp.selector as String, (result, index) {
+        TemplateParser.eachSelector(doc, exp.selector as String, (result, index) {
           // print('RRRR: $result, IIII: $index');
           // 执行最终替换，并添加到结果集
-          final value = _parseRegex(result, exp.capture, exp.replacement);
+          final value = TemplateParser.parseRegex(result, exp.capture, exp.replacement);
           props.add(value);
         });
       }
@@ -338,8 +330,7 @@ class Mio<T extends Model> {
   Future<List<Map<String, dynamic>>> parseRules(String indexUrl, Rules rule,
       [int? page, String? keywords]) async {
     // 生成URL
-    final url =
-        _parseUrlTemplate(indexUrl, page ?? _page, keywords ?? _keywords);
+    final url = TemplateParser.parseUrl(indexUrl, page ?? _page, keywords ?? _keywords);
     print('REQUEEST: $url');
     print('REQUEEST RULES: ${rule.keys}');
 
@@ -368,97 +359,4 @@ class Mio<T extends Model> {
     return _sectionName ?? (_keywords == null ? 'home' : 'search');
   }
 
-  /// 遍历选择器
-  /// @param {cheerio.CheerioAPI} $ 文档上下文
-  /// @param {string} selector 选择器
-  /// @param {function} each (content: string, index: number) => void
-  selectEach(
-      Document doc, String selector, Function(String content, int index) each) {
-    final matches = REG_SELECTOR_TEMPLATE.allMatches(selector);
-    if (matches.isEmpty) return;
-    final match = matches.first;
-    var select = match.groupCount > 0
-        ? match.group(1)!
-        : throw Exception('empty selecor!!');
-    final func = match.groupCount > 1 ? match.group(2) : 'text';
-    final attr = match.groupCount > 2 ? match.group(3) : 'href';
-    // 选择器语法兼容
-    select = select.replaceAll(RegExp(r':eq\('), ':nth-child(');
-    // 遍历元素集
-    doc.querySelectorAll(select).forEachIndexed((index, el) {
-      var result = '';
-      switch (func) {
-        case 'attr':
-          result = el.attributes[attr] ?? '';
-          break;
-        case 'text':
-          result = el.text;
-          break;
-        case 'html':
-          result = el.innerHtml;
-          break;
-      }
-      each(result, index);
-    });
-  }
-
-  /// 替换正则式
-  /// @param {String} text 文本
-  /// @param {String} capture 截取式
-  /// @param {String} replacement 替换式
-  /// @returns {String} 结果
-  String _parseRegex(String text, String? capture, String? replacement) {
-    if (text == "") return replacement ?? "";
-    if (capture == null || capture == "") return text;
-    if (replacement == null || replacement == "") {
-      final m = RegExp(capture).allMatches(text);
-      return m.first.group(0) ?? text;
-    }
-    final result = RegExp(capture).allMatches(text);
-    if (result.isNotEmpty) {
-      final groups = result.first;
-      for (int index = 0; index < groups.groupCount + 1; index++) {
-        // print('index: $index, group: ${groups.group(index)}');
-        replacement = replacement?.replaceAll(
-            RegExp("\\\$$index"), groups.group(index) ?? '');
-      }
-    }
-    return replacement ?? "";
-  }
-
-  /// 替换URL模板
-  /// @param {String} template 模板
-  /// @param {Number} page 当前页码
-  /// @param {String} keywords 关键字
-  /// @returns {String} 真实URL
-  String _parseUrlTemplate(String template, int page, String? keywords) {
-    final pageMatches = REG_PAGE_TEMPLATE.allMatches(template);
-    final keywordMatches = REG_KEYWORD_TEMPLATE.allMatches(template);
-    int p = page;
-    String? k = '';
-    if (keywordMatches.isNotEmpty) {
-      final keywordMatch = keywordMatches.first;
-      k = keywordMatch.groupCount > 1 ? keywordMatch.group(1) : '';
-    }
-    if (pageMatches.isNotEmpty) {
-      final pageMatch = pageMatches.first;
-      // print('TEMPLATE: [$template], page: [$page], keywords: [$keywords]');
-      // print('MATCHES: ${pageMatch.groupCount}, G0: [${pageMatch.group(0)}], G1: [${pageMatch.group(1)}], G2: [${pageMatch.group(2)}]');
-      final offset =
-          pageMatch.groupCount > 0 && (pageMatch.group(1)?.isNotEmpty ?? false)
-              ? int.parse(pageMatch.group(1) ?? '0')
-              : 0;
-      final range =
-          pageMatch.groupCount > 1 && (pageMatch.group(2)?.isNotEmpty ?? false)
-              ? int.parse(pageMatch.group(2) ?? '1')
-              : 1;
-
-      // print('BEFORE FINAL PAGE: [$p] offset: [$offset], range: [$range]');
-      p = (p + offset) * range;
-      // print('AFTER FINAL PAGE: [$p] offset: [$offset], range: [$range]');
-    }
-    return template
-        .replaceAll(REG_PAGE_MATCH, p.toString())
-        .replaceAll(REG_KEYWORD_MATCH, keywords ?? k ?? '');
-  }
 }
