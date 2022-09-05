@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:comic_nyaa/data/download/nyaa_download_manager.dart';
-import 'package:comic_nyaa/library/download/download_task_queue.dart';
+import 'package:comic_nyaa/widget/simple_network_image.dart';
 import 'package:flutter/material.dart';
 
 import '../data/download/nyaa_download_task_queue.dart';
@@ -49,6 +49,7 @@ class _DownloadViewState extends State<DownloadView> {
           //
           // }
           return ListTile(
+            leading: SimpleNetworkImage(queue.cover, headers: queue.headers, width: 48, height: 48,),
               title: Text(title), subtitle: Text('${queue.status.toString()} - ${queue.progress?.completesByteLength} / ${queue.progress?.totalByteLength}'));
         }),
       )),

@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:comic_nyaa/app/global.dart';
+import 'package:comic_nyaa/utils/extensions.dart';
 import 'package:comic_nyaa/utils/http.dart';
 import 'package:comic_nyaa/utils/uri_extensions.dart';
 import 'downloadable.dart';

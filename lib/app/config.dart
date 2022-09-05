@@ -1,18 +1,11 @@
 import 'dart:io';
 
+import 'package:comic_nyaa/utils/extensions.dart';
 import 'package:path_provider/path_provider.dart';
-
-extension ExtendedPath on Directory {
-  Directory joinDir(Directory child) {
-    return join(child.path);
-  }
-  Directory join(String child) {
-    return Directory('$path${Platform.pathSeparator}$child');
-  }
-}
 
 class Config {
   Config._();
+  static const appName = 'ComicNyaa';
   static const uiFontFamily = null; //'sans-serif';
 
   static const downloadDirectoryName = 'ComicNyaa';

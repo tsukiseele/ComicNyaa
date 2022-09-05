@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:comic_nyaa/library/download/download_task.dart';
 import 'package:comic_nyaa/library/download/download_task_queue.dart';
 import 'package:comic_nyaa/library/download/downloadable.dart';
+import 'package:comic_nyaa/library/mio/model/data_origin.dart';
 import 'package:comic_nyaa/models/typed_model.dart';
 import 'package:comic_nyaa/utils/extensions.dart';
 
@@ -15,11 +16,12 @@ class NyaaDownloadTaskQueue extends DownloadTaskQueue {
   final DownloadResourceLevel level;
   String name;
   String cover;
+  late DataOrigin origin;
 
   Future<NyaaDownloadTaskQueue> initialize() async {
+
     status = DownloadStatus.init;
     try {
-      final origin = parent.getOrigin();
       parent = TypedModel.fromJson(await Mio(origin.site)
           .parseAllChildren(parent.toJson(), origin.section.rules!));
       if (name.isEmpty) name = parent.title ?? '';
@@ -43,5 +45,9 @@ class NyaaDownloadTaskQueue extends DownloadTaskQueue {
     this.level = DownloadResourceLevel.medium,
     this.name = '',
     this.cover = ''
-  });
+  }) {
+    origin = parent.getOrigin();
+    headers = origin.site.headers;
+    cover = parent.coverUrl ?? '';
+  }
 }

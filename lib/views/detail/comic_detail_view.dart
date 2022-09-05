@@ -31,7 +31,7 @@ class ComicDetailViewState extends State<ComicDetailView>
   final RefreshController _refreshController = RefreshController();
   final ScrollController _scrollController = ScrollController();
   final List<TypedModel> _children = [];
-  Set<String> _tags = {};
+  final Set<String> _tags = {};
   late DataOrigin _origin;
   StreamSubscription<List<Map<String, dynamic>>>? _stream;
 

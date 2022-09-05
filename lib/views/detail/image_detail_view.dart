@@ -1,7 +1,8 @@
-import 'package:comic_nyaa/app/global.dart';
+import 'package:comic_nyaa/app/config.dart';
 import 'package:comic_nyaa/library/mio/core/mio.dart';
 import 'package:comic_nyaa/library/mio/model/data_origin.dart';
 import 'package:comic_nyaa/models/typed_model.dart';
+import 'package:comic_nyaa/utils/extensions.dart';
 import 'package:comic_nyaa/utils/num_extensions.dart';
 import 'package:comic_nyaa/utils/uri_extensions.dart';
 import 'package:dio/dio.dart';
