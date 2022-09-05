@@ -1,5 +1,3 @@
-import 'dart:isolate';
-
 import 'package:comic_nyaa/app/config.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart' as cache;
@@ -32,7 +30,7 @@ class _SettingsViewState extends State<StatefulWidget> {
       appBar: AppBar(title: const Text('设置')),
       body: ListView(children: [
         ListTile(
-            leading: Container(alignment: Alignment.center, width: 32, height: 32, child: Icon(Icons.cached, color: Colors.black87)) ,
+            leading: Container(alignment: Alignment.center, width: 32, height: 32, child: const Icon(Icons.cached, color: Colors.black87)) ,
             title: const Text('缓存'),
             subtitle: const Text('清除缓存'),
             onTap: () {

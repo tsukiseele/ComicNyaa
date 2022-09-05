@@ -79,7 +79,7 @@ class _CustomTabsState extends State<CustomTabView> with TickerProviderStateMixi
       //     controller.animateTo(_currentPosition);
       //   }
       // });
-      print('SIZE CHANGED ANIMATE_TO::: ${_currentPosition}');
+      print('SIZE CHANGED ANIMATE_TO::: $_currentPosition');
       controller.animateTo(widget.initPosition!);
     } else if (widget.initPosition != null) {
       controller.animateTo(widget.initPosition!);

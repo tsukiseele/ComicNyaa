@@ -18,7 +18,6 @@ import 'package:material_floating_search_bar/material_floating_search_bar.dart';
 
 import '../app/config.dart';
 import '../data/download/nyaa_download_manager.dart';
-import '../library/download/download_manager.dart';
 import '../models/typed_model.dart';
 import '../utils/string_extensions.dart';
 import '../widget/marquee_widget.dart';

@@ -11,12 +11,12 @@ import '../../app/preference.dart';
 import '../../library/mio/core/mio.dart';
 
 class NyaaDownloadTaskQueue extends DownloadTaskQueue {
-  TypedModel parent;
   final Directory directory;
   final DownloadResourceLevel level;
+  late DataOrigin origin;
+  TypedModel parent;
   String name;
   String cover;
-  late DataOrigin origin;
 
   Future<NyaaDownloadTaskQueue> initialize() async {
 

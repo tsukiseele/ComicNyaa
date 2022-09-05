@@ -303,7 +303,7 @@ class Mio<T extends Model> {
       [int? page, String? keywords]) async {
     // 生成URL
     final url = _parseUrlTemplate(
-        indexUrl, page ?? this._page, keywords ?? this._keywords);
+        indexUrl, page ?? _page, keywords ?? _keywords);
     print('REQUEEST: $url');
     print('REQUEEST RULES: ${rule.keys}');
 

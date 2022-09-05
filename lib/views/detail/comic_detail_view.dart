@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:comic_nyaa/library/mio/core/mio.dart';
-import 'package:comic_nyaa/library/mio/core/mio_loader.dart';
 import 'package:comic_nyaa/library/mio/model/data_origin.dart';
 import 'package:comic_nyaa/models/typed_model.dart';
 import 'package:comic_nyaa/views/detail/image_detail_view.dart';

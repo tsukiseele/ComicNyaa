@@ -43,7 +43,7 @@ class _GalleryViewState extends State<GalleryView>
   final RefreshController _refreshController =
       RefreshController(initialRefresh: false);
   final Map<int, double> _heightCache = {};
-  Map<int, TypedModel> _selects = {};
+  final Map<int, TypedModel> _selects = {};
   List<TypedModel> _items = [];
   List<TypedModel> _preloadItems = [];
   double _topOffset = 0;

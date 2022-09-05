@@ -5,22 +5,15 @@
 // gestures. You can also use WidgetTester to find child widgets in the widget
 // tree, read text, and verify that the values of widget properties are correct.
 
-import 'package:comic_nyaa/main.dart';
 import 'package:comic_nyaa/utils/http.dart';
 import 'package:dio/dio.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_test/flutter_test.dart';
 
 void main() async {
-  final u = 'https://hanime1.me/search?query=bdsm&genre=&sort=&year=&month=&duration=';
+  const u = 'https://hanime1.me/search?query=bdsm&genre=&sort=&year=&month=&duration=';
   final response = await Http.client()
       .get(u, options: Options(responseType: ResponseType.plain));
   final html = response.data.toString();
   print(html);
-return;
-  const url = 'https://files.yande.re/sample/650b751d61f7a024f919f5a005220472/yande.re%201009897%20sample%20feet%20genshin_impact%20pantsu%20raiden_shogun%20shadow_lxy%20topless%20yae_miko.jpg';
-
-  print('DECODE: ${Uri.decodeComponent(url.split("/").last.split('?').first)}');
   // testWidgets('Counter increments smoke test', (WidgetTester tester) async {
   //   // Build our app and trigger a frame.
   //   // await tester.pumpWidget(const ComicNyaa());
