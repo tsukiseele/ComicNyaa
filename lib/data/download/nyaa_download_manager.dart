@@ -10,14 +10,15 @@ import '../../models/typed_model.dart';
 class NyaaDownloadManager {
   NyaaDownloadManager._();
 
-  DownloadProvider? _downloadProvider;
-
-  Future<DownloadProvider> get downloadProvider async => _downloadProvider ??= await DownloadProvider().open(await getDatabasesPath());
-
   static NyaaDownloadManager? _instance;
 
   static NyaaDownloadManager get instance =>
       _instance ??= NyaaDownloadManager._();
+
+  DownloadProvider? _downloadProvider;
+
+  Future<DownloadProvider> get downloadProvider async => _downloadProvider ??=
+      await DownloadProvider().open(await getDatabasesPath());
 
   final List<NyaaDownloadTaskQueue> _tasks = [];
 
@@ -32,6 +33,9 @@ class NyaaDownloadManager {
             directory: downloadDir.path,
             level: downloadLevel.toDbCode())
         .initialize()));
+    for (var element in tasks) {
+      (await downloadProvider).insert(element);
+    }
     DownloadManager.instance.addAll(tasks);
     _tasks.addAll(tasks);
   }

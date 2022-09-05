@@ -41,7 +41,7 @@ class _DownloadViewState extends State<DownloadView> {
           child: ListView(
         children: List.generate(_downloadList.length, (index) {
           final queue = _downloadList[index];
-          String title = queue.name;
+          String title = queue.title;
           return ListTile(
               leading: SimpleNetworkImage(
                 queue.cover,

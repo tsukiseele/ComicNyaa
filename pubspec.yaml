@@ -52,6 +52,7 @@ dependencies:
   flutter_spinkit: ^5.1.0
   percent_indicator: ^4.2.2
   sqflite: ^2.0.3+1
+  crypto: ^3.0.2
 #  cached_network_image: ^3.2.1
   shared_preferences: ^2.0.15
   shimmer: ^2.0.0

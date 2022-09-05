@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:comic_nyaa/library/download/download_task.dart';
 import 'package:comic_nyaa/library/download/download_task_queue.dart';
 import 'package:comic_nyaa/library/download/downloadable.dart';
@@ -10,30 +8,28 @@ import '../../app/preference.dart';
 import '../../library/mio/core/mio.dart';
 
 class NyaaDownloadTaskQueue extends DownloadTaskQueue {
-  late int id;
   late String directory;
   late int level;
   late TypedModel parent;
-  late String name;
+  late String title;
   late String cover;
+  int? id;
 
   NyaaDownloadTaskQueue.fromJson(Map<String, dynamic> data) {
-    id = data['id'];
     directory = data['directory'];
     level = int.parse(data['level']);
     cover = data['cover'];
-    name = data['name'];
-    parent = data['parent'];
+    title = data['title'];
+    parent = TypedModel.fromJson(data['parent']);
   }
 
   Map<String, dynamic> toJson() {
     Map<String, dynamic> data = {};
-    data['id'] = id;
     data['directory'] = directory;
     data['level'] = level;
     data['cover'] = cover;
-    data['name'] = name;
-    data['parent'] = parent;
+    data['title'] = title;
+    data['parent'] = parent.toJson().toString();
     return data;
   }
 
@@ -46,7 +42,7 @@ class NyaaDownloadTaskQueue extends DownloadTaskQueue {
 
       parent = TypedModel.fromJson(
           await Mio(origin.site).parseAllChildren(parent.toJson()));
-      if (name.isEmpty) name = parent.title ?? '';
+      if (title.isEmpty) title = parent.title ?? '';
       if (parent.children?.isEmpty == true) {
         queue.add(DownloadTask.fromUrl(directory, parent.getUrl(drl)));
       } else {
@@ -60,12 +56,17 @@ class NyaaDownloadTaskQueue extends DownloadTaskQueue {
     }
     return this;
   }
+  @override
+  Future<void> start() async {
+    // print('');
+    super.start();
+  }
 
   NyaaDownloadTaskQueue(
       {required this.parent,
       required this.directory,
       this.level = 2,
-      this.name = '',
+      this.title = '',
       this.cover = ''}) {
     cover = parent.coverUrl ?? '';
   }
