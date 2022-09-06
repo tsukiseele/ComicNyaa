@@ -27,9 +27,9 @@ class NyaaDownloadTaskQueue extends DownloadTaskQueue {
     url = data['url'];
     status = DownloadStatus.fromDbValue(data['status']);
     level = data['level'];
-    final pppp = jsonDecode(data['parent']);
-    print('PPPPPPPPPPPPPPPPPPPPPPPP::: ${pppp}');
-    parent = TypedModel.fromJson(pppp);
+    final json = jsonDecode(data['parent']);
+    print('PPPPPPPPPPPPPPPPPPPPPPPP::: ${json}');
+    parent = TypedModel.fromJson(Map<String, dynamic>.from(json));
   }
 
   Map<String, dynamic> toJson() {
