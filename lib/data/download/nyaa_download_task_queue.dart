@@ -27,9 +27,10 @@ class NyaaDownloadTaskQueue extends DownloadTaskQueue {
     url = data['url'];
     status = DownloadStatus.fromDbValue(data['status']);
     level = data['level'];
-    final json = jsonDecode(data['parent']);
-    print('PPPPPPPPPPPPPPPPPPPPPPPP::: ${json}');
-    parent = TypedModel.fromJson(Map<String, dynamic>.from(json));
+    // json
+    // final  = (data['parent']);
+    print('PPPPPPPPPPPPPPPPPPPPPPPP::: ${data['parent']}');
+    parent = TypedModel.fromJson(Map<String, dynamic>.from(json.decode(data['parent']) as Map<String, dynamic>));
   }
 
   Map<String, dynamic> toJson() {
@@ -41,7 +42,9 @@ class NyaaDownloadTaskQueue extends DownloadTaskQueue {
     data['path'] = path;
     data['url'] = url;
     data['status'] = status.toDbValue();
-    data['parent'] = jsonEncode(parent.toJson().toString());
+    print('DDDDDDDDDDDDDDDDDDD::: ${parent}');
+    data['parent'] = json.encode(parent.toJson());
+    print('JJJJJJJJJJJJJJJJJJJ::: ${data['parent']}');
     return data;
   }
 
@@ -54,8 +57,7 @@ class NyaaDownloadTaskQueue extends DownloadTaskQueue {
       final lv = DownloadResourceLevel.fromDbCode(level);
       final origin = parent.getOrigin();
       headers = origin.site.headers;
-      parent = TypedModel.fromJson(
-          await Mio(origin.site).parseAllChildren(parent.toJson()));
+      parent = TypedModel.fromJson(await Mio(origin.site).parseAllChildren(parent.toJson()));
       if (title.isEmpty) title = parent.title ?? '';
       final children = parent.children;
       if (children == null || children.isEmpty) {
@@ -63,8 +65,7 @@ class NyaaDownloadTaskQueue extends DownloadTaskQueue {
       } else if (children.length == 1) {
         queue.add(DownloadTask.fromUrl(directory, children[0].getUrl(lv)));
       } else {
-        directory =
-            Directory(directory).join(title + cover.hashCode.toString()).path;
+        directory = Directory(directory).join(title + cover.hashCode.toString()).path;
         for (var child in parent.children!) {
           queue.add(DownloadTask.fromUrl(directory, child.getUrl(lv)));
         }
@@ -90,12 +91,7 @@ class NyaaDownloadTaskQueue extends DownloadTaskQueue {
     (await NyaaDownloadManager.instance).downloadProvider.update(this);
   }
 
-  NyaaDownloadTaskQueue(
-      {required this.parent,
-      required this.directory,
-      this.level = 2,
-      this.title = '',
-      this.cover = ''}) {
+  NyaaDownloadTaskQueue({required this.parent, required this.directory, this.level = 2, this.title = '', this.cover = ''}) {
     cover = parent.coverUrl ?? '';
   }
 }

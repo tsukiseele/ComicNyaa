@@ -34,6 +34,7 @@ class _DownloadViewState extends State<DownloadView> {
 
   Future<void> _update() async {
     final tasks = (await NyaaDownloadManager.instance).tasks;
+    print('TTTTTTTTTTTTTTTTTTT::: ${tasks.length}');
     setState(() => _downloadList = tasks);
   }
 
