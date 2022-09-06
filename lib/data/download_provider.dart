@@ -13,6 +13,7 @@ const String columnPath = 'path';
 const String columnUrl = 'url';
 const String columnLevel = 'level';
 const String columnParent = 'parent';
+const String columnStatus = 'status';
 
 const String createTableDownload = '''
         create table $tableDownload ( 
@@ -23,6 +24,7 @@ const String createTableDownload = '''
           $columnLevel INTEGER NOT NULL,
           $columnParent TEXT NOT NULL,
           $columnPath TEXT NOT NULL,
+          $columnStatus TEXT NOT NULL,
           $columnUrl TEXT NOT NULL)
         ''';
 
@@ -30,15 +32,11 @@ class DownloadProvider {
   late Database _db;
 
   Future<DownloadProvider> open(String path) async {
-    _db = await openDatabase(Directory(path).join('nyaa.db').path, version: 3,
+    _db = await openDatabase(Directory(path).join('nyaa.db').path, version: 5,
         onCreate: (Database db, int version) async {
-      // await db.transaction((txn) async {
-      //   await txn.execute(createTableDownload);
-      // }
-      // );
-          await db.execute(createTableDownload);
+      await db.execute(createTableDownload);
     }, onDowngrade: (Database db, int oldVersion, int newVersion) async {
-      // await db.execute(createTableDownload);
+      await db.execute(createTableDownload);
     });
     return this;
   }
