@@ -8,17 +8,18 @@ import '../../app/preference.dart';
 import '../../models/typed_model.dart';
 
 class NyaaDownloadManager {
-  NyaaDownloadManager._();
+  NyaaDownloadManager._(this.downloadProvider) {
+    downloadProvider.getTasks();
+  }
 
   static NyaaDownloadManager? _instance;
 
-  static NyaaDownloadManager get instance =>
-      _instance ??= NyaaDownloadManager._();
+  static Future<NyaaDownloadManager> get instance async {
+    return _instance ??= NyaaDownloadManager._(await DownloadProvider().open(await getDatabasesPath()));
+  }
+  final DownloadProvider downloadProvider;
 
-  DownloadProvider? _downloadProvider;
-
-  Future<DownloadProvider> get downloadProvider async => _downloadProvider ??=
-      await DownloadProvider().open(await getDatabasesPath());
+  // Future<DownloadProvider> get downloadProvider =>;
 
   final List<NyaaDownloadTaskQueue> _tasks = [];
 

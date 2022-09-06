@@ -19,7 +19,7 @@ class DownloadView extends StatefulWidget {
 }
 
 class _DownloadViewState extends State<DownloadView> {
-  late List<NyaaDownloadTaskQueue> _downloadList;
+  List<NyaaDownloadTaskQueue> _downloadList = [];
   Timer? _timer;
 
   @override
@@ -29,12 +29,17 @@ class _DownloadViewState extends State<DownloadView> {
   }
 
   void loopUpdateStatus() {
-    _timer = Timer.periodic(widget.updateInterval, (timer) => setState(() {}));
+    _timer = Timer.periodic(widget.updateInterval, (timer) => _update());
+  }
+
+  Future<void> _update() async {
+    final tasks = (await NyaaDownloadManager.instance).tasks;
+    setState(() => _downloadList = tasks);
   }
 
   @override
   Widget build(BuildContext context) {
-    _downloadList = NyaaDownloadManager.instance.tasks;
+
     return Scaffold(
       appBar: AppBar(title: const Text('下载')),
       body: Material(

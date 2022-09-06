@@ -60,6 +60,14 @@ class DownloadProvider {
     }
     return null;
   }
+  Future<List<NyaaDownloadTaskQueue>> getTasks() async {
+    List<Map<String, dynamic>> maps = await _db.query(tableDownload);
+    return maps.map((item) => NyaaDownloadTaskQueue.fromJson(item)).toList();
+    // if (maps.isNotEmpty) {
+    //   return NyaaDownloadTaskQueue.fromJson(maps.first as Map<String, dynamic>);
+    // }
+    // return null;
+  }
 
   Future<int> delete(int id) async {
     return await _db

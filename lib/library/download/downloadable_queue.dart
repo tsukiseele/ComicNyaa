@@ -11,7 +11,6 @@ abstract class DownloadableQueue<T> extends Downloadable {
 
   int get length => queue.length;
 
-
   void add(T downloadable) {
     queue.add(downloadable);
   }

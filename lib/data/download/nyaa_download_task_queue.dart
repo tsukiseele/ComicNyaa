@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:comic_nyaa/data/download/nyaa_download_manager.dart';
@@ -25,8 +26,10 @@ class NyaaDownloadTaskQueue extends DownloadTaskQueue {
     path = data['path'];
     url = data['url'];
     status = DownloadStatus.fromDbValue(data['status']);
-    level = int.parse(data['level']);
-    parent = TypedModel.fromJson(data['parent']);
+    level = data['level'];
+    final pppp = jsonDecode(data['parent']);
+    print('PPPPPPPPPPPPPPPPPPPPPPPP::: ${pppp}');
+    parent = TypedModel.fromJson(pppp);
   }
 
   Map<String, dynamic> toJson() {
@@ -38,7 +41,7 @@ class NyaaDownloadTaskQueue extends DownloadTaskQueue {
     data['path'] = path;
     data['url'] = url;
     data['status'] = status.toDbValue();
-    data['parent'] = parent.toJson().toString();
+    data['parent'] = jsonEncode(parent.toJson().toString());
     return data;
   }
 
@@ -47,7 +50,7 @@ class NyaaDownloadTaskQueue extends DownloadTaskQueue {
     super.onInitialize();
     status = DownloadStatus.init;
     try {
-      (await NyaaDownloadManager.instance.downloadProvider).insert(this);
+      (await NyaaDownloadManager.instance).downloadProvider.insert(this);
       final lv = DownloadResourceLevel.fromDbCode(level);
       final origin = parent.getOrigin();
       headers = origin.site.headers;
@@ -70,7 +73,7 @@ class NyaaDownloadTaskQueue extends DownloadTaskQueue {
       status = DownloadStatus.failed;
       error = e;
     } finally {
-      (await NyaaDownloadManager.instance.downloadProvider).update(this);
+      (await NyaaDownloadManager.instance).downloadProvider.update(this);
     }
     return this;
   }
@@ -78,13 +81,13 @@ class NyaaDownloadTaskQueue extends DownloadTaskQueue {
   @override
   Future<void> onDownloading() async {
     super.onDownloading();
-    (await NyaaDownloadManager.instance.downloadProvider).update(this);
+    (await NyaaDownloadManager.instance).downloadProvider.update(this);
   }
 
   @override
   Future<void> onDone() async {
     super.onDone();
-    (await NyaaDownloadManager.instance.downloadProvider).update(this);
+    (await NyaaDownloadManager.instance).downloadProvider.update(this);
   }
 
   NyaaDownloadTaskQueue(

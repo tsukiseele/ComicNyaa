@@ -73,7 +73,7 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
     List<TypedModel> items = _currentTab!.controller.selects.values.toList();
     Fluttertoast.showToast(msg: '${items.length}个任务已添加');
 
-    NyaaDownloadManager.instance.addAll(items);
+    (await NyaaDownloadManager.instance).addAll(items);
     setState(() {
       _currentTab?.controller.clearSelection();
     });
