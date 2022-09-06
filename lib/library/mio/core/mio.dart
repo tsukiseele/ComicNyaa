@@ -324,8 +324,8 @@ class Mio<T extends DataModel> {
       [int? page, String? keywords]) async {
     // 生成URL
     final url = TemplateParser.parseUrl(indexUrl, page ?? _page, keywords ?? _keywords);
-    print('REQUEEST: $url');
-    print('REQUEEST RULES: ${rule.keys}');
+    print('REQUEST: $url');
+    print('REQUEST RULES: ${rule.keys}');
 
     // 发送请求
     final html = await _requestText(url, headers: _site?.headers);

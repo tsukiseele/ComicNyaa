@@ -27,23 +27,33 @@ const String createTableDownload = '''
         ''';
 
 class DownloadProvider {
-  late Database db;
+  late Database _db;
 
   Future<DownloadProvider> open(String path) async {
-    db = await openDatabase(Directory(path).join('nyaa.db').path, version: 1,
+    _db = await openDatabase(Directory(path).join('nyaa.db').path, version: 3,
         onCreate: (Database db, int version) async {
-      await db.execute(createTableDownload);
+      // await db.transaction((txn) async {
+      //   await txn.execute(createTableDownload);
+      // }
+      // );
+          await db.execute(createTableDownload);
+    }, onDowngrade: (Database db, int oldVersion, int newVersion) async {
+      // await db.execute(createTableDownload);
     });
     return this;
   }
 
   Future<int> insert(NyaaDownloadTaskQueue task) async {
-    task.id = await db.insert(tableDownload, task.toJson());
+    print('DB_INSERT::: ${task.toJson().toString()}');
+    await _db.transaction((txn) async {
+      task.id = await txn.insert(tableDownload, task.toJson());
+    });
+    print('DB_INSERT_KEY_ID::: ${task.id!}');
     return task.id!;
   }
 
   Future<NyaaDownloadTaskQueue?> getTask(int id) async {
-    List<Map> maps = await db.query(tableDownload,
+    List<Map> maps = await _db.query(tableDownload,
         columns: [columnId, columnCover, columnTitle],
         where: '$columnId = ?',
         whereArgs: [id]);
@@ -54,13 +64,14 @@ class DownloadProvider {
   }
 
   Future<int> delete(int id) async {
-    return await db.delete(tableDownload, where: '$columnId = ?', whereArgs: [id]);
+    return await _db
+        .delete(tableDownload, where: '$columnId = ?', whereArgs: [id]);
   }
 
   Future<int> update(NyaaDownloadTaskQueue task) async {
-    return await db.update(tableDownload, task.toJson(),
+    return await _db.update(tableDownload, task.toJson(),
         where: '$columnId = ?', whereArgs: [task.id]);
   }
 
-  Future close() async => db.close();
+  Future close() async => _db.close();
 }

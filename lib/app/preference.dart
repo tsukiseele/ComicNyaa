@@ -10,7 +10,6 @@ enum DownloadResourceLevel {
 
   final String value;
 
-
   static DownloadResourceLevel fromDbCode(int code) {
     switch (code) {
       case 1:
@@ -18,14 +17,11 @@ enum DownloadResourceLevel {
       case 2:
         return DownloadResourceLevel.medium;
       case 3:
-      default:
         return DownloadResourceLevel.high;
+      default:
+        return DownloadResourceLevel.medium;
     }
   }
-}
-
-extension DRLEX on DownloadResourceLevel {
-
   int toDbCode() {
     switch (this) {
       case DownloadResourceLevel.low:
@@ -33,7 +29,6 @@ extension DRLEX on DownloadResourceLevel {
       case DownloadResourceLevel.medium:
         return 2;
       case DownloadResourceLevel.high:
-      default:
         return 3;
     }
   }

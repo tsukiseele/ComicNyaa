@@ -28,14 +28,20 @@ class NyaaDownloadManager {
     final downloadDir = await Config.downloadDir;
     final downloadLevel =
         (await NyaaPreferences.instance).downloadResourceLevel;
-    final tasks = await Future.wait(items.map((item) => NyaaDownloadTaskQueue(
-            parent: item,
-            directory: downloadDir.path,
-            level: downloadLevel.toDbCode())
-        .initialize()));
-    for (var element in tasks) {
-      (await downloadProvider).insert(element);
-    }
+    // final tasks = await Future.wait(items.map((item) => NyaaDownloadTaskQueue(
+    //         parent: item,
+    //         directory: downloadDir.path,
+    //         level: downloadLevel.toDbCode())
+    //     .onInitialize()));
+
+    final tasks = items.map((item) => NyaaDownloadTaskQueue(
+              parent: item,
+              directory: downloadDir.path,
+              level: downloadLevel.toDbCode()));
+
+    // for (var element in tasks) {
+    //   (await downloadProvider).insert(element);
+    // }
     DownloadManager.instance.addAll(tasks);
     _tasks.addAll(tasks);
   }
