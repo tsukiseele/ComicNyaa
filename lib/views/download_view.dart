@@ -41,7 +41,6 @@ class _DownloadViewState extends State<DownloadView> {
 
   Future<void> _update() async {
     final tasks = (await NyaaDownloadManager.instance).tasks;
-    print('TTTTTTTTTTTTTTTTTTT::: ${tasks.map((e) => e.status)}');
     setState(() => _downloadList = tasks);
   }
 
@@ -51,9 +50,8 @@ class _DownloadViewState extends State<DownloadView> {
       appBar: AppBar(title: const Text('下载')),
       body: Material(
           child: ListView(
-        children: List.generate(_downloadList.length, (index) {
-          return DownloadItem(_downloadList[index]);
-        }),
+        children: List.generate(_downloadList.length,
+            (index) => DownloadItem(_downloadList[index])),
       )),
     );
   }
