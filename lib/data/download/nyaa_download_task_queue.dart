@@ -30,7 +30,7 @@ class NyaaDownloadTaskQueue extends DownloadTaskQueue {
     // json
     // final  = (data['parent']);
     print('PPPPPPPPPPPPPPPPPPPPPPPP::: ${data['parent']}');
-    parent = TypedModel.fromJson(Map<String, dynamic>.from(json.decode(data['parent']) as Map<String, dynamic>));
+    parent = TypedModel.fromJson(Map.from(jsonDecode(data['parent'])));
   }
 
   Map<String, dynamic> toJson() {
@@ -42,8 +42,9 @@ class NyaaDownloadTaskQueue extends DownloadTaskQueue {
     data['path'] = path;
     data['url'] = url;
     data['status'] = status.toDbValue();
-    print('DDDDDDDDDDDDDDDDDDD::: ${parent}');
-    data['parent'] = json.encode(parent.toJson());
+    final d = parent.toJson();
+    print('DDDDDDDDDDDDDDDDDDD::: ${d.runtimeType} === ${d}');
+    data['parent'] = jsonEncode(d);
     print('JJJJJJJJJJJJJJJJJJJ::: ${data['parent']}');
     return data;
   }

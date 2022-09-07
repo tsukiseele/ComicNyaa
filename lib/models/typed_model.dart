@@ -16,15 +16,7 @@ class TypedModel extends DataModel<TypedModel> {
     largerUrl = json['largerUrl'];
     sampleUrl = json['sampleUrl'];
     if (json['children'] != null) {
-
-      var children = <TypedModel>[];
-      // print('CHILDREN: ${json['children'].runtimeType.toString()}, LENGTH: ${json['children'].length}');
-      // children = json['children']?.map((item) => TypedModel.fromJson(item));
-      json['children'].forEach((item) {
-        // print('ITEM: $item');
-        children.add(TypedModel.fromJson(item));
-      });
-      this.children = children;
+      children = json['children']?.map((item) => TypedModel.fromJson(item));
     }
   }
 
@@ -42,9 +34,7 @@ class TypedModel extends DataModel<TypedModel> {
     data['originUrl'] = originUrl;
     data['largerUrl'] = largerUrl;
     data['sampleUrl'] = sampleUrl;
-    data['children'] = children?.map((e) => e.toJson());
-
-    // data[r'$children'] = $children;
+    data['children'] = children?.map((child) => child.toJson()).toList();
     data.addAll(super.toJson());
     return data;
   }
