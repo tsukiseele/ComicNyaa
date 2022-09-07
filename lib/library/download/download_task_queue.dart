@@ -4,6 +4,8 @@ import 'download_task.dart';
 import 'downloadable_queue.dart';
 
 class DownloadTaskQueue extends DownloadableQueue<DownloadTask> {
+  DownloadTaskQueue(super.createDate);
+
   List<DownloadTask> finishTasks = [];
 
   @override
@@ -31,7 +33,6 @@ class DownloadTaskQueue extends DownloadableQueue<DownloadTask> {
   @override
   Future<void> onDownloading() async {
     status = DownloadStatus.loading;
-    print('LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL::: QUEUE::: $queue');
     while (queue.isNotEmpty) {
       if (status == DownloadStatus.pause) return;
       final task = removeFirst();

@@ -19,7 +19,7 @@ class NyaaDownloadTaskQueue extends DownloadTaskQueue {
   late String cover;
   int? id;
 
-  NyaaDownloadTaskQueue.fromJson(Map<String, dynamic> data) {
+  NyaaDownloadTaskQueue.fromJson(Map<String, dynamic> data): super(DateTime.parse(data['createDate'])) {
     directory = data['directory'];
     cover = data['cover'];
     title = data['title'];
@@ -28,6 +28,8 @@ class NyaaDownloadTaskQueue extends DownloadTaskQueue {
     level = DownloadResourceLevel.fromDbCode(data['level']);
     status = DownloadStatus.fromDbValue(data['status']);
     parent = TypedModel.fromJson(jsonDecode(data['parent']));
+    createDate = DateTime.parse(data['createDate']);
+    progress = DownloadProgress(data['completedLength'], data['totalLength']);
   }
 
   Map<String, dynamic> toJson() {
@@ -40,9 +42,13 @@ class NyaaDownloadTaskQueue extends DownloadTaskQueue {
     data['level'] = level.toDbCode();
     data['status'] = status.toDbValue();
     data['parent'] = jsonEncode(parent.toJson());
+    data['createDate'] = createDate.toIso8601String();
+    data['completedLength'] = progress?.completedLength ?? 0;
+    data['totalLength'] = progress?.totalLength ?? 0;
     return data;
   }
 
+  /// 获取下载列表，添加到队列
   @override
   Future<NyaaDownloadTaskQueue> onInitialize() async {
     await super.onInitialize();
@@ -75,19 +81,19 @@ class NyaaDownloadTaskQueue extends DownloadTaskQueue {
   @override
   Future<void> onDownloading() async {
     await super.onDownloading();
-    print('DOWNLOADDDDDDDDDDDDDDDDDDDDDDDDD：：： $status');
+    print('NyaaDownloadTaskQueue::: status ==> $status');
     (await NyaaDownloadManager.instance).downloadProvider.update(this);
   }
 
   @override
   Future<void> onDone() async {
     await super.onDone();
-    print('DONEEEEEEEEEEEEEEEEEEEEEEEEEEEEE');
+    print('NyaaDownloadTaskQueue::: status ==> $status');
 
     (await NyaaDownloadManager.instance).downloadProvider.update(this);
   }
 
-  NyaaDownloadTaskQueue({required this.parent, required this.directory, this.level = DownloadResourceLevel.medium}) {
+  NyaaDownloadTaskQueue({required this.parent, required this.directory, required DateTime createDate, this.level = DownloadResourceLevel.medium}) : super(createDate) {
     cover = parent.coverUrl ?? '';
     title = parent.title ?? '';
   }

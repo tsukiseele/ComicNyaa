@@ -1,11 +1,15 @@
 import 'dart:io';
 
 import 'package:http/http.dart' as http;
+import 'package:http/retry.dart';
 
 class HClient extends http.BaseClient {
+  HClient._(this._inner);
+
   final http.Client _inner;
 
-  HClient(this._inner);
+  static HClient? _client;
+  static HClient get client => _client ??= HClient._(RetryClient(http.Client()));
 
   @override
   Future<http.StreamedResponse> send(http.BaseRequest request) {
@@ -14,7 +18,6 @@ class HClient extends http.BaseClient {
 
   static Future<void> download(String url, String path, Function(int received, int total)? progress) async {
     final request = http.Request('GET', Uri.parse(url));
-    final client = http.Client();
     final response = await client.send(request);
     final total = response.contentLength ?? 0;
     final List<int> bytes = [];

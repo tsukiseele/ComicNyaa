@@ -11,8 +11,10 @@ class NyaaDownloadManager {
   static NyaaDownloadManager? _instance;
 
   static Future<NyaaDownloadManager> get instance async {
-    return _instance ??= NyaaDownloadManager._(await DownloadProvider().open(await getDatabasesPath()));
+    return _instance ??= NyaaDownloadManager._(
+        await DownloadProvider().open(await getDatabasesPath()));
   }
+
   NyaaDownloadManager._(this.downloadProvider) {
     restoreTasks();
   }
@@ -24,28 +26,19 @@ class NyaaDownloadManager {
   List<NyaaDownloadTaskQueue> get tasks => _tasks;
 
   restoreTasks() async {
-    tasks.addAll(await downloadProvider.getTasks());
+    _tasks.addAll(await downloadProvider.getTasks());
   }
 
   Future<void> addAll(Iterable<TypedModel> items) async {
     final downloadDir = await Config.downloadDir;
     final downloadLevel =
         (await NyaaPreferences.instance).downloadResourceLevel;
-    // final tasks = await Future.wait(items.map((item) => NyaaDownloadTaskQueue(
-    //         parent: item,
-    //         directory: downloadDir.path,
-    //         level: downloadLevel.toDbCode())
-    //     .onInitialize()));
-
     final tasks = items.map((item) => NyaaDownloadTaskQueue(
-              parent: item,
-              directory: downloadDir.path,
-              level: downloadLevel));
-
-    // for (var element in tasks) {
-    //   (await downloadProvider).insert(element);
-    // }
+        parent: item,
+        directory: downloadDir.path,
+        level: downloadLevel,
+        createDate: DateTime.now())).toList();
     DownloadManager.instance.addAll(tasks);
-    _tasks.addAll(tasks);
+    _tasks.insertAll(0, tasks);
   }
 }

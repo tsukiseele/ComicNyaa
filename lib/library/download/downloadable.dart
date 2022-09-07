@@ -28,7 +28,7 @@ enum DownloadStatus {
   String toDbValue() {
     switch (this) {
       case DownloadStatus.idle:
-        return'IDLE';
+        return 'IDLE';
       case DownloadStatus.init:
         return 'INIT';
       case DownloadStatus.loading:
@@ -57,10 +57,11 @@ class DownloadProgress {
 }
 
 abstract class Downloadable<T> {
-  Downloadable(this.url, this.path);
+  Downloadable(this.url, this.path, this.createDate);
 
   DownloadStatus status = DownloadStatus.idle;
   DownloadProgress? progress;
+  DateTime createDate;
   Object? error;
   String url;
   String path;

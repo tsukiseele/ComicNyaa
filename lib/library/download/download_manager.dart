@@ -8,7 +8,6 @@ class DownloadManager {
   static DownloadManager? _instance;
   static DownloadManager get instance => _instance ??= DownloadManager._();
 
-  Map<String, DownloadableQueue> tasks = {};
   TaskRunner taskRunner = TaskRunner<DownloadableQueue, void>((task) async {
     try {
       await task.start();

@@ -14,6 +14,9 @@ const String columnUrl = 'url';
 const String columnLevel = 'level';
 const String columnParent = 'parent';
 const String columnStatus = 'status';
+const String columnCreateDate = 'createDate';
+const String columnCompletedLength = 'completedLength';
+const String columnTotalLength = 'totalLength';
 
 const String createTableDownload = '''
         create table $tableDownload ( 
@@ -25,6 +28,9 @@ const String createTableDownload = '''
           $columnParent TEXT NOT NULL,
           $columnPath TEXT NOT NULL,
           $columnStatus TEXT NOT NULL,
+          $columnCreateDate TEXT NOT NULL,
+          $columnCompletedLength INTEGER NOT NULL,
+          $columnTotalLength INTEGER NOT NULL,
           $columnUrl TEXT NOT NULL)
         ''';
 
@@ -53,6 +59,8 @@ class DownloadProvider {
   Future<NyaaDownloadTaskQueue?> getTask(int id) async {
     List<Map> maps = await _db.query(tableDownload,
         columns: [columnId, columnCover, columnTitle],
+        orderBy: columnCreateDate,
+        having: 'DESC',
         where: '$columnId = ?',
         whereArgs: [id]);
     if (maps.isNotEmpty) {
@@ -60,13 +68,10 @@ class DownloadProvider {
     }
     return null;
   }
+
   Future<List<NyaaDownloadTaskQueue>> getTasks() async {
     List<Map<String, dynamic>> maps = await _db.query(tableDownload);
     return maps.map((item) => NyaaDownloadTaskQueue.fromJson(item)).toList();
-    // if (maps.isNotEmpty) {
-    //   return NyaaDownloadTaskQueue.fromJson(maps.first as Map<String, dynamic>);
-    // }
-    // return null;
   }
 
   Future<int> delete(int id) async {

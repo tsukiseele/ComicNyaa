@@ -2,12 +2,11 @@ import 'dart:io';
 
 import 'package:comic_nyaa/utils/extensions.dart';
 import 'package:comic_nyaa/utils/h_client.dart';
-import 'package:comic_nyaa/utils/http.dart';
 import 'package:comic_nyaa/utils/uri_extensions.dart';
 import 'downloadable.dart';
 
 class DownloadTask extends Downloadable<void> {
-  DownloadTask(String url, String path) : super(url, path);
+  DownloadTask(super.url, super.path, super.createDate);
 
   @override
   Future<void> start() async {
@@ -25,17 +24,16 @@ class DownloadTask extends Downloadable<void> {
   Future<void> onDownloading() async {
     print('DownloadTask::: downloading >>> url: $url, path: $path');
     try {
+      final target = File(path);
+      if (!await target.parent.exists()) {
+        await target.parent.create();
+      }
       await HClient.download(url, path, (received, total) {
         status = DownloadStatus.loading;
         progress = DownloadProgress(received, total);
+        print('PROGRESS::: $progress');
         onProgress(progress!);
       });
-      // await Http.client().download(url, path,
-      //     onReceiveProgress: (received, total) {
-      //       status = DownloadStatus.loading;
-      //       progress = DownloadProgress(received, total);
-      //       onProgress(progress!);
-      //     });
     } catch (e) {
       status = DownloadStatus.failed;
       rethrow;
@@ -54,7 +52,7 @@ class DownloadTask extends Downloadable<void> {
 
   factory DownloadTask.fromUrl(String downloadDir, String url) {
     final path = Directory(downloadDir).join(Uri.parse(url).filename).path;
-    return DownloadTask(url, path);
+    return DownloadTask(url, path, DateTime.now());
   }
 
   @override
