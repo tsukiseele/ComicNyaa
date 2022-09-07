@@ -36,7 +36,7 @@ class DownloadTask extends Downloadable<void> {
       });
     } catch (e) {
       status = DownloadStatus.failed;
-      rethrow;
+      // rethrow;
     }
   }
 

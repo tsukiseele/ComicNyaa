@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:dio/dio.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/retry.dart';
 
@@ -9,10 +10,12 @@ class HClient extends http.BaseClient {
   final http.Client _inner;
 
   static HClient? _client;
+
   static HClient get client => _client ??= HClient._(RetryClient(http.Client()));
 
   @override
   Future<http.StreamedResponse> send(http.BaseRequest request) {
+    request.persistentConnection = false;
     return _inner.send(request);
   }
 

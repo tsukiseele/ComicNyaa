@@ -35,8 +35,8 @@ class _DownloadViewState extends State<DownloadView> {
     _update();
     _timer = Timer.periodic(
         widget.updateInterval,
-        (timer) => WidgetsBinding.instance
-            .addPostFrameCallback((timeStamp) => _update()));
+        (timer) => _update());
+            // WidgetsBinding.instance.addPostFrameCallback((timeStamp) => ));
   }
 
   Future<void> _update() async {
@@ -51,7 +51,7 @@ class _DownloadViewState extends State<DownloadView> {
       body: Material(
           child: ListView(
         children: List.generate(_downloadList.length,
-            (index) => DownloadItem(_downloadList[index])),
+            (index) => DownloadQueueItem(_downloadList[index])),
       )),
     );
   }
