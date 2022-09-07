@@ -8,7 +8,7 @@ import '../data/download/nyaa_download_task_queue.dart';
 
 class DownloadView extends StatefulWidget {
   const DownloadView(
-      {Key? key, this.updateInterval = const Duration(milliseconds: 500)})
+      {Key? key, this.updateInterval = const Duration(milliseconds: 1000)})
       : super(key: key);
   final Duration updateInterval;
 
@@ -29,6 +29,7 @@ class _DownloadViewState extends State<DownloadView> {
   }
 
   void loopUpdateStatus() {
+    _update();
     _timer = Timer.periodic(widget.updateInterval, (timer) => _update());
   }
 
@@ -57,7 +58,7 @@ class _DownloadViewState extends State<DownloadView> {
               ),
               title: Text(title),
               subtitle: Text(
-                  '${queue.status.toString()} - ${queue.progress?.completedLength} / ${queue.progress?.totalLength}'));
+                  '${queue.status.value} - ${queue.progress?.completedLength} / ${queue.progress?.totalLength}'));
         }),
       )),
     );

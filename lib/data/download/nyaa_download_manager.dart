@@ -8,22 +8,24 @@ import '../../app/preference.dart';
 import '../../models/typed_model.dart';
 
 class NyaaDownloadManager {
-  NyaaDownloadManager._(this.downloadProvider) {
-    downloadProvider.getTasks();
-  }
-
   static NyaaDownloadManager? _instance;
 
   static Future<NyaaDownloadManager> get instance async {
     return _instance ??= NyaaDownloadManager._(await DownloadProvider().open(await getDatabasesPath()));
   }
-  final DownloadProvider downloadProvider;
+  NyaaDownloadManager._(this.downloadProvider) {
+    restoreTasks();
+  }
 
-  // Future<DownloadProvider> get downloadProvider =>;
+  final DownloadProvider downloadProvider;
 
   final List<NyaaDownloadTaskQueue> _tasks = [];
 
   List<NyaaDownloadTaskQueue> get tasks => _tasks;
+
+  restoreTasks() async {
+    tasks.addAll(await downloadProvider.getTasks());
+  }
 
   Future<void> addAll(Iterable<TypedModel> items) async {
     final downloadDir = await Config.downloadDir;
@@ -38,7 +40,7 @@ class NyaaDownloadManager {
     final tasks = items.map((item) => NyaaDownloadTaskQueue(
               parent: item,
               directory: downloadDir.path,
-              level: downloadLevel.toDbCode()));
+              level: downloadLevel));
 
     // for (var element in tasks) {
     //   (await downloadProvider).insert(element);

@@ -13,7 +13,7 @@ import '../../library/mio/core/mio.dart';
 
 class NyaaDownloadTaskQueue extends DownloadTaskQueue {
   late String directory;
-  late int level;
+  late DownloadResourceLevel level;
   late TypedModel parent;
   late String title;
   late String cover;
@@ -25,50 +25,42 @@ class NyaaDownloadTaskQueue extends DownloadTaskQueue {
     title = data['title'];
     path = data['path'];
     url = data['url'];
+    level = DownloadResourceLevel.fromDbCode(data['level']);
     status = DownloadStatus.fromDbValue(data['status']);
-    level = data['level'];
-    // json
-    // final  = (data['parent']);
-    print('PPPPPPPPPPPPPPPPPPPPPPPP::: ${data['parent']}');
-    parent = TypedModel.fromJson(Map.from(jsonDecode(data['parent'])));
+    parent = TypedModel.fromJson(jsonDecode(data['parent']));
   }
 
   Map<String, dynamic> toJson() {
     Map<String, dynamic> data = {};
     data['directory'] = directory;
-    data['level'] = level;
     data['cover'] = cover;
     data['title'] = title;
     data['path'] = path;
     data['url'] = url;
+    data['level'] = level.toDbCode();
     data['status'] = status.toDbValue();
-    final d = parent.toJson();
-    print('DDDDDDDDDDDDDDDDDDD::: ${d.runtimeType} === ${d}');
-    data['parent'] = jsonEncode(d);
-    print('JJJJJJJJJJJJJJJJJJJ::: ${data['parent']}');
+    data['parent'] = jsonEncode(parent.toJson());
     return data;
   }
 
   @override
   Future<NyaaDownloadTaskQueue> onInitialize() async {
-    super.onInitialize();
-    status = DownloadStatus.init;
+    await super.onInitialize();
     try {
       (await NyaaDownloadManager.instance).downloadProvider.insert(this);
-      final lv = DownloadResourceLevel.fromDbCode(level);
       final origin = parent.getOrigin();
       headers = origin.site.headers;
       parent = TypedModel.fromJson(await Mio(origin.site).parseAllChildren(parent.toJson()));
       if (title.isEmpty) title = parent.title ?? '';
       final children = parent.children;
       if (children == null || children.isEmpty) {
-        queue.add(DownloadTask.fromUrl(directory, parent.getUrl(lv)));
+        queue.add(DownloadTask.fromUrl(directory, parent.getUrl(level)));
       } else if (children.length == 1) {
-        queue.add(DownloadTask.fromUrl(directory, children[0].getUrl(lv)));
+        queue.add(DownloadTask.fromUrl(directory, children[0].getUrl(level)));
       } else {
         directory = Directory(directory).join(title + cover.hashCode.toString()).path;
         for (var child in parent.children!) {
-          queue.add(DownloadTask.fromUrl(directory, child.getUrl(lv)));
+          queue.add(DownloadTask.fromUrl(directory, child.getUrl(level)));
         }
       }
     } catch (e) {
@@ -82,17 +74,21 @@ class NyaaDownloadTaskQueue extends DownloadTaskQueue {
 
   @override
   Future<void> onDownloading() async {
-    super.onDownloading();
+    await super.onDownloading();
+    print('DOWNLOADDDDDDDDDDDDDDDDDDDDDDDDD：：： $status');
     (await NyaaDownloadManager.instance).downloadProvider.update(this);
   }
 
   @override
   Future<void> onDone() async {
-    super.onDone();
+    await super.onDone();
+    print('DONEEEEEEEEEEEEEEEEEEEEEEEEEEEEE');
+
     (await NyaaDownloadManager.instance).downloadProvider.update(this);
   }
 
-  NyaaDownloadTaskQueue({required this.parent, required this.directory, this.level = 2, this.title = '', this.cover = ''}) {
+  NyaaDownloadTaskQueue({required this.parent, required this.directory, this.level = DownloadResourceLevel.medium}) {
     cover = parent.coverUrl ?? '';
+    title = parent.title ?? '';
   }
 }

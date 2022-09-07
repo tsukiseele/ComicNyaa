@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:comic_nyaa/utils/extensions.dart';
+import 'package:comic_nyaa/utils/h_client.dart';
 import 'package:comic_nyaa/utils/http.dart';
 import 'package:comic_nyaa/utils/uri_extensions.dart';
 import 'downloadable.dart';
@@ -22,15 +23,22 @@ class DownloadTask extends Downloadable<void> {
 
   @override
   Future<void> onDownloading() async {
+    print('DownloadTask::: downloading >>> url: $url, path: $path');
     try {
-      await Http.client().download(url, path,
-          onReceiveProgress: (received, total) {
-            status = DownloadStatus.loading;
-            progress = DownloadProgress(received, total);
-            onProgress(progress!);
-          });
+      await HClient.download(url, path, (received, total) {
+        status = DownloadStatus.loading;
+        progress = DownloadProgress(received, total);
+        onProgress(progress!);
+      });
+      // await Http.client().download(url, path,
+      //     onReceiveProgress: (received, total) {
+      //       status = DownloadStatus.loading;
+      //       progress = DownloadProgress(received, total);
+      //       onProgress(progress!);
+      //     });
     } catch (e) {
       status = DownloadStatus.failed;
+      rethrow;
     }
   }
 
@@ -62,6 +70,5 @@ class DownloadTask extends Downloadable<void> {
   }
 
   @override
-  Future<void> onProgress(DownloadProgress progress) async {
-  }
+  Future<void> onProgress(DownloadProgress progress) async {}
 }

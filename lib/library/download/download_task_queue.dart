@@ -31,6 +31,7 @@ class DownloadTaskQueue extends DownloadableQueue<DownloadTask> {
   @override
   Future<void> onDownloading() async {
     status = DownloadStatus.loading;
+    print('LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL::: QUEUE::: $queue');
     while (queue.isNotEmpty) {
       if (status == DownloadStatus.pause) return;
       final task = removeFirst();

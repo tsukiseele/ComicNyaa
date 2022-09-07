@@ -1,5 +1,9 @@
 import '../core/site_manager.dart';
 import 'data_origin.dart';
+
+/// 抓取数据模型
+/// 子类必须实现 toJson() 和 fromJson() 完成序列化
+///
 class DataModel<T> {
   String? type;
   // List<String>? sources;
