@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../data/download/nyaa_download_task_queue.dart';
+import '../widget/download_item.dart';
 
 class DownloadView extends StatefulWidget {
   const DownloadView(
@@ -51,34 +52,7 @@ class _DownloadViewState extends State<DownloadView> {
       body: Material(
           child: ListView(
         children: List.generate(_downloadList.length, (index) {
-          final queue = _downloadList[index];
-          String title = queue.title;
-          return ListTile(
-            onTap: () {},
-              isThreeLine: true,
-              leading: SimpleNetworkImage(
-                queue.cover,
-                headers: queue.headers,
-                // width: 64,
-                // height: 128,
-              ),
-              title:MarqueeWidget(child:  Text(title)),
-              subtitle: Row(
-                children: [
-                  Expanded(
-
-                    child: Text(
-                      '${queue.status.value} - ${queue.progress?.completedLength} / ${queue.progress?.totalLength}',
-                      maxLines: 1,
-                    ),
-                  ),
-                  Text(
-                    DateFormat('yyyy/M/d hh:mm')
-                        .format(queue.createDate.toLocal()),
-                    maxLines: 1,
-                  )
-                ],
-              ));
+          return DownloadItem(_downloadList[index]);
         }),
       )),
     );
