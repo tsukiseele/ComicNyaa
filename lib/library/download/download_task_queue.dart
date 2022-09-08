@@ -43,6 +43,7 @@ class DownloadTaskQueue<T extends Downloadable> extends DownloadableQueue<T> {
     tasks = queue.toList();
     while (queue.isNotEmpty) {
       if (status == DownloadStatus.pause) return;
+      progress = DownloadProgress(finishTasks.length, tasks.length);
       final task = removeFirst();
       try {
         await task.start();
@@ -51,7 +52,6 @@ class DownloadTaskQueue<T extends Downloadable> extends DownloadableQueue<T> {
         // task.status =
       } finally {
         finishTasks.add(task);
-        progress = DownloadProgress(finishTasks.length, tasks.length);
         onProgress(progress!);
       }
     }
