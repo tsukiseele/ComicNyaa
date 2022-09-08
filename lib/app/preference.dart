@@ -10,7 +10,7 @@ enum DownloadResourceLevel {
 
   final String value;
 
-  static DownloadResourceLevel fromDbCode(int code) {
+  static DownloadResourceLevel fromDbValue(int code) {
     switch (code) {
       case 1:
         return DownloadResourceLevel.low;
