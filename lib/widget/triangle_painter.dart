@@ -92,8 +92,8 @@ Widget triangle({
       size: Size(width, height),
       painter: TrianglePainter(strokeColor: color, direction: direction),
       child: Container(
-        width: width / 2,
-        height: height / 2,
+        width: width,
+        height: height,
         alignment: contentAlignment,
         padding: contentPadding,
         child: child,

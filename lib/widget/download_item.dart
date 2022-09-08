@@ -18,8 +18,8 @@ class DownloadItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-        height: 128,
-        margin: const EdgeInsets.all(4),
+        height: 120,
+        margin: const EdgeInsets.only(top: 4, bottom: 4, left: 8, right: 8),
         child: Material(
             elevation: 1,
             // borderRadius: BorderRadius.circular(4),
@@ -36,7 +36,7 @@ class DownloadItem extends StatelessWidget {
                         SimpleNetworkImage(
                           item.cover ?? '',
                           headers: item.headers,
-                          width: 96,
+                          width: 80,
                           fit: BoxFit.cover,
                           height: double.maxFinite,
                         ),
@@ -88,18 +88,6 @@ class DownloadItem extends StatelessWidget {
                                           : const LinearProgressIndicator())
                                   : Container(),
                               Row(children: [
-                                Expanded(
-                                    child: Padding(
-                                  padding:
-                                      const EdgeInsets.only(left: 4, right: 4),
-                                  child: Text(item.progress != null &&
-                                          item.status !=
-                                              DownloadStatus.successful
-                                      ? getProgressText(
-                                          item.progress!.completedLength,
-                                          item.progress!.totalLength)
-                                      : ''),
-                                )),
                                 Material(
                                   color: getColorByStatus(item.status),
                                   elevation: 2,
@@ -112,6 +100,18 @@ class DownloadItem extends StatelessWidget {
                                             color: Colors.white),
                                       )),
                                 ),
+                                Expanded(
+                                    child: Padding(
+                                  padding:
+                                      const EdgeInsets.only(left: 4, right: 4),
+                                  child: Text(item.progress != null &&
+                                          item.status !=
+                                              DownloadStatus.successful
+                                      ? getProgressText(
+                                          item.progress!.completedLength,
+                                          item.progress!.totalLength)
+                                      : ''),
+                                )),
                               ])
                             ])),
                   )
