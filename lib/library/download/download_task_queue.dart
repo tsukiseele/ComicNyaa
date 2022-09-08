@@ -3,11 +3,10 @@ import 'package:comic_nyaa/library/download/downloadable.dart';
 import 'download_task.dart';
 import 'downloadable_queue.dart';
 
-class DownloadTaskQueue extends DownloadableQueue<DownloadTask> {
+class DownloadTaskQueue<T extends Downloadable> extends DownloadableQueue<T> {
   DownloadTaskQueue(super.createDate);
 
-  List<DownloadTask> tasks = [];
-  List<DownloadTask> finishTasks = [];
+  List<T> finishTasks = [];
 
   @override
   Future<void> start() async {
@@ -29,7 +28,6 @@ class DownloadTaskQueue extends DownloadableQueue<DownloadTask> {
   @override
   Future<void> onInitialize() async {
     status = DownloadStatus.init;
-    tasks = queue.toList();
   }
 
   @override

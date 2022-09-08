@@ -20,6 +20,7 @@ class DownloadTask extends Downloadable<void> {
   @override
   Future<void> onDownloading() async {
     print('DownloadTask::: downloading >>> url: $url, path: $path');
+    status = DownloadStatus.loading;
     try {
       final target = File(path);
       if (!await target.parent.exists()) {
@@ -28,7 +29,6 @@ class DownloadTask extends Downloadable<void> {
       await HClient.download(url, path, headers: headers, onProgress: (received, total) {
         status = DownloadStatus.loading;
         progress = DownloadProgress(received, total);
-        print('PROGRESS::: $progress');
         onProgress(progress!);
       });
     } catch (e) {

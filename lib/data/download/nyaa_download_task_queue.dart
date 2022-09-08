@@ -1,8 +1,5 @@
 import 'dart:convert';
 import 'dart:io';
-
-import 'package:comic_nyaa/data/download/nyaa_download_manager.dart';
-import 'package:comic_nyaa/library/download/download_task.dart';
 import 'package:comic_nyaa/library/download/download_task_queue.dart';
 import 'package:comic_nyaa/library/download/downloadable.dart';
 import 'package:comic_nyaa/models/typed_model.dart';
@@ -10,15 +7,17 @@ import 'package:comic_nyaa/utils/extensions.dart';
 
 import '../../app/preference.dart';
 import '../../library/mio/core/mio.dart';
+import 'nyaa_download_manager.dart';
 import 'nyaa_download_task.dart';
 
-class NyaaDownloadTaskQueue extends DownloadTaskQueue {
+class NyaaDownloadTaskQueue extends DownloadTaskQueue<NyaaDownloadTask> {
+  int? id;
   late String directory;
   late DownloadResourceLevel level;
   late TypedModel parent;
   late String title;
   late String cover;
-  int? id;
+  List<NyaaDownloadTask> tasks = [];
 
   NyaaDownloadTaskQueue.fromJson(Map<String, dynamic> data): super(DateTime.parse(data['createDate'])) {
     directory = data['directory'];
@@ -26,7 +25,7 @@ class NyaaDownloadTaskQueue extends DownloadTaskQueue {
     title = data['title'];
     path = data['path'];
     url = data['url'];
-    level = DownloadResourceLevel.fromDbCode(data['level']);
+    level = DownloadResourceLevel.fromDbValue(data['level']);
     status = DownloadStatus.fromDbValue(data['status']);
     parent = TypedModel.fromJson(jsonDecode(data['parent']));
     progress = DownloadProgress(data['completedLength'], data['totalLength']);
@@ -71,9 +70,12 @@ class NyaaDownloadTaskQueue extends DownloadTaskQueue {
           queue.add(NyaaDownloadTask.fromUrl(directory, child.getUrl(level)));
         }
       }
+      tasks.addAll(queue as Iterable<NyaaDownloadTask>);
+      print('TTTTTTTTTTTTTTTTTTTTTTTTTTTT::: $tasks');
     } catch (e) {
       status = DownloadStatus.failed;
       error = e;
+      rethrow;
     } finally {
       (await NyaaDownloadManager.instance).downloadProvider.update(this);
     }

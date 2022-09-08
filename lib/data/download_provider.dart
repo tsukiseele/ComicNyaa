@@ -17,6 +17,7 @@ const String columnStatus = 'status';
 const String columnCreateDate = 'createDate';
 const String columnCompletedLength = 'completedLength';
 const String columnTotalLength = 'totalLength';
+const String columnTasks = 'tasks';
 
 const String createTableDownload = '''
         create table $tableDownload ( 
@@ -31,6 +32,7 @@ const String createTableDownload = '''
           $columnCreateDate TEXT NOT NULL,
           $columnCompletedLength INTEGER NOT NULL,
           $columnTotalLength INTEGER NOT NULL,
+          $columnTasks TEXT NOT NULL,
           $columnUrl TEXT NOT NULL)
         ''';
 
