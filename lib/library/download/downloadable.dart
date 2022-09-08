@@ -9,42 +9,10 @@ enum DownloadStatus {
   failed('FAILED'),
   successful('SUCCESSFUL');
 
-  static DownloadStatus fromDbValue(String value) {
-    switch (value) {
-      case 'IDLE':
-        return DownloadStatus.idle;
-      case 'INIT':
-        return DownloadStatus.init;
-      case 'LOADING':
-        return DownloadStatus.loading;
-      case 'PAUSE':
-        return DownloadStatus.pause;
-      case 'FAILED':
-        return DownloadStatus.failed;
-      case 'SUCCESSFUL':
-        return DownloadStatus.successful;
-      default:
-        return DownloadStatus.idle;
-    }
-  }
-  String toDbValue() {
-    switch (this) {
-      case DownloadStatus.idle:
-        return 'IDLE';
-      case DownloadStatus.init:
-        return 'INIT';
-      case DownloadStatus.loading:
-        return 'LOADING';
-      case DownloadStatus.pause:
-        return 'PAUSE';
-      case DownloadStatus.failed:
-        return 'FAILED';
-      case DownloadStatus.successful:
-        return 'SUCCESSFUL';
-    }
-  }
   const DownloadStatus(this.value);
   final String value;
+
+  static DownloadStatus fromDbValue(String value) => DownloadStatus.values.firstWhere((item) => item.value == value);
 }
 
 class DownloadProgress {

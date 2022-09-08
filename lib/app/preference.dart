@@ -10,28 +10,8 @@ enum DownloadResourceLevel {
 
   final String value;
 
-  static DownloadResourceLevel fromDbValue(int code) {
-    switch (code) {
-      case 1:
-        return DownloadResourceLevel.low;
-      case 2:
-        return DownloadResourceLevel.medium;
-      case 3:
-        return DownloadResourceLevel.high;
-      default:
-        return DownloadResourceLevel.medium;
-    }
-  }
-  int toDbCode() {
-    switch (this) {
-      case DownloadResourceLevel.low:
-        return 1;
-      case DownloadResourceLevel.medium:
-        return 2;
-      case DownloadResourceLevel.high:
-        return 3;
-    }
-  }
+  static DownloadResourceLevel fromDbValue(String value) =>
+      DownloadResourceLevel.values.firstWhere((item) => item.value == value);
 }
 
 class NyaaPreferences {
@@ -51,7 +31,7 @@ class NyaaPreferences {
   DownloadResourceLevel get downloadResourceLevel {
     final level = preferences.getString('download_resource_level');
     return DownloadResourceLevel.values
-            .singleWhereOrNull((item) => item.value == level) ??
+        .singleWhereOrNull((item) => item.value == level) ??
         defaultDownloadResourceLevel;
   }
 }

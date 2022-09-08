@@ -1,6 +1,5 @@
 import 'package:comic_nyaa/library/download/downloadable.dart';
 
-import 'download_task.dart';
 import 'downloadable_queue.dart';
 
 class DownloadTaskQueue<T extends Downloadable> extends DownloadableQueue<T> {

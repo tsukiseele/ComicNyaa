@@ -18,7 +18,7 @@ class NyaaDownloadTask extends DownloadTask {
     Map<String, dynamic> data = {};
     data['path'] = path;
     data['url'] = url;
-    data['status'] = status.toDbValue();
+    data['status'] = status.value;
     data['createDate'] = createDate.toIso8601String();
     data['completedLength'] = progress?.completedLength ?? 0;
     data['totalLength'] = progress?.totalLength ?? 0;

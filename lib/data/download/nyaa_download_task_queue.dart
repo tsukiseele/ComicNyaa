@@ -29,7 +29,8 @@ class NyaaDownloadTaskQueue extends DownloadTaskQueue<NyaaDownloadTask> {
     status = DownloadStatus.fromDbValue(data['status']);
     parent = TypedModel.fromJson(jsonDecode(data['parent']));
     progress = DownloadProgress(data['completedLength'], data['totalLength']);
-    tasks = jsonDecode(data['tasks']);
+    final tList = jsonDecode(data['tasks']);
+    tasks = tList is List ? tList.map((item) => NyaaDownloadTask.fromJson(item)).toList() : [];
   }
 
   Map<String, dynamic> toJson() {
@@ -39,8 +40,8 @@ class NyaaDownloadTaskQueue extends DownloadTaskQueue<NyaaDownloadTask> {
     data['title'] = title;
     data['path'] = path;
     data['url'] = url;
-    data['level'] = level.toDbCode();
-    data['status'] = status.toDbValue();
+    data['level'] = level.value;
+    data['status'] = status.value;
     data['parent'] = jsonEncode(parent.toJson());
     data['createDate'] = createDate.toIso8601String();
     data['completedLength'] = progress?.completedLength ?? 0;
@@ -70,8 +71,7 @@ class NyaaDownloadTaskQueue extends DownloadTaskQueue<NyaaDownloadTask> {
           queue.add(NyaaDownloadTask.fromUrl(directory, child.getUrl(level)));
         }
       }
-      tasks.addAll(queue as Iterable<NyaaDownloadTask>);
-      print('TTTTTTTTTTTTTTTTTTTTTTTTTTTT::: $tasks');
+      tasks.addAll(queue);
     } catch (e) {
       status = DownloadStatus.failed;
       error = e;
