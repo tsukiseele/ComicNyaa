@@ -1,4 +1,5 @@
 import 'package:comic_nyaa/widget/simple_network_image.dart';
+import 'package:comic_nyaa/widget/triangle_painter.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -41,13 +42,35 @@ class DownloadQueueItem extends StatelessWidget {
             child: InkWell(
                 onTap: onTap,
                 child: Row(mainAxisSize: MainAxisSize.min, children: [
-                  SimpleNetworkImage(
-                    item.cover,
-                    headers: item.headers,
-                    width: 96,
-                    fit: BoxFit.cover,
-                    // height: 128,
-                  ),
+
+                  Container(
+                      clipBehavior: Clip.hardEdge,
+                      decoration: const BoxDecoration(
+                          border:
+                          Border(right: BorderSide(color: Colors.black12))),
+                      child: Stack(children: [
+                        SimpleNetworkImage(
+                          item.cover ?? '',
+                          headers: item.headers,
+                          width: 96,
+                          fit: BoxFit.cover,
+                          height: double.maxFinite,
+                        ),
+                        Positioned(
+                            top: 0,
+                            right: 0,
+                            child: triangle(
+                                width: 64,
+                                height: 64,
+                                color: Theme.of(context).primaryColor,
+                                direction: TriangleDirection.topRight,
+                                // contentPadding: EdgeInsets.only(),
+                                child: const Icon(
+                                  Icons.dashboard,
+                                  color: Colors.white,
+                                  size: 16,
+                                )))
+                      ])),
                   Expanded(
                     child: Container(
                         margin: const EdgeInsets.all(8),

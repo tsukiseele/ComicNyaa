@@ -40,37 +40,20 @@ class DownloadItem extends StatelessWidget {
                           fit: BoxFit.cover,
                           height: double.maxFinite,
                         ),
-                        Positioned(
-                            top: 0,
-                            right: 0,
-                            child: triangle(
-                                width: 64,
-                                height: 64,
-                                color: Theme.of(context).primaryColor,
-                                direction: TriangleDirection.topRight,
-                                // contentPadding: EdgeInsets.only(),
-                                child: const Icon(
-                                  Icons.dashboard,
-                                  color: Colors.white,
-                                  size: 18,
-                                )))
                         // Positioned(
                         //     top: 0,
                         //     right: 0,
-                        //     child: CustomPaint(
-                        //     painter: DynamicTrianglePainter(
-                        //         color: Theme.of(context).primaryColor, ),
-                        //         child: Container(
-                        //           width: 32,
-                        //           height: 32,
-                        //           padding: const EdgeInsets.only(
-                        //               left: 10, top: 0),
-                        //           child: const Icon(
-                        //             Icons.dashboard,
-                        //             color: Colors.white,
-                        //             size: 16,
-                        //           ),
-                        //         ))),
+                        //     child: triangle(
+                        //         width: 64,
+                        //         height: 64,
+                        //         color: Theme.of(context).primaryColor,
+                        //         direction: TriangleDirection.topRight,
+                        //         // contentPadding: EdgeInsets.only(),
+                        //         child: const Icon(
+                        //           Icons.dashboard,
+                        //           color: Colors.white,
+                        //           size: 18,
+                        //         )))
                       ])),
                   Expanded(
                     child: Container(
