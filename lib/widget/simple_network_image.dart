@@ -1,3 +1,4 @@
+import 'package:comic_nyaa/utils/uri_extensions.dart';
 import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
@@ -43,7 +44,7 @@ class _SimpleNetworkImageState extends State<SimpleNetworkImage>
   @override
   Widget build(BuildContext context) {
     return ExtendedImage.network(
-      widget.url,
+      widget.url.asUrl,
       width: widget.width,
       height: widget.height,
       headers: widget.headers,

@@ -4,7 +4,11 @@ class DataOrigin {
   Site site;
   Section section;
 
-  DataOrigin(this.site, this.section);
+  DataOrigin(this.site, this.section) {
+    if (section.reuse != null) {
+      section.rules = site.sections?['${section.reuse}']?.rules;
+    }
+  }
 
   Section getChildSectionByDepth(int depth) {
     Section childSection = section;

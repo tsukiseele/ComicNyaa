@@ -1,6 +1,9 @@
 import 'dart:math';
 
 import 'package:comic_nyaa/data/download/nyaa_download_task.dart';
+import 'package:comic_nyaa/library/mio/model/data_origin.dart';
+import 'package:comic_nyaa/models/typed_model.dart';
+import 'package:comic_nyaa/widget/nyaa_tag_item.dart';
 import 'package:comic_nyaa/widget/simple_network_image.dart';
 import 'package:comic_nyaa/widget/triangle_painter.dart';
 import 'package:flutter/material.dart';
@@ -12,108 +15,101 @@ import 'download_group_item.dart';
 import 'marquee_widget.dart';
 
 class DownloadItem extends StatelessWidget {
-  const DownloadItem(this.item, {Key? key}) : super(key: key);
+  const DownloadItem(this.item, {Key? key, this.origin}) : super(key: key);
   final NyaaDownloadTask item;
+  final DataOrigin? origin;
+
+  Widget _buildProgressText(DownloadProgress? progress) {
+    if (progress == null) {
+      return const Text('');
+    }
+    if (item.status == DownloadStatus.successful || progress.totalLength <= 0) {
+      return Text(progress.completedLength.readableFileSize());
+    }
+    return Text('${(progress.completedLength / progress.totalLength * 100).toInt()}%');
+  }
 
   @override
   Widget build(BuildContext context) {
     return Container(
-        height: 120,
-        margin: const EdgeInsets.only(top: 4, bottom: 4, left: 8, right: 8),
+        height: 112,
+        margin: const EdgeInsets.only(top: 2, bottom: 2, left: 8, right: 8),
         child: Material(
             elevation: 1,
-            // borderRadius: BorderRadius.circular(4),
+            borderRadius: BorderRadius.circular(2),
             clipBehavior: Clip.hardEdge,
             child: InkWell(
-                onTap: () {},
+                onTap: () {
+                  print('IIIIIIIIIIIIIII::: ${item.cover}');
+                },
                 child: Row(mainAxisSize: MainAxisSize.min, children: [
-                  Container(
-                      clipBehavior: Clip.hardEdge,
-                      decoration: const BoxDecoration(
-                          border:
-                              Border(right: BorderSide(color: Colors.black12))),
-                      child: Stack(children: [
-                        SimpleNetworkImage(
-                          item.cover ?? '',
-                          headers: item.headers,
-                          width: 80,
-                          fit: BoxFit.cover,
-                          height: double.maxFinite,
-                        ),
-                        // Positioned(
-                        //     top: 0,
-                        //     right: 0,
-                        //     child: triangle(
-                        //         width: 64,
-                        //         height: 64,
-                        //         color: Theme.of(context).primaryColor,
-                        //         direction: TriangleDirection.topRight,
-                        //         // contentPadding: EdgeInsets.only(),
-                        //         child: const Icon(
-                        //           Icons.dashboard,
-                        //           color: Colors.white,
-                        //           size: 18,
-                        //         )))
-                      ])),
+                  Material(
+                    color: Colors.grey[100],
+                    child: SimpleNetworkImage(
+                      item.cover ?? '',
+                      headers: item.headers,
+                      width: 80,
+                      fit: BoxFit.contain,
+                      height: double.maxFinite,
+                    ),
+                  ),
                   Expanded(
                     child: Container(
                         margin: const EdgeInsets.all(8),
-                        child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              Expanded(
-                                  child: MarqueeWidget(
-                                      child: Text(
-                                item.url,
-                                maxLines: 2,
-                              ))),
-                              Container(
-                                margin: const EdgeInsets.only(bottom: 8),
-                                alignment: AlignmentDirectional.centerEnd,
-                                child: Text(
-                                  DateFormat('yyyy/M/d hh:mm')
-                                      .format(item.createDate.toLocal()),
-                                  maxLines: 1,
-                                ),
-                              ),
-                              item.status != DownloadStatus.successful
-                                  ? Padding(
-                                      padding: const EdgeInsets.only(
-                                          top: 8, bottom: 8),
-                                      child: item.progress != null
-                                          ? LinearProgressIndicator(
-                                              value: item.progress!
-                                                      .completedLength /
-                                                  item.progress!.totalLength)
-                                          : const LinearProgressIndicator())
-                                  : Container(),
-                              Row(children: [
-                                Material(
-                                  color: getColorByStatus(item.status),
-                                  elevation: 2,
-                                  child: Padding(
-                                      padding: const EdgeInsets.all(4),
-                                      child: Text(
-                                        item.status.value,
-                                        maxLines: 1,
-                                        style: const TextStyle(
-                                            color: Colors.white),
-                                      )),
-                                ),
-                                Expanded(
-                                    child: Padding(
-                                  padding:
-                                      const EdgeInsets.only(left: 4, right: 4),
-                                  child: Text(item.progress != null &&
-                                          item.status !=
-                                              DownloadStatus.successful
-                                      ? getProgressText(
-                                          item.progress!.completedLength,
-                                          item.progress!.totalLength)
-                                      : ''),
-                                )),
-                              ])
-                            ])),
+                        child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+                          Expanded(
+                              child: Text(
+                            item.title ?? '',
+                            maxLines: 2,
+                            style: const TextStyle(fontSize: 16),
+                          )),
+                          Container(
+                              margin: const EdgeInsets.only(bottom: 8),
+                              alignment: AlignmentDirectional.centerEnd,
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  Text(
+                                    origin?.site.name ?? '',
+                                    maxLines: 1,
+                                    style: TextStyle(color: Colors.teal[200], fontSize: 16),
+                                  ),
+                                  const Spacer(),
+                                  Text(
+                                    DateFormat('yyyy/M/d hh:mm').format(item.createDate.toLocal()),
+                                    maxLines: 1,
+                                  )
+                                ],
+                              )),
+                          item.status != DownloadStatus.successful
+                              ? Padding(
+                                  padding: const EdgeInsets.only(top: 8, bottom: 8),
+                                  child: item.progress != null
+                                      ? LinearProgressIndicator(
+                                          value: item.progress!.completedLength / item.progress!.totalLength)
+                                      : item.status == DownloadStatus.loading
+                                          ? const LinearProgressIndicator()
+                                          : Container())
+                              : Container(),
+                          Row(children: [
+                            Material(
+                              color: getColorByStatus(item.status),
+                              elevation: 2,
+                              child: Padding(
+                                  padding: const EdgeInsets.all(4),
+                                  child: Text(
+                                    item.status.value,
+                                    maxLines: 1,
+                                    style: const TextStyle(color: Colors.white),
+                                  )),
+                            ),
+                            Expanded(
+                                child: Padding(
+                              padding: const EdgeInsets.only(left: 4, right: 4),
+                              child: _buildProgressText(item.progress),
+                            )),
+                          ])
+                        ])),
                   )
                 ]))));
   }

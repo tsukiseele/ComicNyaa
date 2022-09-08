@@ -34,6 +34,7 @@ class DataModel<T> {
     }
     final site = SiteManager.getSiteByOriginInfo(origin)!;
     final section = site.sections![origin.sectionName]!;
+
     return DataOrigin(site, section);
   }
 }

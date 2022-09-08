@@ -23,6 +23,11 @@ class DownloadTask extends Downloadable<void> {
     status = DownloadStatus.loading;
     try {
       final target = File(path);
+      if (await target.exists()) {
+        final length = await target.length();
+        progress = DownloadProgress(length, length);
+        status = DownloadStatus.successful;
+      }
       if (!await target.parent.exists()) {
         await target.parent.create();
       }

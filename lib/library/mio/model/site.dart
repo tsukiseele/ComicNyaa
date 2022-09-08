@@ -55,6 +55,14 @@ class Site {
     }
     return data;
   }
+
+  void includeSection() {
+    sections?.forEach((key, section) {
+      if (section.reuse != null) {
+        section.rules = sections?['${section.reuse}']?.rules;
+      }
+    });
+  }
 }
 
 class Headers extends BaseMap<String, String> {

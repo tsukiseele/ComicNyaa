@@ -32,6 +32,9 @@ class DownloadTaskQueue<T extends Downloadable> extends DownloadableQueue<T> {
   @override
   Future<void> onInitialize() async {
     status = DownloadStatus.init;
+    tasks = [];
+    finishTasks = [];
+    queue.clear();
   }
 
   @override
@@ -41,10 +44,16 @@ class DownloadTaskQueue<T extends Downloadable> extends DownloadableQueue<T> {
     while (queue.isNotEmpty) {
       if (status == DownloadStatus.pause) return;
       final task = removeFirst();
-      await task.start();
-      finishTasks.add(task);
-      progress = DownloadProgress(finishTasks.length, tasks.length);
-      onProgress(progress!);
+      try {
+        await task.start();
+      } catch (e) {
+        print('FAILED ChlidTask::: ${task.url}');
+        // task.status =
+      } finally {
+        finishTasks.add(task);
+        progress = DownloadProgress(finishTasks.length, tasks.length);
+        onProgress(progress!);
+      }
     }
   }
 
@@ -59,7 +68,5 @@ class DownloadTaskQueue<T extends Downloadable> extends DownloadableQueue<T> {
   }
 
   @override
-  Future<void> onProgress(DownloadProgress progress) async {
-
-  }
+  Future<void> onProgress(DownloadProgress progress) async {}
 }

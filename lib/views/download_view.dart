@@ -9,9 +9,7 @@ import '../widget/download_item.dart';
 import 'download_detail_view.dart';
 
 class DownloadView extends StatefulWidget {
-  const DownloadView(
-      {Key? key, this.updateInterval = const Duration(milliseconds: 1000)})
-      : super(key: key);
+  const DownloadView({Key? key, this.updateInterval = const Duration(milliseconds: 1000)}) : super(key: key);
   final Duration updateInterval;
 
   @override
@@ -44,10 +42,7 @@ class _DownloadViewState extends State<DownloadView> {
   }
 
   void onShowDetail(NyaaDownloadTaskQueue item) {
-    Navigator.push(
-        context,
-        MaterialPageRoute(
-            builder: (ctx) => DownloadDetailView(item, notifier: notifier)));
+    Navigator.push(context, MaterialPageRoute(builder: (ctx) => DownloadDetailView(item, notifier: notifier)));
   }
 
   @override
@@ -55,14 +50,14 @@ class _DownloadViewState extends State<DownloadView> {
     return Scaffold(
       appBar: AppBar(title: const Text('下载')),
       body: Material(
-          child: ListView(
-        children: List.generate(_downloadList.length, (index) {
+          child: Container(
+        padding: const EdgeInsets.only(top: 4, bottom: 4),
+        child: ListView(
+            children: List.generate(_downloadList.length, (index) {
           final item = _downloadList[index];
-          print('SSSSSSSSSSSSSSSS::: IS_SINGLE => ${item.isSingle()}');
-          return item.isSingle()
-              ? DownloadItem(item.tasks.first)
-              : DownloadQueueItem(item, onTap: () => onShowDetail(item));
-        }),
+          // print('SSSSSSSSSSSSSSSS::: IS_SINGLE => ${item.isSingle()}, ${item.tasks}');
+          return item.isSingle() ? DownloadItem(item.tasks.first, origin: item.parent.getOrigin()) : DownloadQueueItem(item, onTap: () => onShowDetail(item));
+        })),
       )),
     );
   }

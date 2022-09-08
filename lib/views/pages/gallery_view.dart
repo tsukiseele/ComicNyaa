@@ -292,7 +292,7 @@ class _GalleryViewState extends State<GalleryView>
                                   // Column(
                                   //   children: [
                                   ExtendedImage.network(
-                                      _items[index].coverUrl?.asUrl() ?? '',
+                                      _items[index].coverUrl?.asUrl ?? '',
                                       headers: _currentSite?.headers,
                                       height: _heightCache[index],
                                       opacity: controller,
@@ -345,8 +345,8 @@ class _GalleryViewState extends State<GalleryView>
                                           right: 0,
                                           bottom: 0,
                                           child: triangle(
-                                            width: 64,
-                                            height: 64,
+                                            width: 32,
+                                            height: 32,
                                             color:
                                                 Theme.of(context).primaryColor,
                                             direction:

@@ -4,6 +4,7 @@ import 'package:comic_nyaa/library/download/download_task_queue.dart';
 import 'package:comic_nyaa/library/download/downloadable.dart';
 import 'package:comic_nyaa/models/typed_model.dart';
 import 'package:comic_nyaa/utils/extensions.dart';
+import 'package:comic_nyaa/utils/string_extensions.dart';
 
 import '../../app/preference.dart';
 import '../../library/mio/core/mio.dart';
@@ -18,7 +19,7 @@ class NyaaDownloadTaskQueue extends DownloadTaskQueue<NyaaDownloadTask> {
   late String title;
   late String cover;
 
-  NyaaDownloadTaskQueue.fromJson(Map<String, dynamic> data): super(DateTime.parse(data['createDate'])) {
+  NyaaDownloadTaskQueue.fromJson(Map<String, dynamic> data) : super(DateTime.parse(data['createDate'])) {
     directory = data['directory'];
     cover = data['cover'];
     title = data['title'];
@@ -54,23 +55,25 @@ class NyaaDownloadTaskQueue extends DownloadTaskQueue<NyaaDownloadTask> {
   Future<NyaaDownloadTaskQueue> onInitialize() async {
     await super.onInitialize();
     try {
-      (await NyaaDownloadManager.instance).downloadProvider.insert(this);
+      if (id == null) {
+        (await NyaaDownloadManager.instance).downloadProvider.insert(this);
+      }
       final origin = parent.getOrigin();
       headers = origin.site.headers;
       parent = TypedModel.fromJson(await Mio(origin.site).parseAllChildren(parent.toJson()));
       if (title.isEmpty) title = parent.title ?? '';
       final children = parent.children;
       if (children == null || children.isEmpty) {
-        queue.add(NyaaDownloadTask.fromUrl(directory, parent.getUrl(level), cover: parent.coverUrl));
+        queue.add(NyaaDownloadTask.fromUrl(directory, parent.getUrl(level), title: parent.title, cover: parent.coverUrl));
       } else if (children.length == 1) {
-        queue.add(NyaaDownloadTask.fromUrl(directory, children[0].getUrl(level), cover: children[0].coverUrl ?? parent.coverUrl));
+        queue.add(NyaaDownloadTask.fromUrl(directory, children[0].getUrl(level),
+            title: StringUtil.value(children[0].title, parent.title),
+            cover: StringUtil.value(children[0].coverUrl, parent.coverUrl)));
       } else {
-        directory = Directory(directory)
-            .join(title + cover.hashCode.toString())
-            .path;
+        directory = Directory(directory).join(title /*'${title}_${cover.hashCode}'*/).path;
         for (var child in parent.children!) {
-          queue.add(NyaaDownloadTask.fromUrl(
-              directory, child.getUrl(level), cover: child.coverUrl));
+          queue.add(NyaaDownloadTask.fromUrl(directory, child.getUrl(level),
+              title: child.title, cover: child.coverUrl));
         }
       }
     } catch (e) {
@@ -98,7 +101,9 @@ class NyaaDownloadTaskQueue extends DownloadTaskQueue<NyaaDownloadTask> {
     (await NyaaDownloadManager.instance).downloadProvider.update(this);
   }
 
-  NyaaDownloadTaskQueue({required this.parent, required this.directory, required DateTime createDate, this.level = DownloadResourceLevel.medium}) : super(createDate) {
+  NyaaDownloadTaskQueue(
+      {required this.parent, required this.directory, required DateTime createDate, this.level = DownloadResourceLevel.medium})
+      : super(createDate) {
     cover = parent.coverUrl ?? '';
     title = parent.title ?? '';
   }

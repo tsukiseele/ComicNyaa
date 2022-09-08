@@ -32,7 +32,7 @@ class _DownloadDetailViewState extends State<DownloadDetailView> {
       body: Material(
           child: ListView(
         children:
-            List.generate(tasks.length, (index) => DownloadItem(tasks[index])),
+            List.generate(tasks.length, (index) => DownloadItem(tasks[index], origin: widget.queue.parent.getOrigin())),
       )),
     );
   }

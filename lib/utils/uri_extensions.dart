@@ -13,7 +13,7 @@ extension UriExtension on Uri {
 }
 
 extension UrlBuilder on String {
-  asUrl() {
+  get asUrl {
     return replaceAll(r'\', '');
   }
 }

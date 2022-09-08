@@ -1,3 +1,4 @@
+import 'package:comic_nyaa/data/download/nyaa_download_manager.dart';
 import 'package:comic_nyaa/widget/simple_network_image.dart';
 import 'package:comic_nyaa/widget/triangle_painter.dart';
 import 'package:flutter/material.dart';
@@ -61,27 +62,50 @@ class DownloadQueueItem extends StatelessWidget {
   final NyaaDownloadTaskQueue item;
   final void Function()? onTap;
 
+  Widget _buildProgressText(DownloadProgress? progress) {
+    if (progress == null) {
+      return const Text('');
+    }
+    return Text('${progress.completedLength} / ${progress.totalLength} pics');
+  }
+
+  Widget _buildProgressIndicator(DownloadProgress? progress) {
+    if (item.status == DownloadStatus.init) {
+      return const LinearProgressIndicator();
+    }
+    if (item.status == DownloadStatus.loading) {
+      if (item.progress != null && item.progress!.totalLength > 0) {
+        return Padding(
+            padding: const EdgeInsets.only(top: 8, bottom: 8),
+            child: LinearProgressIndicator(value: item.progress!.completedLength / item.progress!.totalLength));
+      } else {
+        return const LinearProgressIndicator();
+      }
+    }
+    return Container();
+  }
+
   @override
   Widget build(BuildContext context) {
+    final origin = item.parent.getOrigin();
     return Container(
         height: 120,
         margin: const EdgeInsets.only(top: 4, bottom: 4, left: 8, right: 8),
         child: Material(
             elevation: 1,
+            borderRadius: BorderRadius.circular(2),
+            clipBehavior: Clip.hardEdge,
             child: InkWell(
                 onTap: onTap,
                 child: Row(mainAxisSize: MainAxisSize.min, children: [
-                  Container(
-                      clipBehavior: Clip.hardEdge,
-                      decoration: const BoxDecoration(
-                          border:
-                              Border(right: BorderSide(color: Colors.black12))),
+                  Material(
+                      color: Colors.grey[100],
                       child: Stack(children: [
                         SimpleNetworkImage(
                           item.cover,
                           headers: item.headers,
                           width: 80,
-                          fit: BoxFit.cover,
+                          fit: BoxFit.contain,
                           height: double.maxFinite,
                         ),
                         Positioned(
@@ -92,7 +116,7 @@ class DownloadQueueItem extends StatelessWidget {
                                 height: 40,
                                 color: Theme.of(context).primaryColor,
                                 direction: TriangleDirection.topLeft,
-                                contentPadding: EdgeInsets.all(2),
+                                contentPadding: const EdgeInsets.all(2),
                                 child: Icon(
                                   getIconDataByNumber(item.tasks.length),
                                   color: Colors.white,
@@ -102,51 +126,59 @@ class DownloadQueueItem extends StatelessWidget {
                   Expanded(
                     child: Container(
                         margin: const EdgeInsets.all(8),
-                        child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              Expanded(
-                                  child:
-                                      MarqueeWidget(child: Text(item.title))),
-                              Container(
-                                margin: const EdgeInsets.only(bottom: 8),
-                                alignment: AlignmentDirectional.centerStart,
-                                child: Text(
-                                  DateFormat('yyyy/M/d hh:mm')
-                                      .format(item.createDate.toLocal()),
-                                  maxLines: 1,
-                                ),
-                              ),
-                              Row(children: [
-                                Material(
-                                  color: getColorByStatus(item.status),
-                                  elevation: 2,
-                                  child: Padding(
-                                      padding: const EdgeInsets.all(4),
-                                      child: Text(
-                                        item.status.value,
-                                        maxLines: 1,
-                                        style: const TextStyle(
-                                            color: Colors.white),
-                                      )),
-                                ),
-                                Expanded(
-                                    child: Padding(
-                                  padding:
-                                      const EdgeInsets.only(left: 4, right: 4),
+                        child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+                          Expanded(child: Text(item.title)),
+                          Container(
+                              margin: const EdgeInsets.only(bottom: 8),
+                              alignment: AlignmentDirectional.centerEnd,
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  Text(
+                                    origin.site.name ?? '',
+                                    maxLines: 1,
+                                    style: TextStyle(color: Colors.teal[200], fontSize: 16),
+                                  ),
+                                  const Spacer(),
+                                  Text(
+                                    DateFormat('yyyy/M/d hh:mm').format(item.createDate.toLocal()),
+                                    maxLines: 1,
+                                  )
+                                ],
+                              )),
+                          _buildProgressIndicator(item.progress),
+                          Row(children: [
+                            Material(
+                              color: getColorByStatus(item.status),
+                              elevation: 2,
+                              child: Padding(
+                                  padding: const EdgeInsets.all(4),
                                   child: Text(
-                                      '${item.progress?.completedLength} / ${item.progress?.totalLength}'),
-                                )),
-                                item.status == DownloadStatus.loading
-                                    ? InkWell(
-                                        onTap: () {},
-                                        child: const Icon(Icons.pause))
-                                    : InkWell(
-                                        onTap: () {},
-                                        child: const Icon(Icons.play_arrow))
-                              ])
-                            ])),
+                                    item.status.value,
+                                    maxLines: 1,
+                                    style: const TextStyle(color: Colors.white),
+                                  )),
+                            ),
+                            Expanded(
+                                child: Padding(
+                              padding: const EdgeInsets.only(left: 4, right: 4),
+                              child: _buildProgressText(item.progress),
+                            )),
+                            item.status == DownloadStatus.loading
+                                ? InkWell(
+                                    onTap: () {},
+                                    child: const Padding(padding: EdgeInsets.all(4), child: Icon(Icons.pause)))
+                                : InkWell(
+                                    onTap: () => onRestart(item),
+                                    child: const Padding(padding: EdgeInsets.all(4), child:  Icon(Icons.play_arrow)))
+                          ])
+                        ])),
                   )
                 ]))));
+  }
+
+  Future<void> onRestart(NyaaDownloadTaskQueue tasks) async {
+    tasks.start();
+    // (await NyaaDownloadManager.instance).restart(tasks.parent);
   }
 }

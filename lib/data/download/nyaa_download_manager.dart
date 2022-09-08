@@ -41,4 +41,9 @@ class NyaaDownloadManager {
     DownloadManager.instance.addAll(tasks);
     _tasks.insertAll(0, tasks);
   }
+
+  restart(NyaaDownloadTaskQueue queue) {
+
+    DownloadManager.instance.add(queue);
+  }
 }
