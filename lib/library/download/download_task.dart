@@ -1,8 +1,5 @@
 import 'dart:io';
-
-import 'package:comic_nyaa/utils/extensions.dart';
 import 'package:comic_nyaa/utils/h_client.dart';
-import 'package:comic_nyaa/utils/uri_extensions.dart';
 import 'downloadable.dart';
 
 class DownloadTask extends Downloadable<void> {
@@ -28,7 +25,7 @@ class DownloadTask extends Downloadable<void> {
       if (!await target.parent.exists()) {
         await target.parent.create();
       }
-      await HClient.download(url, path, (received, total) {
+      await HClient.download(url, path, headers: headers, onProgress: (received, total) {
         status = DownloadStatus.loading;
         progress = DownloadProgress(received, total);
         print('PROGRESS::: $progress');
@@ -48,11 +45,6 @@ class DownloadTask extends Downloadable<void> {
   @override
   Future<void> onPause() async {
     status = DownloadStatus.pause;
-  }
-
-  factory DownloadTask.fromUrl(String downloadDir, String url) {
-    final path = Directory(downloadDir).join(Uri.parse(url).filename).path;
-    return DownloadTask(url, path, DateTime.now());
   }
 
   @override

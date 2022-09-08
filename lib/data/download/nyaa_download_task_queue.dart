@@ -10,6 +10,7 @@ import 'package:comic_nyaa/utils/extensions.dart';
 
 import '../../app/preference.dart';
 import '../../library/mio/core/mio.dart';
+import 'nyaa_download_task.dart';
 
 class NyaaDownloadTaskQueue extends DownloadTaskQueue {
   late String directory;
@@ -28,8 +29,8 @@ class NyaaDownloadTaskQueue extends DownloadTaskQueue {
     level = DownloadResourceLevel.fromDbCode(data['level']);
     status = DownloadStatus.fromDbValue(data['status']);
     parent = TypedModel.fromJson(jsonDecode(data['parent']));
-    createDate = DateTime.parse(data['createDate']);
     progress = DownloadProgress(data['completedLength'], data['totalLength']);
+    tasks = jsonDecode(data['tasks']);
   }
 
   Map<String, dynamic> toJson() {
@@ -45,6 +46,7 @@ class NyaaDownloadTaskQueue extends DownloadTaskQueue {
     data['createDate'] = createDate.toIso8601String();
     data['completedLength'] = progress?.completedLength ?? 0;
     data['totalLength'] = progress?.totalLength ?? 0;
+    data['tasks'] = jsonEncode(tasks);
     return data;
   }
 
@@ -60,13 +62,13 @@ class NyaaDownloadTaskQueue extends DownloadTaskQueue {
       if (title.isEmpty) title = parent.title ?? '';
       final children = parent.children;
       if (children == null || children.isEmpty) {
-        queue.add(DownloadTask.fromUrl(directory, parent.getUrl(level)));
+        queue.add(NyaaDownloadTask.fromUrl(directory, parent.getUrl(level)));
       } else if (children.length == 1) {
-        queue.add(DownloadTask.fromUrl(directory, children[0].getUrl(level)));
+        queue.add(NyaaDownloadTask.fromUrl(directory, children[0].getUrl(level)));
       } else {
         directory = Directory(directory).join(title + cover.hashCode.toString()).path;
         for (var child in parent.children!) {
-          queue.add(DownloadTask.fromUrl(directory, child.getUrl(level)));
+          queue.add(NyaaDownloadTask.fromUrl(directory, child.getUrl(level)));
         }
       }
     } catch (e) {

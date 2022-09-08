@@ -33,6 +33,7 @@ class ImageDetailViewState extends State<ImageDetailView>
   late List<TypedModel> _models;
   final Set<int> _cache = {};
   List<String> _images = [];
+
   // Site? _site;
   late DataOrigin _origin;
   int _currentIndex = 0;
@@ -70,8 +71,7 @@ class ImageDetailViewState extends State<ImageDetailView>
     TypedModel model = _models[index];
     String image = getUrl(model);
     if (image.isEmpty) {
-      final results = await Mio(_origin.site)
-          .parseAllChildren(model.toJson());
+      final results = await Mio(_origin.site).parseAllChildren(model.toJson());
       final m = TypedModel.fromJson(results);
       if (m.children?.isNotEmpty == true) {
         final models = m.children;
@@ -190,7 +190,7 @@ class ImageDetailViewState extends State<ImageDetailView>
     return const Center(
         child: SpinKitSpinningLines(
       color: Colors.teal,
-      size: 96,
+      size: 64,
     ));
   }
 
@@ -281,14 +281,15 @@ class ImageDetailViewState extends State<ImageDetailView>
                     switch (state.extendedImageLoadState) {
                       case LoadState.loading:
                         final event = state.loadingProgress;
-                        if (event == null) {
-                          return buildLoading();
-                        }
                         double? progress;
-                        if (event.expectedTotalBytes != null &&
-                            event.expectedTotalBytes! > 0) {
-                          progress = event.cumulativeBytesLoaded /
-                              (event.expectedTotalBytes!);
+                        if (event == null) {
+                          progress = 0;
+                        } else {
+                          if (event.expectedTotalBytes != null &&
+                              event.expectedTotalBytes! > 0) {
+                            progress = event.cumulativeBytesLoaded /
+                                (event.expectedTotalBytes!);
+                          }
                         }
                         return CircularPercentIndicator(
                             radius: 48,
@@ -299,8 +300,11 @@ class ImageDetailViewState extends State<ImageDetailView>
                             circularStrokeCap: CircularStrokeCap.round,
                             percent: progress ?? 0,
                             center: Text(
-                              _getProgressText(event.cumulativeBytesLoaded,
-                                  event.expectedTotalBytes ?? 0),
+                              event != null
+                                  ? _getProgressText(
+                                      event.cumulativeBytesLoaded,
+                                      event.expectedTotalBytes ?? 0)
+                                  : 'Loading',
                               style: const TextStyle(
                                   fontSize: 18, color: Colors.white70),
                             ));

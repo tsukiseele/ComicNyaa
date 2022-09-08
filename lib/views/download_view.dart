@@ -1,13 +1,11 @@
 import 'dart:async';
 
 import 'package:comic_nyaa/data/download/nyaa_download_manager.dart';
-import 'package:comic_nyaa/widget/marquee_widget.dart';
-import 'package:comic_nyaa/widget/simple_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 
 import '../data/download/nyaa_download_task_queue.dart';
 import '../widget/download_item.dart';
+import 'download_detail_view.dart';
 
 class DownloadView extends StatefulWidget {
   const DownloadView(
@@ -24,6 +22,7 @@ class DownloadView extends StatefulWidget {
 class _DownloadViewState extends State<DownloadView> {
   List<NyaaDownloadTaskQueue> _downloadList = [];
   Timer? _timer;
+  late ChangeNotifier notifier = ValueNotifier(_downloadList);
 
   @override
   void initState() {
@@ -33,15 +32,22 @@ class _DownloadViewState extends State<DownloadView> {
 
   void loopUpdateStatus() {
     _update();
-    _timer = Timer.periodic(
-        widget.updateInterval,
-        (timer) => _update());
-            // WidgetsBinding.instance.addPostFrameCallback((timeStamp) => ));
+    _timer = Timer.periodic(widget.updateInterval, (timer) => _update());
+    // WidgetsBinding.instance.addPostFrameCallback((timeStamp) => ));
   }
 
   Future<void> _update() async {
     final tasks = (await NyaaDownloadManager.instance).tasks;
     setState(() => _downloadList = tasks);
+  }
+
+  void onShowDetail(NyaaDownloadTaskQueue item) {
+
+    Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (ctx) =>
+                DownloadDetailView(item, notifier: notifier)));
   }
 
   @override
@@ -50,8 +56,9 @@ class _DownloadViewState extends State<DownloadView> {
       appBar: AppBar(title: const Text('下载')),
       body: Material(
           child: ListView(
-        children: List.generate(_downloadList.length,
-            (index) => DownloadQueueItem(_downloadList[index])),
+        children: List.generate(
+            _downloadList.length,
+            (index) => DownloadQueueItem(_downloadList[index], onTap: () => onShowDetail(_downloadList[index]))),
       )),
     );
   }

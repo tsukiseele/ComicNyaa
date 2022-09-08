@@ -6,6 +6,7 @@ import 'downloadable_queue.dart';
 class DownloadTaskQueue extends DownloadableQueue<DownloadTask> {
   DownloadTaskQueue(super.createDate);
 
+  List<DownloadTask> tasks = [];
   List<DownloadTask> finishTasks = [];
 
   @override
@@ -28,6 +29,7 @@ class DownloadTaskQueue extends DownloadableQueue<DownloadTask> {
   @override
   Future<void> onInitialize() async {
     status = DownloadStatus.init;
+    tasks = queue.toList();
   }
 
   @override

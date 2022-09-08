@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:dio/dio.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/retry.dart';
 
@@ -19,14 +18,15 @@ class HClient extends http.BaseClient {
     return _inner.send(request);
   }
 
-  static Future<void> download(String url, String path, Function(int received, int total)? progress) async {
+  static Future<void> download(String url, String path, { Map<String, String>? headers, void Function(int received, int total)? onProgress}) async {
     final request = http.Request('GET', Uri.parse(url));
+    if (headers != null) request.headers.addAll(headers);
     final response = await client.send(request);
     final total = response.contentLength ?? 0;
     final List<int> bytes = [];
     await for (final value in response.stream) {
       bytes.addAll(value);
-      if (progress != null) progress(bytes.length, total);
+      if (onProgress != null) onProgress(bytes.length, total);
     }
     client.close();
     File(path).writeAsBytes(bytes);

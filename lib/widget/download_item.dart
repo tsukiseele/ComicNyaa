@@ -1,15 +1,37 @@
 import 'package:comic_nyaa/data/download/nyaa_download_task_queue.dart';
 import 'package:comic_nyaa/library/download/download_task.dart';
-import 'package:comic_nyaa/views/download_detail_view.dart';
 import 'package:comic_nyaa/widget/simple_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+import '../library/download/downloadable.dart';
 import 'marquee_widget.dart';
 
+const Color idle = Colors.grey;
+const Color downloading = Colors.blue;
+const Color successful = Colors.teal;
+const Color failed = Colors.red;
+
+Color _getColorByStatus(DownloadStatus status) {
+  switch(status) {
+    case DownloadStatus.idle:
+    case DownloadStatus.pause:
+      return idle;
+    case DownloadStatus.init:
+    case DownloadStatus.loading:
+      return downloading;
+    case DownloadStatus.successful:
+      return successful;
+    case DownloadStatus.failed:
+      return failed;
+    default:
+      return idle;
+  }
+}
 class DownloadQueueItem extends StatelessWidget {
-  const DownloadQueueItem(this.item, {Key? key}) : super(key: key);
+  const DownloadQueueItem(this.item, {Key? key, this.onTap}) : super(key: key);
   final NyaaDownloadTaskQueue item;
+  final void Function()? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -19,9 +41,7 @@ class DownloadQueueItem extends StatelessWidget {
         child: Material(
             elevation: 2,
             child: InkWell(
-                onTap: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (ctx) => DownloadDetailView(item)));
-                },
+                onTap: onTap,
                 child: Row(mainAxisSize: MainAxisSize.min, children: [
                   SimpleNetworkImage(
                     item.cover,
@@ -41,7 +61,7 @@ class DownloadQueueItem extends StatelessWidget {
                                       MarqueeWidget(child: Text(item.title))),
                               Row(children: [
                                 Material(
-                                  color: Theme.of(context).primaryColor,
+                                  color: _getColorByStatus(item.status),
                                   elevation: 2,
                                   child: Padding(
                                       padding: const EdgeInsets.all(4),
@@ -103,7 +123,7 @@ class DownloadItem extends StatelessWidget {
                                   MarqueeWidget(child: Text(item.url))),
                               Row(children: [
                                 Material(
-                                  color: Theme.of(context).primaryColor,
+                                  color: _getColorByStatus(item.status),
                                   elevation: 2,
                                   child: Padding(
                                       padding: const EdgeInsets.all(4),

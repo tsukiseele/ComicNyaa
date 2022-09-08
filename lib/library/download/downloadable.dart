@@ -1,4 +1,6 @@
 
+import 'package:flutter/cupertino.dart';
+
 enum DownloadStatus {
   idle('IDLE'),
   init('INIT'),
@@ -73,14 +75,19 @@ abstract class Downloadable<T> {
 
   Future<T> resume();
 
+  @mustCallSuper
   Future<T> onInitialize();
 
+  @mustCallSuper
   Future<T> onDownloading();
 
+  @mustCallSuper
   Future<T> onProgress(DownloadProgress progress);
 
+  @mustCallSuper
   Future<T> onPause();
 
+  @mustCallSuper
   Future<T> onDone();
 
   bool get isFailed => status == DownloadStatus.failed;
