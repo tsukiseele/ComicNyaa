@@ -175,14 +175,6 @@ class ImageDetailViewState extends State<ImageDetailView>
     super.initState();
   }
 
-  String _getProgressText(int current, int total) {
-    if (total > 0) {
-      return '${(current / total * 100).toInt()}%';
-    } else {
-      return current.readableFileSize();
-    }
-  }
-
   AnimationController? _animationController;
   Animation<double>? _animation;
 
@@ -301,7 +293,7 @@ class ImageDetailViewState extends State<ImageDetailView>
                             percent: progress ?? 0,
                             center: Text(
                               event != null
-                                  ? _getProgressText(
+                                  ? getProgressText(
                                       event.cumulativeBytesLoaded,
                                       event.expectedTotalBytes ?? 0)
                                   : 'Loading',

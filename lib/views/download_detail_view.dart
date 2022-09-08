@@ -15,9 +15,9 @@ class DownloadDetailView extends StatefulWidget {
 
 class _DownloadDetailViewState extends State<DownloadDetailView> {
   void _update() {
-
     setState(() {});
-}
+  }
+
   @override
   void initState() {
     super.initState();
@@ -28,11 +28,11 @@ class _DownloadDetailViewState extends State<DownloadDetailView> {
   Widget build(BuildContext context) {
     final tasks = widget.queue.tasks.toList();
     return Scaffold(
-      appBar: AppBar(title: const Text('下载')),
+      appBar: AppBar(title: const Text('下载详情')),
       body: Material(
           child: ListView(
-        children: List.generate(
-            tasks.length, (index) => DownloadItem(tasks[index])),
+        children:
+            List.generate(tasks.length, (index) => DownloadItem(tasks[index])),
       )),
     );
   }

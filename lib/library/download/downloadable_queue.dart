@@ -9,8 +9,6 @@ abstract class DownloadableQueue<T> extends Downloadable {
 
   Queue<T> get queue => _queue;
 
-  int get length => queue.length;
-
   void add(T downloadable) {
     queue.add(downloadable);
   }
@@ -29,10 +27,6 @@ abstract class DownloadableQueue<T> extends Downloadable {
 
   T removeLast() {
     return queue.removeLast();
-  }
-
-  isSingle() {
-    return queue.length == 1;
   }
 
   T get first => queue.first;

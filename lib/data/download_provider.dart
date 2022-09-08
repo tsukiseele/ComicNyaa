@@ -61,8 +61,8 @@ class DownloadProvider {
   Future<NyaaDownloadTaskQueue?> getTask(int id) async {
     List<Map> maps = await _db.query(tableDownload,
         columns: [columnId, columnCover, columnTitle],
-        orderBy: columnCreateDate,
-        having: 'DESC',
+        orderBy: '$columnCreateDate DESC',
+        // having: 'DESC',
         where: '$columnId = ?',
         whereArgs: [id]);
     if (maps.isNotEmpty) {

@@ -11,3 +11,11 @@ extension FileFormatter on num {
     return "${NumberFormat("#,##0.#").format(this / pow(base, digitGroups))} ${units[digitGroups]}";
   }
 }
+
+String getProgressText(int current, int total) {
+  if (total > 0) {
+    return '${(current / total * 100).toInt()}%';
+  } else {
+    return current.readableFileSize();
+  }
+}

@@ -7,11 +7,13 @@ import '../../library/download/download_task.dart';
 import '../../library/download/downloadable.dart';
 
 class NyaaDownloadTask extends DownloadTask {
-  NyaaDownloadTask(super.url, super.path, super.createDate);
+  String? cover;
+  NyaaDownloadTask(super.url, super.path, super.createDate, {this.cover});
 
   NyaaDownloadTask.fromJson(Map<String, dynamic> data): super(data['url'], data['path'], DateTime.parse(data['createDate'])) {
     status = DownloadStatus.fromDbValue(data['status']);
     progress = DownloadProgress(data['completedLength'], data['totalLength']);
+    cover = data['cover'];
   }
 
   Map<String, dynamic> toJson() {
@@ -25,8 +27,8 @@ class NyaaDownloadTask extends DownloadTask {
     return data;
   }
 
-  factory NyaaDownloadTask.fromUrl(String downloadDir, String url) {
+  factory NyaaDownloadTask.fromUrl(String downloadDir, String url, {String? cover}) {
     final path = Directory(downloadDir).join(Uri.parse(url).filename).path;
-    return NyaaDownloadTask(url, path, DateTime.now());
+    return NyaaDownloadTask(url, path, DateTime.now(), cover: cover);
   }
 }

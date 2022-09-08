@@ -17,7 +17,6 @@ class NyaaDownloadTaskQueue extends DownloadTaskQueue<NyaaDownloadTask> {
   late TypedModel parent;
   late String title;
   late String cover;
-  List<NyaaDownloadTask> tasks = [];
 
   NyaaDownloadTaskQueue.fromJson(Map<String, dynamic> data): super(DateTime.parse(data['createDate'])) {
     directory = data['directory'];
@@ -62,16 +61,18 @@ class NyaaDownloadTaskQueue extends DownloadTaskQueue<NyaaDownloadTask> {
       if (title.isEmpty) title = parent.title ?? '';
       final children = parent.children;
       if (children == null || children.isEmpty) {
-        queue.add(NyaaDownloadTask.fromUrl(directory, parent.getUrl(level)));
+        queue.add(NyaaDownloadTask.fromUrl(directory, parent.getUrl(level), cover: parent.coverUrl));
       } else if (children.length == 1) {
-        queue.add(NyaaDownloadTask.fromUrl(directory, children[0].getUrl(level)));
+        queue.add(NyaaDownloadTask.fromUrl(directory, children[0].getUrl(level), cover: children[0].coverUrl ?? parent.coverUrl));
       } else {
-        directory = Directory(directory).join(title + cover.hashCode.toString()).path;
+        directory = Directory(directory)
+            .join(title + cover.hashCode.toString())
+            .path;
         for (var child in parent.children!) {
-          queue.add(NyaaDownloadTask.fromUrl(directory, child.getUrl(level)));
+          queue.add(NyaaDownloadTask.fromUrl(
+              directory, child.getUrl(level), cover: child.coverUrl));
         }
       }
-      tasks.addAll(queue);
     } catch (e) {
       status = DownloadStatus.failed;
       error = e;

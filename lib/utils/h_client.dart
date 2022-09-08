@@ -28,6 +28,7 @@ class HClient extends http.BaseClient {
       bytes.addAll(value);
       if (onProgress != null) onProgress(bytes.length, total);
     }
+    if (onProgress != null) onProgress(bytes.length, total);
     client.close();
     File(path).writeAsBytes(bytes);
   }

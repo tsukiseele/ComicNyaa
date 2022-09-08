@@ -6,6 +6,11 @@ class DownloadTaskQueue<T extends Downloadable> extends DownloadableQueue<T> {
   DownloadTaskQueue(super.createDate);
 
   List<T> finishTasks = [];
+  List<T> tasks = [];
+
+  bool isSingle() {
+    return tasks.length == 1;
+  }
 
   @override
   Future<void> start() async {
@@ -32,12 +37,13 @@ class DownloadTaskQueue<T extends Downloadable> extends DownloadableQueue<T> {
   @override
   Future<void> onDownloading() async {
     status = DownloadStatus.loading;
+    tasks = queue.toList();
     while (queue.isNotEmpty) {
       if (status == DownloadStatus.pause) return;
       final task = removeFirst();
       await task.start();
       finishTasks.add(task);
-      progress = DownloadProgress(finishTasks.length, length + finishTasks.length);
+      progress = DownloadProgress(finishTasks.length, tasks.length);
       onProgress(progress!);
     }
   }
