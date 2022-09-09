@@ -62,7 +62,7 @@ class Http {
       RandomAccessFile raf = await file.open(mode: FileMode.append);
       // print('AAAAAAAAAAAAAAAAAAAAAAA');
       int received = downloadStart;
-      final total = response.contentLength ?? 0;
+      final total = (response.contentLength ?? 0) + downloadStart;
       try {
         onProgress?.call(received, total);
         // print('BVBBBBBBBBBBBBBBBB');

@@ -26,7 +26,7 @@ class DownloadItem extends StatelessWidget {
     if (item.status == DownloadStatus.successful || progress.totalLength <= 0) {
       return Text(progress.completedLength.readableFileSize());
     }
-    return Text('${(progress.completedLength / progress.totalLength * 100).toInt()}%');
+    return Text('${progress.completedLength.readableFileSize()} / ${progress.totalLength.readableFileSize()}');
   }
 
   Widget _buildProgressIndicator(DownloadProgress? progress) {

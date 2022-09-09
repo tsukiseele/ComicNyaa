@@ -83,7 +83,7 @@ class NyaaDownloadTaskQueue extends DownloadTaskQueue<NyaaDownloadTask> {
       status = DownloadStatus.failed;
       error = e;
     } finally {
-      // 保存初始化状态
+      // 必须更新数据库，保存初始化状态
       (await NyaaDownloadManager.instance).downloadProvider.update(this);
     }
     return;
