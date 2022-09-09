@@ -89,7 +89,7 @@ class DownloadQueueItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final origin = item.parent.getOrigin();
     return Container(
-        height: 120,
+        height: 112,
         margin: const EdgeInsets.only(top: 4, bottom: 4, left: 8, right: 8),
         child: Material(
             elevation: 1,

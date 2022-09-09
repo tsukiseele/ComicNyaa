@@ -51,20 +51,21 @@ class DownloadTaskQueue<T extends Downloadable> extends DownloadableQueue<T> {
       final task = queue.removeFirst();
       try {
         await task.start();
+        finishCount++;
       } catch (e) {
         print('FAILED! DownloadTask::: ${task.url}');
         // task.status =
       } finally {
-        finishCount++;
         onProgress(DownloadProgress(finishCount, tasks.length));
       }
     }
     onProgress(DownloadProgress(finishCount, tasks.length));
+    status = DownloadStatus.successful;
   }
 
   @override
   Future<void> onDone() async {
-    status = DownloadStatus.successful;
+    // status = DownloadStatus.successful;
   }
 
   @override

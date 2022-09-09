@@ -83,16 +83,19 @@ class NyaaDownloadTaskQueue extends DownloadTaskQueue<NyaaDownloadTask> {
       status = DownloadStatus.failed;
       error = e;
     } finally {
-      // (await NyaaDownloadManager.instance).downloadProvider.update(this);
+      // 保存初始化状态
+      (await NyaaDownloadManager.instance).downloadProvider.update(this);
     }
     return;
   }
 
   @override
   Future<void> onDownloading() async {
-    await super.onDownloading();
+    if (status == DownloadStatus.failed) {
+      return;
+    }
     print('NyaaDownloadTaskQueue::: status ==> $status');
-    (await NyaaDownloadManager.instance).downloadProvider.update(this);
+    await super.onDownloading();
   }
 
   @override
