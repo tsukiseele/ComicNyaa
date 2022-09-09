@@ -55,9 +55,7 @@ class NyaaDownloadTaskQueue extends DownloadTaskQueue<NyaaDownloadTask> {
   Future<NyaaDownloadTaskQueue> onInitialize() async {
     await super.onInitialize();
     try {
-      if (id == null) {
-        (await NyaaDownloadManager.instance).downloadProvider.insert(this);
-      }
+      if (id == null) (await NyaaDownloadManager.instance).downloadProvider.insert(this);
       final origin = parent.getOrigin();
       headers = origin.site.headers;
       parent = TypedModel.fromJson(await Mio(origin.site).parseAllChildren(parent.toJson()));
@@ -79,9 +77,8 @@ class NyaaDownloadTaskQueue extends DownloadTaskQueue<NyaaDownloadTask> {
     } catch (e) {
       status = DownloadStatus.failed;
       error = e;
-      rethrow;
     } finally {
-      (await NyaaDownloadManager.instance).downloadProvider.update(this);
+      // (await NyaaDownloadManager.instance).downloadProvider.update(this);
     }
     return this;
   }
@@ -97,7 +94,6 @@ class NyaaDownloadTaskQueue extends DownloadTaskQueue<NyaaDownloadTask> {
   Future<void> onDone() async {
     await super.onDone();
     print('NyaaDownloadTaskQueue::: status ==> $status');
-
     (await NyaaDownloadManager.instance).downloadProvider.update(this);
   }
 
