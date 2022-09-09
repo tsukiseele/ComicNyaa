@@ -1,39 +1,17 @@
 import 'dart:io';
-
 import 'nyaa_client.dart';
-
 import 'package:http/http.dart' as http;
 
 class Http {
+  static const String tempFileSuffix = '.temp';
+
   Http._();
 
   static NyaaClient? _http;
 
   static NyaaClient get client => _http ??= NyaaClient();
 
-  // static Dio client() {
-  //   _dio ??= Dio(BaseOptions(
-  //     sendTimeout: 10000,
-  //     connectTimeout: 15000,
-  //     receiveTimeout: 20000,
-  //   ));
-  //   // _dio?.interceptors.add(QueuedInterceptor());
-  //   _dio?.interceptors.add(DioCacheManager(CacheConfig(defaultMaxAge: const Duration(minutes: 15))).interceptor);
-  //   _dio?.interceptors.add(RetryInterceptor(
-  //     dio: _dio!,
-  //     logPrint: print, // specify log function (optional)
-  //     retries: 3, // retry count (optional)
-  //     retryDelays: const [ // set delays between retries (optional)
-  //       Duration(seconds: 1), // wait 1 sec before first retry
-  //       Duration(seconds: 2), // wait 2 sec before second retry
-  //       Duration(seconds: 3), // wait 3 sec before third retry
-  //     ],
-  //   ));
-  //
-  //   return _dio!;
-  // }
-
-  static Future<void> download(String url, String path,
+  static Future<void> downloadFile(String url, String path,
       {Map<String, String>? headers,
       void Function(int received, int total)? onProgress}) async {
     final request = http.Request('GET', Uri.parse(url));
@@ -50,12 +28,11 @@ class Http {
     File(path).writeAsBytes(bytes);
   }
 
-/*
-  Future<void> downloadFile({
+  static Future<void> downloadFileBreakPointer({
     required String url,
     required String savePath,
-    required CancelToken cancelToken,
-    ProgressCallback? onReceiveProgress,
+    Map<String, String>? headers,
+    void Function(int received, int total)? onProgress,
     void Function()? done,
     void Function(Exception)? failed,
   }) async {
@@ -63,56 +40,63 @@ class Http {
     File f = File(savePath);
     if (await f.exists()) {
       // 文件存在时拿到已下载的字节数
-      downloadStart = f.lengthSync();
+      downloadStart = await f.length();
     }
     print("start: $downloadStart");
     try {
-      var response = await downloadDio.get<ResponseBody>(
-        url,
-        options: Options(
-          /// Receive response data as a stream
-          responseType: ResponseType.stream,
-          followRedirects: false,
-          headers: {
-            /// 加入range请求头，实现断点续传
-            "range": "bytes=$downloadStart-",
-          },
-        ),
-      );
-      File file = File(savePath);
+      final request = http.Request('GET', Uri.parse(url));
+      headers ??= <String, String>{};
+      headers['range'] = 'bytes=$downloadStart-';
+      request.headers.addAll(headers);
+      final response = await client.send(request);
+
+      File file = File('$savePath$tempFileSuffix');
       RandomAccessFile raf = file.openSync(mode: FileMode.append);
       int received = downloadStart;
-      int total = await _getContentLength(response);
-      Stream<Uint8List> stream = response.data!.stream;
-      StreamSubscription<Uint8List>? subscription;
-      subscription = stream.listen(
-            (data) {
-          /// Write files must be synchronized
-          raf.writeFromSync(data);
-          received += data.length;
-          onReceiveProgress?.call(received, total);
-        },
-        onDone: () async {
-          file.rename(savePath.replaceAll('.temp', ''));
-          await raf.close();
-          done?.call();
-        },
-        onError: (e) async {
-          await raf.close();
-          failed?.call(e);
-        },
-        cancelOnError: true,
-      );
-      cancelToken.whenCancel.then((_) async {
-        await subscription?.cancel();
+      final total = response.contentLength ?? 0;
+      try {
+        onProgress?.call(received, total);
+        await for (final bytes in response.stream) {
+          bytes.addAll(bytes);
+          raf.writeFromSync(bytes);
+          received += bytes.length;
+          onProgress?.call(received, total);
+        }
+        onProgress?.call(received, total);
+      } on Exception catch (error) {
         await raf.close();
-      });
-    } on DioError catch (error) {
-      if (CancelToken.isCancel(error)) {
-        print("Download cancelled");
-      } else {
         failed?.call(error);
+      } finally {
+        file.rename(savePath.replaceAll(tempFileSuffix, ''));
+        await raf.close();
+        done?.call();
       }
+      // Stream<Uint8List> stream = response.data!.stream;
+      // StreamSubscription<Uint8List>? subscription;
+      // subscription = stream.listen(
+      //       (data) {
+      //     /// Write files must be synchronized
+      //     raf.writeFromSync(data);
+      //     received += data.length;
+      //     onReceiveProgress?.call(received, total);
+      //   },
+      //   onDone: () async {
+      //     file.rename(savePath.replaceAll('.temp', ''));
+      //     await raf.close();
+      //     done?.call();
+      //   },
+      //   onError: (e) async {
+      //     await raf.close();
+      //     failed?.call(e);
+      //   },
+      //   cancelOnError: true,
+      // );
+      // cancelToken.whenCancel.then((_) async {
+      //   await subscription?.cancel();
+      //   await raf.close();
+      // });
+    } on Exception catch (error) {
+      failed?.call(error);
     }
-  }*/
+  }
 }

@@ -48,7 +48,7 @@ class SubscribeProvider {
     final url = subscribe.url;
     final dir = await Config.ruleDir;
     final savePath = dir.join(Uri.parse(url).filename).path;
-    await Http.download(url, savePath);
+    await Http.downloadFile(url, savePath);
     await SiteManager.loadFromDirectory(dir);
   }
 

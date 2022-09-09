@@ -37,7 +37,7 @@ class DownloadTask extends Downloadable<void> {
         await target.parent.create();
       }
       // 开始下载并监听回调
-      await Http.download(url, path, headers: headers, onProgress: (received, total) {
+      await Http.downloadFile(url, path, headers: headers, onProgress: (received, total) {
         status = DownloadStatus.loading;
         progress = DownloadProgress(received, total);
         onProgress(progress!);
