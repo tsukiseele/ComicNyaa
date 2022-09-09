@@ -1,5 +1,6 @@
 import 'dart:io';
-import 'package:comic_nyaa/utils/h_client.dart';
+import '../http/http.dart';
+import '../http/nyaa_client.dart';
 import 'downloadable.dart';
 
 class DownloadTask extends Downloadable<void> {
@@ -36,7 +37,7 @@ class DownloadTask extends Downloadable<void> {
         await target.parent.create();
       }
       // 开始下载并监听回调
-      await HClient.download(url, path, headers: headers, onProgress: (received, total) {
+      await Http.download(url, path, headers: headers, onProgress: (received, total) {
         status = DownloadStatus.loading;
         progress = DownloadProgress(received, total);
         onProgress(progress!);

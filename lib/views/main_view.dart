@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:collection/collection.dart';
 import 'package:comic_nyaa/data/subscribe_provider.dart';
 import 'package:comic_nyaa/library/mio/core/site_manager.dart';
@@ -7,7 +8,6 @@ import 'package:comic_nyaa/views/settings_view.dart';
 import 'package:comic_nyaa/views/subscribe_view.dart';
 import 'package:comic_nyaa/widget/nyaa_tab_view.dart';
 import 'package:comic_nyaa/widget/simple_network_image.dart';
-import 'package:dio/dio.dart';
 import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
 
@@ -17,6 +17,7 @@ import 'package:material_floating_search_bar/material_floating_search_bar.dart';
 
 import '../app/config.dart';
 import '../data/download/nyaa_download_manager.dart';
+import '../library/http/http.dart';
 import '../models/typed_model.dart';
 import '../utils/string_extensions.dart';
 import '../widget/marquee_widget.dart';
@@ -297,9 +298,10 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
         queryStyle:
             const TextStyle(fontFamily: Config.uiFontFamily, fontSize: 16),
         onQueryChanged: (query) async {
-          final value = await Dio().get(
-              'https://danbooru.donmai.us/autocomplete.json?search[query]=$query&search[type]=tag_query&limit=10');
-          final result = List<Map<String, dynamic>>.from(value.data);
+          final response = await Http.client.get(
+              Uri.parse('https://danbooru.donmai.us/autocomplete.json?search[query]=$query&search[type]=tag_query&limit=10'));
+
+          final result = List<Map<String, dynamic>>.from(jsonDecode(response.body));
           setState(() {
             _autosuggest =
                 result.map((item) => item['value'] as String).toList();

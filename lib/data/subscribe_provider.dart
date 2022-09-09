@@ -4,7 +4,7 @@ import 'package:comic_nyaa/utils/uri_extensions.dart';
 
 import '../app/config.dart';
 import '../library/mio/core/site_manager.dart';
-import '../utils/http.dart';
+import '../library/http/http.dart';
 
 class SubscribeProvider {
   SubscribeProvider._();
@@ -48,7 +48,7 @@ class SubscribeProvider {
     final url = subscribe.url;
     final dir = await Config.ruleDir;
     final savePath = dir.join(Uri.parse(url).filename).path;
-    await Http.client().download(url, savePath);
+    await Http.download(url, savePath);
     await SiteManager.loadFromDirectory(dir);
   }
 

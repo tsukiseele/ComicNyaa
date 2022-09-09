@@ -5,13 +5,13 @@ import 'package:comic_nyaa/models/typed_model.dart';
 import 'package:comic_nyaa/utils/extensions.dart';
 import 'package:comic_nyaa/utils/num_extensions.dart';
 import 'package:comic_nyaa/utils/uri_extensions.dart';
-import 'package:dio/dio.dart';
 import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
 import '../../app/preference.dart';
+import '../../library/http/http.dart';
 
 class ImageDetailView extends StatefulWidget {
   const ImageDetailView({Key? key, required this.models, this.index = 0})
@@ -161,7 +161,7 @@ class ImageDetailViewState extends State<ImageDetailView>
       String savePath =
           (await Config.downloadDir).join(Uri.parse(url).filename).path;
       Fluttertoast.showToast(msg: '下载已添加：$savePath');
-      await Dio().download(url, savePath);
+      await Http.download(url, savePath);
 
       print('Download =====> $savePath');
     } catch (e) {
