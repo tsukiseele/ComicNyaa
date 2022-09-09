@@ -77,7 +77,7 @@ class _SimpleNetworkImageState extends State<SimpleNetworkImage>
 
   @override
   void dispose() {
-    super.dispose();
     animationController?.dispose();
+    super.dispose();
   }
 }

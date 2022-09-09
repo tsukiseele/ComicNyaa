@@ -23,14 +23,19 @@ class DownloadTask extends Downloadable<void> {
     status = DownloadStatus.loading;
     try {
       final target = File(path);
+      // 存在则跳过，直接返回
       if (await target.exists()) {
+        print('File is exists, skip it::: $target ');
         final length = await target.length();
         progress = DownloadProgress(length, length);
         status = DownloadStatus.successful;
+        return;
       }
+      // 创建父级目录
       if (!await target.parent.exists()) {
         await target.parent.create();
       }
+      // 开始下载并监听回调
       await HClient.download(url, path, headers: headers, onProgress: (received, total) {
         status = DownloadStatus.loading;
         progress = DownloadProgress(received, total);

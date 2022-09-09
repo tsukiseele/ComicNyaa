@@ -52,25 +52,29 @@ class NyaaDownloadTaskQueue extends DownloadTaskQueue<NyaaDownloadTask> {
 
   /// 获取下载列表，添加到队列
   @override
-  Future<NyaaDownloadTaskQueue> onInitialize() async {
+  Future<void> onInitialize() async {
     await super.onInitialize();
     try {
+      // 存在任务列表，代表已经初始化完成，直接跳过初始化，执行下载
+      if (tasks.isNotEmpty) return;
+      // 不存在id，表示任务组不存在，插入到数据库
       if (id == null) (await NyaaDownloadManager.instance).downloadProvider.insert(this);
+      // 执行初始化逻辑，生成任务组
       final origin = parent.getOrigin();
       headers = origin.site.headers;
       parent = TypedModel.fromJson(await Mio(origin.site).parseAllChildren(parent.toJson()));
       if (title.isEmpty) title = parent.title ?? '';
       final children = parent.children;
       if (children == null || children.isEmpty) {
-        queue.add(NyaaDownloadTask.fromUrl(directory, parent.getUrl(level), title: parent.title, cover: parent.coverUrl));
+        add(NyaaDownloadTask.fromUrl(directory, parent.getUrl(level), title: parent.title, cover: parent.coverUrl));
       } else if (children.length == 1) {
-        queue.add(NyaaDownloadTask.fromUrl(directory, children[0].getUrl(level),
+        add(NyaaDownloadTask.fromUrl(directory, children[0].getUrl(level),
             title: StringUtil.value(children[0].title, parent.title),
             cover: StringUtil.value(children[0].coverUrl, parent.coverUrl)));
       } else {
         directory = Directory(directory).join(title /*'${title}_${cover.hashCode}'*/).path;
         for (var child in parent.children!) {
-          queue.add(NyaaDownloadTask.fromUrl(directory, child.getUrl(level),
+          add(NyaaDownloadTask.fromUrl(directory, child.getUrl(level),
               title: child.title, cover: child.coverUrl));
         }
       }
@@ -80,7 +84,7 @@ class NyaaDownloadTaskQueue extends DownloadTaskQueue<NyaaDownloadTask> {
     } finally {
       // (await NyaaDownloadManager.instance).downloadProvider.update(this);
     }
-    return this;
+    return;
   }
 
   @override

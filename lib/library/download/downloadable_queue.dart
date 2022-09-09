@@ -1,6 +1,8 @@
 
 import 'dart:collection';
 
+import 'package:flutter/material.dart';
+
 import 'downloadable.dart';
 
 abstract class DownloadableQueue<T> extends Downloadable {
@@ -9,25 +11,30 @@ abstract class DownloadableQueue<T> extends Downloadable {
 
   Queue<T> get queue => _queue;
 
-  void add(T downloadable) {
-    queue.add(downloadable);
-  }
+  // T get first => queue.first;
 
-  void addAll(Iterable<T> iterable) {
-    queue.addAll(iterable);
-  }
-
-  bool remove(T downloadable) {
-    return queue.remove(downloadable);
-  }
-
-  T removeFirst() {
-    return queue.removeFirst();
-  }
-
-  T removeLast() {
-    return queue.removeLast();
-  }
-
-  T get first => queue.first;
+  // @mustCallSuper
+  // void add(T downloadable) {
+  //   queue.add(downloadable);
+  // }
+  //
+  // @mustCallSuper
+  // void addAll(Iterable<T> iterable) {
+  //   queue.addAll(iterable);
+  // }
+  //
+  // @mustCallSuper
+  // bool remove(T downloadable) {
+  //   return queue.remove(downloadable);
+  // }
+  //
+  // @mustCallSuper
+  // T removeFirst() {
+  //   return queue.removeFirst();
+  // }
+  //
+  // @mustCallSuper
+  // T removeLast() {
+  //   return queue.removeLast();
+  // }
 }

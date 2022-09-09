@@ -5,11 +5,14 @@ import 'downloadable_queue.dart';
 class DownloadTaskQueue<T extends Downloadable> extends DownloadableQueue<T> {
   DownloadTaskQueue(super.createDate);
 
-  List<T> finishTasks = [];
   List<T> tasks = [];
 
-  bool isSingle() {
-    return tasks.length == 1;
+  void add(T downloadable) {
+    tasks.add(downloadable);
+  }
+
+  void addAll(Iterable<T> iterable) {
+    tasks.addAll(iterable);
   }
 
   @override
@@ -32,27 +35,28 @@ class DownloadTaskQueue<T extends Downloadable> extends DownloadableQueue<T> {
   @override
   Future<void> onInitialize() async {
     status = DownloadStatus.init;
-    tasks = [];
-    finishTasks = [];
-    queue.clear();
   }
 
   @override
   Future<void> onDownloading() async {
     status = DownloadStatus.loading;
-    tasks = queue.toList();
+    if (tasks.isNotEmpty) {
+      queue.clear();
+      queue.addAll(tasks);
+    }
+    int finishCount = 0;
+    onProgress(DownloadProgress(finishCount, tasks.length));
     while (queue.isNotEmpty) {
       if (status == DownloadStatus.pause) return;
-      progress = DownloadProgress(finishTasks.length, tasks.length);
-      final task = removeFirst();
+      final task = queue.removeFirst();
       try {
         await task.start();
       } catch (e) {
-        print('FAILED ChlidTask::: ${task.url}');
+        print('FAILED! DownloadTask::: ${task.url}');
         // task.status =
       } finally {
-        finishTasks.add(task);
-        onProgress(progress!);
+        finishCount++;
+        onProgress(DownloadProgress(finishCount, tasks.length));
       }
     }
   }
@@ -68,5 +72,11 @@ class DownloadTaskQueue<T extends Downloadable> extends DownloadableQueue<T> {
   }
 
   @override
-  Future<void> onProgress(DownloadProgress progress) async {}
+  Future<void> onProgress(DownloadProgress progress) async {
+    this.progress = progress;
+  }
+
+  bool isSingle() {
+    return tasks.length == 1;
+  }
 }

@@ -166,7 +166,7 @@ class DownloadQueueItem extends StatelessWidget {
                             )),
                             item.status == DownloadStatus.loading
                                 ? InkWell(
-                                    onTap: () {},
+                                    onTap: () => onPause(item),
                                     child: const Padding(padding: EdgeInsets.all(4), child: Icon(Icons.pause)))
                                 : InkWell(
                                     onTap: () => onRestart(item),
@@ -179,6 +179,13 @@ class DownloadQueueItem extends StatelessWidget {
 
   Future<void> onRestart(NyaaDownloadTaskQueue tasks) async {
     tasks.start();
+    // (await NyaaDownloadManager.instance).restart(tasks.parent);
+  }
+
+
+  Future<void> onPause(NyaaDownloadTaskQueue tasks) async {
+
+    tasks.pause();
     // (await NyaaDownloadManager.instance).restart(tasks.parent);
   }
 }
