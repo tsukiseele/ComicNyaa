@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'dart:io';
 import 'nyaa_client.dart';
 import 'package:http/http.dart' as http;
@@ -28,13 +29,12 @@ class Http {
     File(path).writeAsBytes(bytes);
   }
 
-  static Future<void> downloadFileBreakPointer({
-    required String url,
-    required String savePath,
+  static Future<void> downloadFileBreakPointer(
+    String url,
+    String savePath, {
     Map<String, String>? headers,
     void Function(int received, int total)? onProgress,
-    void Function()? done,
-    void Function(Exception)? failed,
+    // void Function()? done,
   }) async {
     int downloadStart = 0;
     File f = File(savePath);
@@ -42,34 +42,46 @@ class Http {
       // 文件存在时拿到已下载的字节数
       downloadStart = await f.length();
     }
-    print("start: $downloadStart");
-    try {
+    // print("start: $downloadStart");
+      File file = File('$savePath$tempFileSuffix');
+      print('HTTP::: downloadFileBreakPointer ==> OPEN: $file');
+      // print('ZZZZZZZZZZZZZZZZZZZZ');
+      if (await file.exists()) {
+        downloadStart = await file.length();
+      } else {
+        // print('99999999999');
+        await file.create(recursive: true);
+      }
       final request = http.Request('GET', Uri.parse(url));
       headers ??= <String, String>{};
       headers['range'] = 'bytes=$downloadStart-';
       request.headers.addAll(headers);
       final response = await client.send(request);
-
-      File file = File('$savePath$tempFileSuffix');
-      RandomAccessFile raf = file.openSync(mode: FileMode.append);
+      print('START::: $downloadStart');
+      // print('XXXXXXXXXXXXXXXXXX');
+      RandomAccessFile raf = await file.open(mode: FileMode.append);
+      // print('AAAAAAAAAAAAAAAAAAAAAAA');
       int received = downloadStart;
       final total = response.contentLength ?? 0;
       try {
         onProgress?.call(received, total);
+        // print('BVBBBBBBBBBBBBBBBB');
         await for (final bytes in response.stream) {
-          bytes.addAll(bytes);
-          raf.writeFromSync(bytes);
+          await raf.writeFrom(bytes);
           received += bytes.length;
           onProgress?.call(received, total);
+          // print('CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC');
         }
         onProgress?.call(received, total);
-      } on Exception catch (error) {
-        await raf.close();
-        failed?.call(error);
-      } finally {
         file.rename(savePath.replaceAll(tempFileSuffix, ''));
+        // done?.call();
+      } catch (error) {
+        // file.delete();
+        // print('EEEEEEEEEEEEEEEEEEEEE::: $error');
+        rethrow;
+      } finally {
         await raf.close();
-        done?.call();
+        client.close();
       }
       // Stream<Uint8List> stream = response.data!.stream;
       // StreamSubscription<Uint8List>? subscription;
@@ -95,8 +107,5 @@ class Http {
       //   await subscription?.cancel();
       //   await raf.close();
       // });
-    } on Exception catch (error) {
-      failed?.call(error);
-    }
   }
 }

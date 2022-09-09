@@ -29,6 +29,22 @@ class DownloadItem extends StatelessWidget {
     return Text('${(progress.completedLength / progress.totalLength * 100).toInt()}%');
   }
 
+  Widget _buildProgressIndicator(DownloadProgress? progress) {
+    if (item.status == DownloadStatus.init) {
+      return const LinearProgressIndicator();
+    }
+    if (item.status == DownloadStatus.loading) {
+      if (item.progress != null && item.progress!.totalLength > 0) {
+        return Padding(
+            padding: const EdgeInsets.only(top: 8, bottom: 8),
+            child: LinearProgressIndicator(value: item.progress!.completedLength / item.progress!.totalLength));
+      } else {
+        return const LinearProgressIndicator();
+      }
+    }
+    return Container();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -81,16 +97,7 @@ class DownloadItem extends StatelessWidget {
                                   )
                                 ],
                               )),
-                          item.status != DownloadStatus.successful
-                              ? Padding(
-                                  padding: const EdgeInsets.only(top: 8, bottom: 8),
-                                  child: item.progress != null
-                                      ? LinearProgressIndicator(
-                                          value: item.progress!.completedLength / item.progress!.totalLength)
-                                      : item.status == DownloadStatus.loading
-                                          ? const LinearProgressIndicator()
-                                          : Container())
-                              : Container(),
+                          _buildProgressIndicator(item.progress),
                           Row(children: [
                             Material(
                               color: getColorByStatus(item.status),
@@ -108,9 +115,26 @@ class DownloadItem extends StatelessWidget {
                               padding: const EdgeInsets.only(left: 4, right: 4),
                               child: _buildProgressText(item.progress),
                             )),
+                            item.status == DownloadStatus.loading
+                                ? InkWell(
+                                onTap: () => onPause(item),
+                                child: const Padding(padding: EdgeInsets.all(4), child: Icon(Icons.pause)))
+                                : InkWell(
+                                onTap: () => onRestart(item),
+                                child: const Padding(padding: EdgeInsets.all(4), child:  Icon(Icons.play_arrow)))
                           ])
                         ])),
                   )
                 ]))));
+  }
+  Future<void> onRestart(NyaaDownloadTask task) async {
+    task.start();
+    // (await NyaaDownloadManager.instance).restart(tasks.parent);
+  }
+
+
+  Future<void> onPause(NyaaDownloadTask task) async {
+    task.pause();
+    // (await NyaaDownloadManager.instance).restart(tasks.parent);
   }
 }
