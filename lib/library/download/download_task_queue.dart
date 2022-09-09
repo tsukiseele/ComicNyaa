@@ -59,6 +59,7 @@ class DownloadTaskQueue<T extends Downloadable> extends DownloadableQueue<T> {
         onProgress(DownloadProgress(finishCount, tasks.length));
       }
     }
+    onProgress(DownloadProgress(finishCount, tasks.length));
   }
 
   @override

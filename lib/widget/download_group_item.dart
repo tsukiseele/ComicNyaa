@@ -127,9 +127,14 @@ class DownloadQueueItem extends StatelessWidget {
                     child: Container(
                         margin: const EdgeInsets.all(8),
                         child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-                          Expanded(child: Text(item.title)),
+                          Expanded(
+                              child: Text(
+                                item.title,
+                                maxLines: 2,
+                                style: const TextStyle(fontSize: 16),
+                              )),
                           Container(
-                              margin: const EdgeInsets.only(bottom: 8),
+                              // margin: const EdgeInsets.only(bottom: ),
                               alignment: AlignmentDirectional.centerEnd,
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.end,
