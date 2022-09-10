@@ -75,7 +75,7 @@ class DownloadQueueItem extends StatelessWidget {
     }
     if (item.status == DownloadStatus.loading) {
       if (item.progress != null && item.progress!.totalLength > 0) {
-        return LinearProgressIndicator(value: item.progress!.completedLength / item.progress!.totalLength));
+        return LinearProgressIndicator(value: item.progress!.completedLength / item.progress!.totalLength);
       } else {
         return const LinearProgressIndicator();
       }

@@ -49,21 +49,21 @@ class _ComicNyaaState extends State<ComicNyaa> {
 
   @override
   void initState() {
-
     // 初始化显示模式
     setOptimalDisplayMode();
     // 初始化Mio
     Mio.setCustomRequest((url, {Map<String, String>? headers}) async {
       /// Http Client
-      // if (headers != null) {
-      // headers['user-agent'] = r'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36';
-      // }
+      headers ??= <String, String>{};
+      headers['user-agent'] =
+          r'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36';
       final response = await Http.client.get(Uri.parse(url), headers: headers);
       print('RESPONSEBODY:::   ${response.body}');
       return response.body;
+
       /// Dio Client
       // if (headers != null) {
-        // headers['user-agent'] = r'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36';
+      // headers['user-agent'] = r'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36';
       // }
       // final response = await Http.client()
       //     .get(url, options: Options(responseType: ResponseType.plain, headers: headers));

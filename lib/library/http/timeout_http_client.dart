@@ -5,6 +5,7 @@ class TimeoutHttpClient {
       { required this.connectionTimeout, required this.idleTimeout}) {
     client.connectionTimeout = Duration(milliseconds: connectionTimeout);
     client.idleTimeout = Duration(milliseconds: connectionTimeout);
+    client.maxConnectionsPerHost = 3;
   }
 
   final HttpClient client;
