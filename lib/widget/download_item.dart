@@ -35,9 +35,7 @@ class DownloadItem extends StatelessWidget {
     }
     if (item.status == DownloadStatus.loading) {
       if (item.progress != null && item.progress!.totalLength > 0) {
-        return Padding(
-            padding: const EdgeInsets.only(top: 8, bottom: 8),
-            child: LinearProgressIndicator(value: item.progress!.completedLength / item.progress!.totalLength));
+        return LinearProgressIndicator(value: item.progress!.completedLength / item.progress!.totalLength);
       } else {
         return const LinearProgressIndicator();
       }
@@ -56,7 +54,6 @@ class DownloadItem extends StatelessWidget {
             clipBehavior: Clip.hardEdge,
             child: InkWell(
                 onTap: () {
-                  print('IIIIIIIIIIIIIII::: ${item.cover}');
                 },
                 child: Row(mainAxisSize: MainAxisSize.min, children: [
                   Material(
