@@ -485,6 +485,7 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
                         style: const TextStyle(
                           fontFamily: Config.uiFontFamily,
                           fontSize: 18,
+                          fontWeight: FontWeight.bold
                         ),
                         textAlign: TextAlign.start,
                       ),

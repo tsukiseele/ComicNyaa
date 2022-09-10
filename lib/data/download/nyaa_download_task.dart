@@ -10,7 +10,9 @@ class NyaaDownloadTask extends DownloadTask {
   String? cover;
   String? title;
 
-  NyaaDownloadTask(super.url, super.path, super.createDate, {this.title, this.cover});
+  NyaaDownloadTask(super.url, super.path, super.createDate, {this.title, this.cover, Map<String, String>? headers}) {
+    this.headers = headers;
+  }
 
   NyaaDownloadTask.fromJson(Map<String, dynamic> data) : super(data['url'], data['path'], DateTime.parse(data['createDate'])) {
     status = DownloadStatus.fromDbValue(data['status']);
@@ -32,8 +34,8 @@ class NyaaDownloadTask extends DownloadTask {
     return data;
   }
 
-  factory NyaaDownloadTask.fromUrl(String downloadDir, String url, {String? title, String? cover}) {
+  factory NyaaDownloadTask.fromUrl(String downloadDir, String url, {String? title, String? cover, Map<String, String>? headers}) {
     final path = Directory(downloadDir).join(Uri.parse(url).filename).path;
-    return NyaaDownloadTask(url, path, DateTime.now(), title: title, cover: cover);
+    return NyaaDownloadTask(url, path, DateTime.now(), title: title, cover: cover, headers: headers);
   }
 }

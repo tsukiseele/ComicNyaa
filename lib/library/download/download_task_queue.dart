@@ -65,7 +65,6 @@ class DownloadTaskQueue<T extends Downloadable> extends DownloadableQueue<T> {
 
   @override
   Future<void> onDone() async {
-    // status = DownloadStatus.successful;
   }
 
   @override

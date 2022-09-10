@@ -2,6 +2,7 @@ import 'package:comic_nyaa/data/download/nyaa_download_manager.dart';
 import 'package:comic_nyaa/widget/simple_network_image.dart';
 import 'package:comic_nyaa/widget/triangle_painter.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
 
 import '../data/download/nyaa_download_task_queue.dart';
@@ -181,14 +182,15 @@ class DownloadQueueItem extends StatelessWidget {
   }
 
   Future<void> onRestart(NyaaDownloadTaskQueue tasks) async {
-    tasks.start();
+    await tasks.start();
+    Fluttertoast.showToast(msg: '任务已完成：${tasks.title}');
     // (await NyaaDownloadManager.instance).restart(tasks.parent);
   }
 
 
   Future<void> onPause(NyaaDownloadTaskQueue tasks) async {
 
-    tasks.pause();
+    await tasks.pause();
     // (await NyaaDownloadManager.instance).restart(tasks.parent);
   }
 }

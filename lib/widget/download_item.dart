@@ -7,6 +7,7 @@ import 'package:comic_nyaa/widget/nyaa_tag_item.dart';
 import 'package:comic_nyaa/widget/simple_network_image.dart';
 import 'package:comic_nyaa/widget/triangle_painter.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
 
 import '../library/download/downloadable.dart';
@@ -126,6 +127,7 @@ class DownloadItem extends StatelessWidget {
   }
   Future<void> onRestart(NyaaDownloadTask task) async {
     task.start();
+    Fluttertoast.showToast(msg: '任务已完成：${task.title}');
     // (await NyaaDownloadManager.instance).restart(tasks.parent);
   }
 
