@@ -54,7 +54,7 @@ class Http {
     final response = await client.send(request);
     RandomAccessFile raf = await file.open(mode: FileMode.append);
     int received = downloadStart;
-    final total = response.contentLength ?? 0;
+    final total = (response.contentLength ?? 0) + downloadStart;
     try {
       onProgress?.call(received, total);
       await for (final bytes in response.stream) {

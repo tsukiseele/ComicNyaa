@@ -26,10 +26,7 @@ class NyaaDownloadManager {
   List<NyaaDownloadTaskQueue> get tasks => _tasks;
 
   restoreTasks() async {
-
     _tasks.addAll(await downloadProvider.getTasks());
-
-    _tasks.forEach((element) {print('IIIIIIIIIII ${element.id}');});
   }
 
   Future<void> addAll(Iterable<TypedModel> items) async {
@@ -46,7 +43,6 @@ class NyaaDownloadManager {
   }
 
   restart(NyaaDownloadTaskQueue queue) {
-
     DownloadManager.instance.add(queue);
   }
 }

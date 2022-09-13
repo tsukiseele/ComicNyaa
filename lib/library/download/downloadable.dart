@@ -58,6 +58,9 @@ abstract class Downloadable<T> {
   @mustCallSuper
   Future<T> onDone();
 
+  @mustCallSuper
+  Future<T> onFailed(Object? error);
+
   bool get isFailed => status == DownloadStatus.failed;
 
   bool get isSuccessful => status == DownloadStatus.successful;

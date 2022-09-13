@@ -19,7 +19,8 @@ class NyaaDownloadTaskQueue extends DownloadTaskQueue<NyaaDownloadTask> {
   late String title;
   late String cover;
 
-  NyaaDownloadTaskQueue.fromJson(Map<String, dynamic> data) : super(DateTime.parse(data['createDate'])) {
+  NyaaDownloadTaskQueue.fromJson(Map<String, dynamic> data)
+      : super(DateTime.parse(data['createDate'])) {
     id = data['id'];
     directory = data['directory'];
     cover = data['cover'];
@@ -31,7 +32,9 @@ class NyaaDownloadTaskQueue extends DownloadTaskQueue<NyaaDownloadTask> {
     parent = TypedModel.fromJson(jsonDecode(data['parent']));
     progress = DownloadProgress(data['completedLength'], data['totalLength']);
     final tList = jsonDecode(data['tasks']);
-    tasks = tList is List ? tList.map((item) => NyaaDownloadTask.fromJson(item)).toList() : [];
+    tasks = tList is List
+        ? tList.map((item) => NyaaDownloadTask.fromJson(item)).toList()
+        : [];
   }
 
   Map<String, dynamic> toJson() {
@@ -60,11 +63,14 @@ class NyaaDownloadTaskQueue extends DownloadTaskQueue<NyaaDownloadTask> {
       // 存在任务列表，代表已经初始化完成，直接跳过初始化，执行下载
       if (tasks.isNotEmpty) return;
       // 不存在id，表示任务组不存在，插入到数据库
-      if (id == null) (await NyaaDownloadManager.instance).downloadProvider.insert(this);
+      if (id == null) {
+        (await NyaaDownloadManager.instance).downloadProvider.insert(this);
+      }
       // 执行初始化逻辑，生成任务组
       final origin = parent.getOrigin();
       headers = origin.site.headers;
-      parent = TypedModel.fromJson(await Mio(origin.site).parseAllChildren(parent.toJson()));
+      parent = TypedModel.fromJson(
+          await Mio(origin.site).parseAllChildren(parent.toJson()));
       if (title.isEmpty) title = parent.title ?? '';
       final children = parent.children;
       if (children == null || children.isEmpty) {
@@ -77,16 +83,17 @@ class NyaaDownloadTaskQueue extends DownloadTaskQueue<NyaaDownloadTask> {
             headers: headers));
       } else {
         // 一旦使用散列码，虽然能避免任务名重复，但是将失去缓存检测，这里不使用散列
-        directory = Directory(directory).join(title /*'${title}_${cover.hashCode}'*/).path;
+        directory = Directory(directory)
+            .join(title /*'${title}_${cover.hashCode}'*/)
+            .path;
         for (var child in parent.children!) {
           add(NyaaDownloadTask.fromUrl(directory, child.getUrl(level),
               title: child.title, cover: child.coverUrl, headers: headers));
         }
       }
     } catch (e) {
-      status = DownloadStatus.failed;
-      error = e;
-      print(e);
+      onFailed(e);
+      rethrow;
     } finally {
       // 必须更新数据库，保存初始化状态
       (await NyaaDownloadManager.instance).downloadProvider.update(this);
@@ -96,30 +103,24 @@ class NyaaDownloadTaskQueue extends DownloadTaskQueue<NyaaDownloadTask> {
 
   @override
   Future<void> onDownloading() async {
-    if (status == DownloadStatus.failed) {
-      return;
-    }
-    print('AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA');
     print('NyaaDownloadTaskQueue::: status ==> $status');
     await super.onDownloading();
   }
 
   @override
   Future<void> onDone() async {
-    print('DDDDDDDDDDDDDDDDDDDDDDDDDDDDD');
     await super.onDone();
     print('NyaaDownloadTaskQueue::: status ==> $status');
-    // print('XXXXXXXXXXXXXXXXXX:: ${toJson().toString()}');
-print('UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU');
-print('STATE: ${status.value}: ${progress?.totalLength} / ${progress?.completedLength}');
+    print(
+        'STATE: ${status.value}: ${progress?.totalLength} / ${progress?.completedLength}');
     (await NyaaDownloadManager.instance).downloadProvider.update(this);
-    print('PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP::: ID == $id');
-    (await NyaaDownloadManager.instance).downloadProvider.getTask(id!);
-    print('EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE');
   }
 
   NyaaDownloadTaskQueue(
-      {required this.parent, required this.directory, required DateTime createDate, this.level = DownloadResourceLevel.medium})
+      {required this.parent,
+      required this.directory,
+      required DateTime createDate,
+      this.level = DownloadResourceLevel.medium})
       : super(createDate) {
     cover = parent.coverUrl ?? '';
     title = parent.title ?? '';

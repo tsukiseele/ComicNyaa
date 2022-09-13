@@ -53,8 +53,8 @@ class DownloadTaskQueue<T extends Downloadable> extends DownloadableQueue<T> {
         await task.start();
         finishCount++;
       } catch (e) {
-        print('FAILED! DownloadTask::: ${task.url}');
-        // task.status =
+        onFailed(e);
+        rethrow;
       } finally {
         onProgress(DownloadProgress(finishCount, tasks.length));
       }
@@ -79,5 +79,12 @@ class DownloadTaskQueue<T extends Downloadable> extends DownloadableQueue<T> {
 
   bool isSingle() {
     return tasks.length == 1;
+  }
+
+  @override
+  Future<void> onFailed(Object? error) async {
+    status = DownloadStatus.failed;
+    this.error = error;
+    print('[DownloadTask]: DOWNLOAD FAILED:: $error');
   }
 }

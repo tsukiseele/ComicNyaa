@@ -43,9 +43,8 @@ class DownloadTask extends Downloadable<void> {
         onProgress(progress!);
       });
     } catch (e) {
-      status = DownloadStatus.failed;
-      print(e);
-      // rethrow;
+      onFailed(e);
+      rethrow;
     }
   }
 
@@ -73,4 +72,11 @@ class DownloadTask extends Downloadable<void> {
 
   @override
   Future<void> onProgress(DownloadProgress progress) async {}
+
+  @override
+  Future<void> onFailed(Object? error) async {
+    status = DownloadStatus.failed;
+    this.error = error;
+    print('[DownloadTask]: DOWNLOAD FAILED:: $error');
+  }
 }
