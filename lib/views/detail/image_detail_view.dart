@@ -34,8 +34,8 @@ class ImageDetailView extends StatefulWidget {
 
 class ImageDetailViewState extends State<ImageDetailView>
     with TickerProviderStateMixin {
-  final PageController _pageController = PageController();
-  final PanelController _panelController = PanelController();
+  final _pageController = PageController();
+  final _panelController = PanelController();
   final Set<int> _cache = {};
   late List<TypedModel> _models;
   late DataOrigin _origin;
@@ -187,15 +187,6 @@ class ImageDetailViewState extends State<ImageDetailView>
     double screenHeight = MediaQuery.of(context).size.height;
     final padding = MediaQuery.of(context).padding;
     double viewportHeight = screenHeight - padding.top - padding.bottom;
-    print(_models[_currentIndex].tags);
-    print('XXXXXXXXXXXXXXXXXXXXXX');
-    print(widget.models[_currentIndex].tags);
-    final tags = StringUtil.value(_models[_currentIndex].tags?.trim(),
-            widget.models[_currentIndex].tags)
-        .split(' ');
-    final title =
-        _models[_currentIndex].title ?? widget.models[_currentIndex].title;
-
     return Scaffold(
         body: SlidingUpPanel(
             controller: _panelController,
@@ -341,9 +332,11 @@ class ImageDetailViewState extends State<ImageDetailView>
                     }
                   },
                 )),
-            minHeight: 48,
+            minHeight: 64,
             maxHeight: screenHeight * 0.667,
+            isDraggable: true,
             backdropEnabled: true,
+            backdropOpacity: .3,
             parallaxEnabled: true,
             parallaxOffset: .1,
             color: Colors.transparent,
@@ -352,36 +345,45 @@ class ImageDetailViewState extends State<ImageDetailView>
                 color: Colors.black12,
                 height: double.maxFinite,
                 child: InkWell(
-                    onTap: () {
-                      _panelController.open();
-                    },
+                    onTap: () => _panelController.open(),
                     child: const Icon(
                       Icons.keyboard_arrow_up,
                       color: Colors.white,
                       size: 32,
                     ))),
-            panel: Container(
-                margin: const EdgeInsets.only(top: 48),
-                child: Material(
-                    borderRadius: BorderRadius.circular(16),
-                    child: ListView(
-                        padding: const EdgeInsets.only(
-                            top: 8, left: 16, bottom: 24, right: 16),
-                        children: [
-                          _buildTitleView('标题'),
-                          Text(title ?? ''),
-                          _buildTitleView('标签'),
-                          NyaaTags(
-                              itemCount: tags.length,
-                              builder: (ctx, index) => NyaaTagItem(
-                                  text: tags[index], color: Colors.teal)),
-                          _buildTitleView('预览源'),
-                          _buildLink(_models[_currentIndex].sampleUrl ?? '无'),
-                          _buildTitleView('压缩源'),
-                          _buildLink(_models[_currentIndex].largerUrl ?? '无'),
-                          _buildTitleView('原始源'),
-                          _buildLink(_models[_currentIndex].originUrl ?? '无'),
-                        ])))));
+          panelBuilder: (scrollController) => _buildScrollPanel(scrollController),
+        ));
+  }
+
+  Widget _buildScrollPanel(ScrollController scrollController) {
+    final tags = StringUtil.value(_models[_currentIndex].tags?.trim(),
+            widget.models[_currentIndex].tags)
+        .split(' ').where((tag) => tag.trim().isNotEmpty).toList();
+    final title =
+        _models[_currentIndex].title ?? widget.models[_currentIndex].title;
+    return Container(
+        margin: const EdgeInsets.only(top: 64),
+        child: Material(
+            borderRadius: BorderRadius.circular(16),
+            child: ListView(
+              controller: scrollController,
+                padding: const EdgeInsets.only(
+                    top: 8, left: 16, bottom: 24, right: 16),
+                children: [
+                  _buildTitleView('标题'),
+                  Text(title ?? ''),
+                  _buildTitleView('标签'),
+                  NyaaTags(
+                      itemCount: tags.length,
+                      builder: (ctx, index) =>
+                          NyaaTagItem(text: tags[index], color: Colors.teal)),
+                  _buildTitleView('预览源'),
+                  _buildLink(_models[_currentIndex].sampleUrl ?? '无'),
+                  _buildTitleView('压缩源'),
+                  _buildLink(_models[_currentIndex].largerUrl ?? '无'),
+                  _buildTitleView('原始源'),
+                  _buildLink(_models[_currentIndex].originUrl ?? '无'),
+                ])));
   }
 
   Widget _buildTitleView(String title) {
@@ -395,9 +397,7 @@ class ImageDetailViewState extends State<ImageDetailView>
   }
 
   Widget _buildLink(String url) {
-    return Padding(
-        padding: const EdgeInsets.only(bottom: 8, top: 16),
-        child: InkWell(
+    return InkWell(
             onTap: () async {
               if (await canLaunchUrlString(url)) {
                 await launchUrlString(url);
@@ -409,6 +409,6 @@ class ImageDetailViewState extends State<ImageDetailView>
               url,
               style: const TextStyle(
                   color: Colors.teal, decoration: TextDecoration.underline),
-            )));
+            ));
   }
 }
