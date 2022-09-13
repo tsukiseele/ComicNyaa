@@ -16,6 +16,7 @@ import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:shimmer/shimmer.dart';
 
 import '../../data/download/nyaa_download_manager.dart';
+import '../main_view.dart';
 
 class ComicDetailView extends StatefulWidget {
   const ComicDetailView({Key? key, required this.model}) : super(key: key);
@@ -63,7 +64,9 @@ class ComicDetailViewState extends State<ComicDetailView>
       if (models.isNotEmpty) {
         for (var item in models) {
           item.tags?.split(RegExp(r'[\s,]+')).forEach((tag) {
-            if (tag.trim().isNotEmpty) _tags.add(tag);
+            if (tag
+                .trim()
+                .isNotEmpty) _tags.add(tag);
           });
         }
         // _tags = models[0].tags!.split(RegExp(r'[\s,]+'));
@@ -108,100 +111,114 @@ class ComicDetailViewState extends State<ComicDetailView>
 
   Widget buildHeader(double statusBarHeight, List<String> tags) {
     return Container(
-        color: Theme.of(context).primaryColor.withOpacity(.75),
+        color: Theme
+            .of(context)
+            .primaryColor
+            .withOpacity(.75),
         padding: EdgeInsets.only(
             top: statusBarHeight + 8, bottom: 8, left: 8, right: 8),
         child: Column(children: [
-          SizedBox(
-              height: 192,
-              child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Material(
-                      elevation: 8,
-                      child: Padding(
-                        padding: const EdgeInsets.all(4),
-                        child: ExtendedImage.network(
-                          widget.model.coverUrl ?? '',
-                        ),
+            SizedBox(
+            height: 192,
+            child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Material(
+                    elevation: 8,
+                    child: Padding(
+                      padding: const EdgeInsets.all(4),
+                      child: ExtendedImage.network(
+                        widget.model.coverUrl ?? '',
                       ),
                     ),
-                    Expanded(
-                      child: Container(
-                          margin: const EdgeInsets.only(left: 8),
-                          child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.end,
-                              children: [
+                  ),
+                  Expanded(
+                    child: Container(
+                        margin: const EdgeInsets.only(left: 8),
+                        child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Expanded(
+                                  child: Text(
+                                    widget.model.title ?? 'Unknown',
+                                    maxLines: 5,
+                                    style: const TextStyle(
+                                        color: Colors.white, fontSize: 20),
+                                  )),
+                              // Spacer(),
+                              Row(children: [
                                 Expanded(
-                                    child: Text(
-                                  widget.model.title ?? 'Unknown',
-                                  maxLines: 5,
-                                  style: const TextStyle(
-                                      color: Colors.white, fontSize: 20),
-                                )),
-                                // Spacer(),
-                                Row(children: [
-                                  Expanded(
-                                      child: Text('${_children.length}页',
-                                          style: const TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 18))),
-                                  IconButton(
-                                      padding: const EdgeInsets.all(4),
-                                      iconSize: 32,
-                                      onPressed: () {
-                                        RouteUtil.push(
-                                            context,
-                                            ImageDetailView(
-                                                models: _children, index: 0));
-                                      },
-                                      icon: const Icon(
-                                        Icons.remove_red_eye,
-                                        color: Colors.white,
-                                      )),
-                                  IconButton(
-                                      padding: const EdgeInsets.all(4),
-                                      iconSize: 32,
-                                      onPressed: () async {
-                                        (await NyaaDownloadManager.instance)
-                                            .add(widget.model);
-                                        Fluttertoast.showToast(
-                                            msg: '下载已添加：${widget.model.title}');
-                                        // DownloadManager();
-                                      },
-                                      icon: const Icon(
-                                        Icons.download,
-                                        color: Colors.white,
-                                      )),
-                                ])
-                              ])),
-                    )
-                  ])),
-          Container(
-              margin: const EdgeInsets.only(top: 16),
-              child: NyaaTags(
-                  itemCount: tags.length,
-                  builder: (context, index) => NyaaTagItem(text: tags[index])))
-        ]));
+                                    child: Text('${_children.length}页',
+                                        style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 18))),
+                                IconButton(
+                                    padding: const EdgeInsets.all(4),
+                                    iconSize: 32,
+                                    onPressed: () {
+                                      RouteUtil.push(
+                                          context,
+                                          ImageDetailView(
+                                              models: _children, index: 0));
+                                    },
+                                    icon: const Icon(
+                                      Icons.remove_red_eye,
+                                      color: Colors.white,
+                                    )),
+                                IconButton(
+                                    padding: const EdgeInsets.all(4),
+                                    iconSize: 32,
+                                    onPressed: () async {
+                                      (await NyaaDownloadManager.instance)
+                                          .add(widget.model);
+                                      Fluttertoast.showToast(
+                                          msg: '下载已添加：${widget.model.title}');
+                                    },
+                                    icon: const Icon(
+                                      Icons.download,
+                                      color: Colors.white,
+                                    )),
+                              ])
+                            ])),
+                  )
+                ])),
+        Container(
+          margin: const EdgeInsets.only(top: 16),
+          child: NyaaTags(
+              itemCount: tags.leng
+              builder: (context, index) => NyaaTagItem(text: tags[index],
+          onTap: () {
+            RouteUtil.push(
+                context,
+                MainView(site: widget.model
+                    .getOrigin()
+                    .site, keywords: tags[index]));
+          },)))]
+    )
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    final statusBarHeight = MediaQuery.of(context).viewPadding.top;
+    final statusBarHeight = MediaQuery
+        .of(context)
+        .viewPadding
+        .top;
     final tags = _tags.toList();
     return Scaffold(
         body: RawScrollbar(
-      controller: _scrollController,
-      thumbColor: Colors.pink[300],
-      radius: const Radius.circular(4),
-      thickness: 4,
-      child: SmartRefresher(
-          controller: _refreshController,
-          scrollController: _scrollController,
-          header: SliverToBoxAdapter(child: buildHeader(statusBarHeight, tags)),
-          child: _children.isNotEmpty
-              ? MasonryGridView.count(
+          controller: _scrollController,
+          thumbColor: Colors.pink[300],
+          radius: const Radius.circular(4),
+          thickness: 4,
+          child: SmartRefresher(
+              controller: _refreshController,
+              scrollController: _scrollController,
+              header: SliverToBoxAdapter(
+                  child: buildHeader(statusBarHeight, tags)),
+              child: _children.isNotEmpty
+                  ? MasonryGridView.count(
                   controller: _scrollController,
                   padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
                   crossAxisCount: 3,
@@ -219,13 +236,14 @@ class ComicDetailViewState extends State<ComicDetailView>
                         //Colors.grey[100],
                         elevation: 2,
                         borderRadius:
-                            const BorderRadius.all(Radius.circular(2.0)),
+                        const BorderRadius.all(Radius.circular(2.0)),
                         child: InkWell(
                             onTap: () {
                               Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                      builder: (ctx) => ImageDetailView(
+                                      builder: (ctx) =>
+                                          ImageDetailView(
                                             models: _children,
                                             index: index,
                                           )));
@@ -238,33 +256,33 @@ class ComicDetailViewState extends State<ComicDetailView>
                                     fit: BoxFit.cover,
                                     opacity: controller,
                                     loadStateChanged: (state) {
-                                  switch (state.extendedImageLoadState) {
-                                    case LoadState.loading:
-                                      controller.reset();
-                                      return Shimmer.fromColors(
-                                          baseColor: const Color.fromRGBO(
-                                              240, 240, 240, 1),
-                                          highlightColor: Colors.white,
-                                          child: AspectRatio(
-                                            aspectRatio: 0.8,
-                                            child: Container(
-                                              decoration: const BoxDecoration(
-                                                  color: Colors.white),
-                                            ),
-                                          ));
-                                    case LoadState.failed:
-                                      return const AspectRatio(
-                                          aspectRatio: 1,
-                                          child: Icon(
-                                            Icons.image_not_supported,
-                                            size: 64,
-                                            color: Colors.redAccent,
-                                          ));
-                                    case LoadState.completed:
-                                      controller.forward();
-                                      return null;
-                                  }
-                                }),
+                                      switch (state.extendedImageLoadState) {
+                                        case LoadState.loading:
+                                          controller.reset();
+                                          return Shimmer.fromColors(
+                                              baseColor: const Color.fromRGBO(
+                                                  240, 240, 240, 1),
+                                              highlightColor: Colors.white,
+                                              child: AspectRatio(
+                                                aspectRatio: 0.8,
+                                                child: Container(
+                                                  decoration: const BoxDecoration(
+                                                      color: Colors.white),
+                                                ),
+                                              ));
+                                        case LoadState.failed:
+                                          return const AspectRatio(
+                                              aspectRatio: 1,
+                                              child: Icon(
+                                                Icons.image_not_supported,
+                                                size: 64,
+                                                color: Colors.redAccent,
+                                              ));
+                                        case LoadState.completed:
+                                          controller.forward();
+                                          return null;
+                                      }
+                                    }),
                                 Container(
                                   padding: const EdgeInsets.all(8.0),
                                   child: Text(_children[index].title ?? ''),
@@ -272,12 +290,12 @@ class ComicDetailViewState extends State<ComicDetailView>
                               ],
                             )));
                   })
-              : const Center(
+                  : const Center(
                   child: SpinKitSpinningLines(
-                  color: Colors.teal,
-                  size: 64,
-                ))),
-    ));
+                    color: Colors.teal,
+                    size: 64,
+                  ))),
+        ));
   }
 
   @override

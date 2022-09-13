@@ -358,21 +358,6 @@ class _GalleryViewState extends State<GalleryView>
                                               size: 18,
                                             ),
                                           )
-                                          // CustomPaint(
-                                          //     painter: TrianglePainter(
-                                          //         strokeColor: Theme.of(context)
-                                          //             .primaryColor, direction: TriangleDirection.buttomRight),
-                                          //     child: Container(
-                                          //       width: 32,
-                                          //       height: 32,
-                                          //       padding: const EdgeInsets.only(
-                                          //           left: 10, top: 10),
-                                          //       child: const Icon(
-                                          //         Icons.check_rounded,
-                                          //         color: Colors.white,
-                                          //         size: 18,
-                                          //       ),
-                                          //     ))
                                           )
                                       : Container()
                                 ],

@@ -2,7 +2,8 @@ import 'package:comic_nyaa/views/pages/gallery_view.dart';
 import 'package:flutter/material.dart';
 
 import '../library/mio/model/site.dart';
-
+///
+/// The widget unused
 class SearchView extends StatelessWidget {
   const SearchView({Key? key, required this.site, required this.keywords})
       : super(key: key);
