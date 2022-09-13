@@ -40,8 +40,7 @@ class DownloadProvider {
   late Database _db;
 
   Future<DownloadProvider> open(String path) async {
-    _db = await openDatabase(Directory(path).join('nyaa.db').path, version: 5,
-        onCreate: (Database db, int version) async {
+    _db = await openDatabase(Directory(path).join('nyaa.db').path, version: 5, onCreate: (Database db, int version) async {
       await db.execute(createTableDownload);
     }, onDowngrade: (Database db, int oldVersion, int newVersion) async {
       await db.execute(createTableDownload);
@@ -59,12 +58,7 @@ class DownloadProvider {
   }
 
   Future<NyaaDownloadTaskQueue?> getTask(int id) async {
-    List<Map> maps = await _db.query(tableDownload,
-        columns: [columnId, columnCover, columnTitle],
-        orderBy: '$columnCreateDate DESC',
-        // having: 'DESC',
-        where: '$columnId = ?',
-        whereArgs: [id]);
+    List<Map> maps = await _db.query(tableDownload, where: '$columnId = ?', whereArgs: [id]);
     if (maps.isNotEmpty) {
       return NyaaDownloadTaskQueue.fromJson(maps.first as Map<String, dynamic>);
     }
@@ -72,18 +66,19 @@ class DownloadProvider {
   }
 
   Future<List<NyaaDownloadTaskQueue>> getTasks() async {
-    List<Map<String, dynamic>> maps = await _db.query(tableDownload);
+    List<Map<String, dynamic>> maps = await _db.query(
+      tableDownload,
+      orderBy: '$columnCreateDate DESC',
+    );
     return maps.map((item) => NyaaDownloadTaskQueue.fromJson(item)).toList();
   }
 
   Future<int> delete(int id) async {
-    return await _db
-        .delete(tableDownload, where: '$columnId = ?', whereArgs: [id]);
+    return await _db.delete(tableDownload, where: '$columnId = ?', whereArgs: [id]);
   }
 
   Future<int> update(NyaaDownloadTaskQueue task) async {
-    return await _db.update(tableDownload, task.toJson(),
-        where: '$columnId = ?', whereArgs: [task.id]);
+    return await _db.update(tableDownload, task.toJson(), where: '$columnId = ?', whereArgs: [task.id]);
   }
 
   Future close() async => _db.close();

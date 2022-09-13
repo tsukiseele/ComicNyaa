@@ -7,6 +7,7 @@ import 'package:comic_nyaa/widget/nyaa_tag_item.dart';
 import 'package:comic_nyaa/widget/simple_network_image.dart';
 import 'package:comic_nyaa/widget/triangle_painter.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
 
 import '../library/download/downloadable.dart';
@@ -26,7 +27,7 @@ class DownloadItem extends StatelessWidget {
     if (item.status == DownloadStatus.successful || progress.totalLength <= 0) {
       return Text(progress.completedLength.readableFileSize());
     }
-    return Text('${(progress.completedLength / progress.totalLength * 100).toInt()}%');
+    return Text('${progress.completedLength.readableFileSize()} / ${progress.totalLength.readableFileSize()}');
   }
 
   Widget _buildProgressIndicator(DownloadProgress? progress) {
@@ -35,9 +36,7 @@ class DownloadItem extends StatelessWidget {
     }
     if (item.status == DownloadStatus.loading) {
       if (item.progress != null && item.progress!.totalLength > 0) {
-        return Padding(
-            padding: const EdgeInsets.only(top: 8, bottom: 8),
-            child: LinearProgressIndicator(value: item.progress!.completedLength / item.progress!.totalLength));
+        return LinearProgressIndicator(value: item.progress!.completedLength / item.progress!.totalLength);
       } else {
         return const LinearProgressIndicator();
       }
@@ -56,7 +55,6 @@ class DownloadItem extends StatelessWidget {
             clipBehavior: Clip.hardEdge,
             child: InkWell(
                 onTap: () {
-                  print('IIIIIIIIIIIIIII::: ${item.cover}');
                 },
                 child: Row(mainAxisSize: MainAxisSize.min, children: [
                   Material(
@@ -129,6 +127,7 @@ class DownloadItem extends StatelessWidget {
   }
   Future<void> onRestart(NyaaDownloadTask task) async {
     task.start();
+    Fluttertoast.showToast(msg: '任务已完成：${task.title}');
     // (await NyaaDownloadManager.instance).restart(tasks.parent);
   }
 

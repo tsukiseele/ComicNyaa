@@ -20,6 +20,7 @@ class NyaaDownloadTaskQueue extends DownloadTaskQueue<NyaaDownloadTask> {
   late String cover;
 
   NyaaDownloadTaskQueue.fromJson(Map<String, dynamic> data) : super(DateTime.parse(data['createDate'])) {
+    id = data['id'];
     directory = data['directory'];
     cover = data['cover'];
     title = data['title'];
@@ -35,6 +36,7 @@ class NyaaDownloadTaskQueue extends DownloadTaskQueue<NyaaDownloadTask> {
 
   Map<String, dynamic> toJson() {
     Map<String, dynamic> data = {};
+    data['id'] = id;
     data['directory'] = directory;
     data['cover'] = cover;
     data['title'] = title;
@@ -66,40 +68,54 @@ class NyaaDownloadTaskQueue extends DownloadTaskQueue<NyaaDownloadTask> {
       if (title.isEmpty) title = parent.title ?? '';
       final children = parent.children;
       if (children == null || children.isEmpty) {
-        add(NyaaDownloadTask.fromUrl(directory, parent.getUrl(level), title: parent.title, cover: parent.coverUrl));
+        add(NyaaDownloadTask.fromUrl(directory, parent.getUrl(level),
+            title: parent.title, cover: parent.coverUrl, headers: headers));
       } else if (children.length == 1) {
         add(NyaaDownloadTask.fromUrl(directory, children[0].getUrl(level),
             title: StringUtil.value(children[0].title, parent.title),
-            cover: StringUtil.value(children[0].coverUrl, parent.coverUrl)));
+            cover: StringUtil.value(children[0].coverUrl, parent.coverUrl),
+            headers: headers));
       } else {
         // 一旦使用散列码，虽然能避免任务名重复，但是将失去缓存检测，这里不使用散列
         directory = Directory(directory).join(title /*'${title}_${cover.hashCode}'*/).path;
         for (var child in parent.children!) {
           add(NyaaDownloadTask.fromUrl(directory, child.getUrl(level),
-              title: child.title, cover: child.coverUrl));
+              title: child.title, cover: child.coverUrl, headers: headers));
         }
       }
     } catch (e) {
       status = DownloadStatus.failed;
       error = e;
+      print(e);
     } finally {
-      // (await NyaaDownloadManager.instance).downloadProvider.update(this);
+      // 必须更新数据库，保存初始化状态
+      (await NyaaDownloadManager.instance).downloadProvider.update(this);
     }
     return;
   }
 
   @override
   Future<void> onDownloading() async {
-    await super.onDownloading();
+    if (status == DownloadStatus.failed) {
+      return;
+    }
+    print('AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA');
     print('NyaaDownloadTaskQueue::: status ==> $status');
-    (await NyaaDownloadManager.instance).downloadProvider.update(this);
+    await super.onDownloading();
   }
 
   @override
   Future<void> onDone() async {
+    print('DDDDDDDDDDDDDDDDDDDDDDDDDDDDD');
     await super.onDone();
     print('NyaaDownloadTaskQueue::: status ==> $status');
+    // print('XXXXXXXXXXXXXXXXXX:: ${toJson().toString()}');
+print('UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU');
+print('STATE: ${status.value}: ${progress?.totalLength} / ${progress?.completedLength}');
     (await NyaaDownloadManager.instance).downloadProvider.update(this);
+    print('PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP::: ID == $id');
+    (await NyaaDownloadManager.instance).downloadProvider.getTask(id!);
+    print('EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE');
   }
 
   NyaaDownloadTaskQueue(

@@ -318,7 +318,7 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
                   height: 24,
                   child: SimpleNetworkImage(_currentTab?.site.icon ?? '',
                       error: Text(
-                        _currentTab?.site.name?.substring(0, 1) ?? '?',
+                        _currentTab?.site.name?.substring(0, 1) ?? '',
                         style: const TextStyle(
                             fontFamily: Config.uiFontFamily,
                             fontSize: 18,
@@ -485,6 +485,7 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
                         style: const TextStyle(
                           fontFamily: Config.uiFontFamily,
                           fontSize: 18,
+                          fontWeight: FontWeight.bold
                         ),
                         textAlign: TextAlign.start,
                       ),

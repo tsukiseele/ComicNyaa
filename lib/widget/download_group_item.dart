@@ -2,6 +2,7 @@ import 'package:comic_nyaa/data/download/nyaa_download_manager.dart';
 import 'package:comic_nyaa/widget/simple_network_image.dart';
 import 'package:comic_nyaa/widget/triangle_painter.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
 
 import '../data/download/nyaa_download_task_queue.dart';
@@ -75,9 +76,7 @@ class DownloadQueueItem extends StatelessWidget {
     }
     if (item.status == DownloadStatus.loading) {
       if (item.progress != null && item.progress!.totalLength > 0) {
-        return Padding(
-            padding: const EdgeInsets.only(top: 8, bottom: 8),
-            child: LinearProgressIndicator(value: item.progress!.completedLength / item.progress!.totalLength));
+        return LinearProgressIndicator(value: item.progress!.completedLength / item.progress!.totalLength);
       } else {
         return const LinearProgressIndicator();
       }
@@ -89,7 +88,7 @@ class DownloadQueueItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final origin = item.parent.getOrigin();
     return Container(
-        height: 120,
+        height: 112,
         margin: const EdgeInsets.only(top: 4, bottom: 4, left: 8, right: 8),
         child: Material(
             elevation: 1,
@@ -183,14 +182,15 @@ class DownloadQueueItem extends StatelessWidget {
   }
 
   Future<void> onRestart(NyaaDownloadTaskQueue tasks) async {
-    tasks.start();
+    await tasks.start();
+    Fluttertoast.showToast(msg: '任务已完成：${tasks.title}');
     // (await NyaaDownloadManager.instance).restart(tasks.parent);
   }
 
 
   Future<void> onPause(NyaaDownloadTaskQueue tasks) async {
 
-    tasks.pause();
+    await tasks.pause();
     // (await NyaaDownloadManager.instance).restart(tasks.parent);
   }
 }

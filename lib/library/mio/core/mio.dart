@@ -329,7 +329,6 @@ class Mio<T extends DataModel> {
 
     // 发送请求
     final html = await _requestText(url, headers: _site?.headers);
-
     // 检查无效响应
     if (html.trim().isEmpty) return [];
     // print('HTMl: ${html}');
