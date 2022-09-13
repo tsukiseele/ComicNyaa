@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:collection/collection.dart';
 import 'package:comic_nyaa/data/subscribe_provider.dart';
 import 'package:comic_nyaa/library/mio/core/site_manager.dart';
+import 'package:comic_nyaa/utils/flutter_utils.dart';
 import 'package:comic_nyaa/views/download_view.dart';
 import 'package:comic_nyaa/views/settings_view.dart';
 import 'package:comic_nyaa/views/subscribe_view.dart';
@@ -26,7 +27,6 @@ class MainView extends StatefulWidget {
   const MainView({Key? key, this.site, this.keywords}) : super(key: key);
   final Site? site;
   final String? keywords;
-
 
   @override
   State<MainView> createState() => _MainViewState();
@@ -64,7 +64,6 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
 
       _listenGalleryScroll();
       _currentTab?.controller.onItemSelect = _onGalleryItemSelected;
-
     });
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       if (widget.keywords != null) {
@@ -175,80 +174,78 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
       drawer: buildDrawer(),
       endDrawer: buildEndDrawer(),
       body: Stack(
-            fit: StackFit.expand,
-            children: [
-              _gallerys.isNotEmpty
-                  ? NyaaTabView(
-                      position: _currentTabIndex,
-                      onPositionChange: (int index) {
-                        setState(() => _currentTabIndex = index);
-                        _listenGalleryScroll();
-                        _listenGalleryItemSelected();
-                      },
-                      onScroll: (double value) {},
-                      itemCount: _gallerys.length,
-                      isScrollToNewTab: true,
-                      color: tabColors[_currentTabIndex % tabColors.length],
-                      indicator: const BoxDecoration(
-                          color: Colors.white70,
-                          boxShadow: [
-                            BoxShadow(color: Colors.black12, blurRadius: 8)
-                          ],
-                          borderRadius: BorderRadius.all(Radius.circular(20))),
-                      pageBuilder: (BuildContext context, int index) =>
-                          _gallerys[index],
-                      tabBuilder: (BuildContext context, int index) {
-                        return InkWell(
-                            onLongPress: () {
-                              if (_gallerys.length > 1) {
-                                setState(() => _removeTab(index));
-                              } else {
-                                Fluttertoast.showToast(msg: '您不能删除最后一个标签页');
-                              }
-                            },
-                            onTap: () {
-                              setState(() => _currentTabIndex = index);
-                            },
-                            child: AnimatedSize(
-                                duration: const Duration(milliseconds: 250),
-                                curve: Curves.ease,
-                                child: Row(children: [
-                                  Container(
-                                    width: 40,
-                                    height: 40,
-                                    padding: EdgeInsets.only(
-                                        top: 8,
-                                        bottom: 8,
-                                        right:
-                                            _currentTabIndex == index ? 8 : 0),
-                                    child: SimpleNetworkImage(
-                                        _gallerys[index].site.icon ?? '',
-                                        fit: BoxFit.contain,
-                                        clearMemoryCacheIfFailed: false),
-                                  ),
-                                  _currentTabIndex == index
-                                      ? SizedBox(
-                                          width: _currentTabIndex == index
-                                              ? 96.0
-                                              : null,
-                                          child: MarqueeWidget(
-                                              direction: Axis.horizontal,
-                                              child: Text(
-                                                  _gallerys[index].site.name ??
-                                                      'unknown',
-                                                  overflow:
-                                                      TextOverflow.ellipsis,
-                                                  maxLines: 1,
-                                                  style: const TextStyle(
-                                                      fontSize: 16,
-                                                      color: Colors.black87))))
-                                      : Container()
-                                ])));
-                      })
-                  : Container(),
-              buildFloatingSearchBar(),
-            ],
-          ),
+        fit: StackFit.expand,
+        children: [
+          _gallerys.isNotEmpty
+              ? NyaaTabView(
+                  position: _currentTabIndex,
+                  onPositionChange: (int index) {
+                    setState(() => _currentTabIndex = index);
+                    _listenGalleryScroll();
+                    _listenGalleryItemSelected();
+                  },
+                  onScroll: (double value) {},
+                  itemCount: _gallerys.length,
+                  isScrollToNewTab: true,
+                  color: tabColors[_currentTabIndex % tabColors.length],
+                  indicator: const BoxDecoration(
+                      color: Colors.white70,
+                      boxShadow: [
+                        BoxShadow(color: Colors.black12, blurRadius: 8)
+                      ],
+                      borderRadius: BorderRadius.all(Radius.circular(20))),
+                  pageBuilder: (BuildContext context, int index) =>
+                      _gallerys[index],
+                  tabBuilder: (BuildContext context, int index) {
+                    return InkWell(
+                        onLongPress: () {
+                          if (_gallerys.length > 1) {
+                            setState(() => _removeTab(index));
+                          } else {
+                            Fluttertoast.showToast(msg: '您不能删除最后一个标签页');
+                          }
+                        },
+                        onTap: () {
+                          setState(() => _currentTabIndex = index);
+                        },
+                        child: AnimatedSize(
+                            duration: const Duration(milliseconds: 250),
+                            curve: Curves.ease,
+                            child: Row(children: [
+                              Container(
+                                width: 40,
+                                height: 40,
+                                padding: EdgeInsets.only(
+                                    top: 8,
+                                    bottom: 8,
+                                    right: _currentTabIndex == index ? 8 : 0),
+                                child: SimpleNetworkImage(
+                                    _gallerys[index].site.icon ?? '',
+                                    fit: BoxFit.contain,
+                                    clearMemoryCacheIfFailed: false),
+                              ),
+                              _currentTabIndex == index
+                                  ? SizedBox(
+                                      width: _currentTabIndex == index
+                                          ? 96.0
+                                          : null,
+                                      child: MarqueeWidget(
+                                          direction: Axis.horizontal,
+                                          child: Text(
+                                              _gallerys[index].site.name ??
+                                                  'unknown',
+                                              overflow: TextOverflow.ellipsis,
+                                              maxLines: 1,
+                                              style: const TextStyle(
+                                                  fontSize: 16,
+                                                  color: Colors.black87))))
+                                  : Container()
+                            ])));
+                  })
+              : Container(),
+          buildFloatingSearchBar(),
+        ],
+      ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       floatingActionButtonAnimator: FloatingActionButtonAnimator.scaling,
       floatingActionButton: Container(
@@ -282,9 +279,10 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
           style: TextStyle(
               fontFamily: Config.uiFontFamily,
               fontSize: 16,
-              color: StringUtil.value(_currentTab?.controller.keywords, '').isEmpty
-                  ? Colors.black26
-                  : Colors.black87),
+              color:
+                  StringUtil.value(_currentTab?.controller.keywords, '').isEmpty
+                      ? Colors.black26
+                      : Colors.black87),
         ),
         controller: _floatingSearchBarController,
         automaticallyImplyDrawerHamburger: false,
@@ -307,10 +305,11 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
         queryStyle:
             const TextStyle(fontFamily: Config.uiFontFamily, fontSize: 16),
         onQueryChanged: (query) async {
-          final response = await Http.client.get(
-              Uri.parse('https://danbooru.donmai.us/autocomplete.json?search[query]=$query&search[type]=tag_query&limit=10'));
+          final response = await Http.client.get(Uri.parse(
+              'https://danbooru.donmai.us/autocomplete.json?search[query]=$query&search[type]=tag_query&limit=10'));
 
-          final result = List<Map<String, dynamic>>.from(jsonDecode(response.body));
+          final result =
+              List<Map<String, dynamic>>.from(jsonDecode(response.body));
           setState(() {
             _autosuggest =
                 result.map((item) => item['value'] as String).toList();
@@ -423,26 +422,17 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
           leading: const Icon(Icons.home)),
       ListTile(
           title: const Text('订阅'),
-          onTap: () {
-            Navigator.push(context,
-                MaterialPageRoute(builder: (ctx) => const SubscribeView()));
-          },
+          onTap: () => RouteUtil.push(context, const SubscribeView()),
           iconColor: Colors.black87,
           leading: const Icon(Icons.collections_bookmark)),
       ListTile(
           title: const Text('下载'),
-          onTap: () {
-            Navigator.push(context,
-                MaterialPageRoute(builder: (ctx) => const DownloadView()));
-          },
+          onTap: () => RouteUtil.push(context, const DownloadView()),
           iconColor: Colors.black87,
           leading: const Icon(Icons.download)),
       ListTile(
           title: const Text('设置'),
-          onTap: () {
-            Navigator.push(context,
-                MaterialPageRoute(builder: (ctx) => const SettingsView()));
-          },
+          onTap: () => RouteUtil.push(context, const SettingsView()),
           iconColor: Colors.black87,
           leading: const Icon(Icons.tune))
     ]));
@@ -489,10 +479,9 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
                       title: Text(
                         _sites[index].name ?? '',
                         style: const TextStyle(
-                          fontFamily: Config.uiFontFamily,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold
-                        ),
+                            fontFamily: Config.uiFontFamily,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold),
                         textAlign: TextAlign.start,
                         maxLines: 1,
                         softWrap: false,

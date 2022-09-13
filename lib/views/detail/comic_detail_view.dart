@@ -121,11 +121,15 @@ class ComicDetailViewState extends State<ComicDetailView>
                   children: [
                     Material(
                       elevation: 8,
+                      color: Colors.transparent,
                       child: Padding(
                         padding: const EdgeInsets.all(4),
-                        child: ExtendedImage.network(
-                          widget.model.coverUrl ?? '',
-                        ),
+                        child: Hero(
+                            tag: widget.model.coverUrl ?? '',
+                            child: ExtendedImage.network(
+                              widget.model.coverUrl ?? '',
+                              height: 192,
+                            )),
                       ),
                     ),
                     Expanded(
@@ -182,11 +186,16 @@ class ComicDetailViewState extends State<ComicDetailView>
               margin: const EdgeInsets.only(top: 16),
               child: NyaaTags(
                   itemCount: tags.length,
-                  builder: (context, index) => NyaaTagItem(text: tags[index], onTap: () {
-                    RouteUtil.push(
-                        context,
-                        MainView(site: widget.model.getOrigin().site, keywords: tags[index]));
-                  },)))
+                  builder: (context, index) => NyaaTagItem(
+                        text: tags[index],
+                        onTap: () {
+                          RouteUtil.push(
+                              context,
+                              MainView(
+                                  site: widget.model.getOrigin().site,
+                                  keywords: tags[index]));
+                        },
+                      )))
         ]));
   }
 
@@ -225,15 +234,12 @@ class ComicDetailViewState extends State<ComicDetailView>
                         borderRadius:
                             const BorderRadius.all(Radius.circular(2.0)),
                         child: InkWell(
-                            onTap: () {
-                              Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (ctx) => ImageDetailView(
-                                            models: _children,
-                                            index: index,
-                                          )));
-                            },
+                            onTap: () => RouteUtil.push(
+                                context,
+                                ImageDetailView(
+                                  models: _children,
+                                  index: index,
+                                )),
                             child: Column(
                               children: [
                                 ExtendedImage.network(getUrl(_children[index]),

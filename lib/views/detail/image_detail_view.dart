@@ -193,7 +193,7 @@ class ImageDetailViewState extends State<ImageDetailView>
         body: SlidingUpPanel(
             controller: _panelController,
             body: Material(
-                color: Colors.black87,
+                color: Colors.black,
                 child: ExtendedImageGesturePageView.builder(
                   itemCount: _images.length,
                   scrollDirection: Axis.horizontal,

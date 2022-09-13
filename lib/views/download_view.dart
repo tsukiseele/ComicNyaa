@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:comic_nyaa/data/download/nyaa_download_manager.dart';
+import 'package:comic_nyaa/utils/flutter_utils.dart';
 import 'package:flutter/material.dart';
 
 import '../data/download/nyaa_download_task_queue.dart';
@@ -42,7 +43,7 @@ class _DownloadViewState extends State<DownloadView> {
   }
 
   void onShowDetail(NyaaDownloadTaskQueue item) {
-    Navigator.push(context, MaterialPageRoute(builder: (ctx) => DownloadDetailView(item, notifier: notifier)));
+    RouteUtil.push(context, DownloadDetailView(item, notifier: notifier));
   }
 
   @override

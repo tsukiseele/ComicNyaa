@@ -16,6 +16,7 @@ import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:shimmer/shimmer.dart';
 
 import '../../models/typed_model.dart';
+import '../../utils/flutter_utils.dart';
 
 class GalleryController {
   String keywords = '';
@@ -204,7 +205,7 @@ class _GalleryViewState extends State<GalleryView>
         break;
     }
     if (target != null) {
-      Navigator.push(context, MaterialPageRoute(builder: (context) => target!));
+      RouteUtil.push(context, target);
     }
   }
 
@@ -291,6 +292,7 @@ class _GalleryViewState extends State<GalleryView>
                                 children: [
                                   // Column(
                                   //   children: [
+                                  Hero(tag: _items[index].coverUrl?.asUrl ?? '', child:
                                   ExtendedImage.network(
                                       _items[index].coverUrl?.asUrl ?? '',
                                       headers: _currentSite?.headers,
@@ -330,7 +332,7 @@ class _GalleryViewState extends State<GalleryView>
                                   }, afterPaintImage:
                                           (canvas, rect, image, paint) {
                                     _heightCache[index] = rect.height;
-                                  }),
+                                  })),
                                   // Container(
                                   //   padding: const EdgeInsets.all(8.0),
                                   //   child: Text(
