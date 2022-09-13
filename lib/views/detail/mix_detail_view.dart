@@ -47,8 +47,7 @@ class MixDetailViewState extends State<MixDetailView> {
       // final playerWidget = Chewie(
       //   controller: chewieController,
       // );
-      // 'https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4')
-      print('IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII');
+      // 'https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4'
       // Ensure the first frame is shown after the video is initialized, even before the play button has been pressed.
       setState(() {});
     } catch (e) {

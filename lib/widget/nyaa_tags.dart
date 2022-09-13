@@ -23,7 +23,10 @@ class _NyaaTagsState extends State<NyaaTags>
 
   @override
   Widget build(BuildContext context) {
-    return Wrap(children: List.generate(
+    return Wrap(
+      spacing: 1,
+      runSpacing: 1,
+      children: List.generate(
       widget.itemCount,
           (index) => widget.builder(context, index),
     ),);

@@ -488,6 +488,9 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
                           fontWeight: FontWeight.bold
                         ),
                         textAlign: TextAlign.start,
+                        maxLines: 1,
+                        softWrap: false,
+                        overflow: TextOverflow.fade,
                       ),
                       subtitle: Text(
                         _sites[index].details ?? '',

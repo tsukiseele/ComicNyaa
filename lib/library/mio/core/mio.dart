@@ -275,7 +275,7 @@ class Mio<T extends DataModel> {
         }
         // 匹配正则内容
         final regexp = RegExp(exp.regex ?? '');
-        var groups = List.of(regexp.allMatches(content));
+        final groups = List.of(regexp.allMatches(content));
 
         groups.forEachIndexed((i, item) {
           final match = item.groupCount > 0 ? item.group(1) : item.group(0);
