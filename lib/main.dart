@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'package:comic_nyaa/library/http/nyaa_client.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_displaymode/flutter_displaymode.dart';

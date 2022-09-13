@@ -1,8 +1,5 @@
 
 import 'dart:collection';
-
-import 'package:flutter/material.dart';
-
 import 'downloadable.dart';
 
 abstract class DownloadableQueue<T> extends Downloadable {

@@ -1,6 +1,5 @@
 import 'dart:io';
 import '../http/http.dart';
-import '../http/nyaa_client.dart';
 import 'downloadable.dart';
 
 class DownloadTask extends Downloadable<void> {
@@ -77,6 +76,6 @@ class DownloadTask extends Downloadable<void> {
   Future<void> onFailed(Object? error) async {
     status = DownloadStatus.failed;
     this.error = error;
-    print('[DownloadTask]: DOWNLOAD FAILED:: $error');
+    print('[DownloadTask]: FAILED:: $error');
   }
 }

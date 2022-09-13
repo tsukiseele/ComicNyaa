@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 
 enum TriangleDirection { topLeft, topRight, bottomLeft, bottomRight }

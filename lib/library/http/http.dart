@@ -1,4 +1,3 @@
-import 'dart:developer';
 import 'dart:io';
 import 'nyaa_client.dart';
 import 'package:http/http.dart' as http;

@@ -5,8 +5,6 @@
 // gestures. You can also use WidgetTester to find child widgets in the widget
 // tree, read text, and verify that the values of widget properties are correct.
 
-import 'package:comic_nyaa/library/http/http.dart';
-
 void main() async {
   // const u = 'https://hanime1.me/search?query=bdsm&genre=&sort=&year=&month=&duration=';
   // final response = await Http.client()

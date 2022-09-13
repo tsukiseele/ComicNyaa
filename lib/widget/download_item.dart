@@ -1,11 +1,6 @@
-import 'dart:math';
-
 import 'package:comic_nyaa/data/download/nyaa_download_task.dart';
 import 'package:comic_nyaa/library/mio/model/data_origin.dart';
-import 'package:comic_nyaa/models/typed_model.dart';
-import 'package:comic_nyaa/widget/nyaa_tag_item.dart';
 import 'package:comic_nyaa/widget/simple_network_image.dart';
-import 'package:comic_nyaa/widget/triangle_painter.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
@@ -13,7 +8,6 @@ import 'package:intl/intl.dart';
 import '../library/download/downloadable.dart';
 import '../utils/num_extensions.dart';
 import 'download_group_item.dart';
-import 'marquee_widget.dart';
 
 class DownloadItem extends StatelessWidget {
   const DownloadItem(this.item, {Key? key, this.origin}) : super(key: key);

@@ -1,4 +1,3 @@
-import 'package:comic_nyaa/data/download/nyaa_download_manager.dart';
 import 'package:comic_nyaa/widget/simple_network_image.dart';
 import 'package:comic_nyaa/widget/triangle_painter.dart';
 import 'package:flutter/material.dart';
@@ -7,7 +6,6 @@ import 'package:intl/intl.dart';
 
 import '../data/download/nyaa_download_task_queue.dart';
 import '../library/download/downloadable.dart';
-import 'marquee_widget.dart';
 
 const Color idle = Colors.grey;
 const Color downloading = Colors.blue;

@@ -54,7 +54,7 @@ class DownloadTaskQueue<T extends Downloadable> extends DownloadableQueue<T> {
         finishCount++;
       } catch (e) {
         onFailed(e);
-        rethrow;
+        // rethrow;
       } finally {
         onProgress(DownloadProgress(finishCount, tasks.length));
       }
@@ -85,6 +85,6 @@ class DownloadTaskQueue<T extends Downloadable> extends DownloadableQueue<T> {
   Future<void> onFailed(Object? error) async {
     status = DownloadStatus.failed;
     this.error = error;
-    print('[DownloadTask]: DOWNLOAD FAILED:: $error');
+    print('[DownloadTaskQueue]: FAILED:: $error');
   }
 }
