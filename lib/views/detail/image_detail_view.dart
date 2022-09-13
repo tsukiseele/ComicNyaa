@@ -14,7 +14,6 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import '../../app/preference.dart';
 import '../../library/http/http.dart';

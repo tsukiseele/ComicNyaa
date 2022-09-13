@@ -38,13 +38,9 @@ class ComicDetailViewState extends State<ComicDetailView>
 
   void initialized() {
     _scrollController.addListener(() {
-      const offset = 32;
       if (_scrollController.position.pixels >=
           _scrollController.position.maxScrollExtent) {
-        print(
-            'SCROLL POSITION: ${_scrollController.position.pixels} >= ${_scrollController.position.maxScrollExtent - offset}');
         while (_stream?.isPaused == true) {
-          print('STREAM RESUME >>>>>>>>>>>>>>>>>> ');
           _stream?.resume();
         }
       }
@@ -54,7 +50,6 @@ class ComicDetailViewState extends State<ComicDetailView>
     _tags.addAll(model.tags?.split(' ').toSet() ?? {});
     _stream = Mio(_origin.site)
         .parseChildren(item: model.toJson())
-        // .parseChildren(model.toJson(), _origin.section.rules!)
         .listen((List<Map<String, dynamic>> data) {
       _stream?.pause();
       _getNext(data);
@@ -163,8 +158,10 @@ class ComicDetailViewState extends State<ComicDetailView>
                                       padding: const EdgeInsets.all(4),
                                       iconSize: 32,
                                       onPressed: () async {
-                                        (await NyaaDownloadManager.instance).add(widget.model);
-                                        Fluttertoast.showToast(msg: '下载已添加：${widget.model.title}');
+                                        (await NyaaDownloadManager.instance)
+                                            .add(widget.model);
+                                        Fluttertoast.showToast(
+                                            msg: '下载已添加：${widget.model.title}');
                                         // DownloadManager();
                                       },
                                       icon: const Icon(
