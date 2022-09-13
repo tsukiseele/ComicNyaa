@@ -8,7 +8,6 @@ import 'package:comic_nyaa/views/settings_view.dart';
 import 'package:comic_nyaa/views/subscribe_view.dart';
 import 'package:comic_nyaa/widget/nyaa_tab_view.dart';
 import 'package:comic_nyaa/widget/simple_network_image.dart';
-import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
 
 import 'package:comic_nyaa/library/mio/model/site.dart';
@@ -383,7 +382,7 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
       Container(
           margin: const EdgeInsets.only(bottom: 8),
           child: Stack(children: [
-            ExtendedImage.network(
+            const SimpleNetworkImage(
               'https://cdn.jsdelivr.net/gh/nyarray/LoliHost/images/94d6d0e7be187770e5d538539d95a12a.jpeg',
               fit: BoxFit.cover,
               width: double.maxFinite,
@@ -408,14 +407,11 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
                   alignment: Alignment.bottomLeft,
                   child: Text(
                       "Os iustī meditabitur sapientiam, Et lingua eius loquetur iudicium.",
-                      // "ポトフちゃんとワトラちゃんがすごくかわいいです！",
                       style: TextStyle(color: Colors.teal[200], fontSize: 18,
                           // fontWeight: FontWeight.bold,
                           shadows: [
                             Shadow(color: Colors.teal[100]!, blurRadius: 8)
                           ]))),
-              // child: const Text('ポトフちゃんとワトラちゃんがすごくかわいいです！',
-              //     style: TextStyle(color: Colors.white, fontSize: 16))),
             ),
           ])),
       ListTile(
