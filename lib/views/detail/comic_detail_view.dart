@@ -14,6 +14,8 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:shimmer/shimmer.dart';
 
+import '../../data/download/nyaa_download_manager.dart';
+
 class ComicDetailView extends StatefulWidget {
   const ComicDetailView({Key? key, required this.model}) : super(key: key);
   final title = '漫画';
@@ -160,7 +162,9 @@ class ComicDetailViewState extends State<ComicDetailView>
                                   IconButton(
                                       padding: const EdgeInsets.all(4),
                                       iconSize: 32,
-                                      onPressed: () {
+                                      onPressed: () async {
+                                        (await NyaaDownloadManager.instance).add(widget.model);
+                                        Fluttertoast.showToast(msg: '下载已添加：${widget.model.title}');
                                         // DownloadManager();
                                       },
                                       icon: const Icon(

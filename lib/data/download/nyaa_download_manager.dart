@@ -29,6 +29,19 @@ class NyaaDownloadManager {
     _tasks.addAll(await downloadProvider.getTasks());
   }
 
+  Future<void> add(TypedModel item) async {
+    final downloadDir = await Config.downloadDir;
+    final downloadLevel =
+        (await NyaaPreferences.instance).downloadResourceLevel;
+    final task = NyaaDownloadTaskQueue(
+        parent: item,
+        directory: downloadDir.path,
+        level: downloadLevel,
+        createDate: DateTime.now());
+    DownloadManager.instance.add(task);
+    _tasks.insert(0, task);
+  }
+
   Future<void> addAll(Iterable<TypedModel> items) async {
     final downloadDir = await Config.downloadDir;
     final downloadLevel =
