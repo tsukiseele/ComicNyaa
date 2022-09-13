@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:comic_nyaa/library/mio/core/mio.dart';
 import 'package:comic_nyaa/library/mio/model/data_origin.dart';
 import 'package:comic_nyaa/models/typed_model.dart';
+import 'package:comic_nyaa/utils/flutter_utils.dart';
 import 'package:comic_nyaa/views/detail/image_detail_view.dart';
 import 'package:comic_nyaa/widget/nyaa_tag_item.dart';
 import 'package:comic_nyaa/widget/nyaa_tags.dart';
@@ -149,7 +150,12 @@ class ComicDetailViewState extends State<ComicDetailView>
                                   IconButton(
                                       padding: const EdgeInsets.all(4),
                                       iconSize: 32,
-                                      onPressed: () {},
+                                      onPressed: () {
+                                        RouteUtil.push(
+                                            context,
+                                            ImageDetailView(
+                                                models: _children, index: 0));
+                                      },
                                       icon: const Icon(
                                         Icons.remove_red_eye,
                                         color: Colors.white,
@@ -185,9 +191,6 @@ class ComicDetailViewState extends State<ComicDetailView>
     final statusBarHeight = MediaQuery.of(context).viewPadding.top;
     final tags = _tags.toList();
     return Scaffold(
-        // appBar: AppBar(
-        //   title: Text(widget.title),
-        // ),
         body: RawScrollbar(
       controller: _scrollController,
       thumbColor: Colors.pink[300],

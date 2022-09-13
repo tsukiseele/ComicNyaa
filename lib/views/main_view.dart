@@ -24,8 +24,10 @@ import '../widget/marquee_widget.dart';
 import 'pages/gallery_view.dart';
 
 class MainView extends StatefulWidget {
-  const MainView({Key? key, required this.title}) : super(key: key);
-  final String title;
+  const MainView({Key? key, this.site, this.keywords}) : super(key: key);
+  final Site? site;
+  final String? keywords;
+
 
   @override
   State<MainView> createState() => _MainViewState();
@@ -39,7 +41,6 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
   ScrollController? _galleryScrollController;
   List<Site> _sites = [];
   List<String> _autosuggest = [];
-  DateTime? _currentBackPressTime = DateTime.now();
   int _currentTabIndex = 0;
   int _lastScrollPosition = 0;
 
@@ -56,9 +57,20 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
     setState(() {
       _sites = SiteManager.sites.values.toList();
       // 打开默认标签
-      _addTab(_sites.firstWhereOrNull((site) => site.id == 920) ?? _sites[0]);
+      if (widget.site != null) {
+        _addTab(widget.site!);
+      } else {
+        _addTab(_sites.firstWhereOrNull((site) => site.id == 920) ?? _sites[0]);
+      }
+
       _listenGalleryScroll();
       _currentTab?.controller.onItemSelect = _onGalleryItemSelected;
+
+    });
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      if (widget.keywords != null) {
+        _currentTab?.controller.search?.call(widget.keywords!);
+      }
     });
   }
 
@@ -163,9 +175,7 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
       endDrawerEnableOpenDragGesture: true,
       drawer: buildDrawer(),
       endDrawer: buildEndDrawer(),
-      body: WillPopScope(
-          onWillPop: onWillPop,
-          child: Stack(
+      body: Stack(
             fit: StackFit.expand,
             children: [
               _gallerys.isNotEmpty
@@ -239,7 +249,7 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
                   : Container(),
               buildFloatingSearchBar(),
             ],
-          )),
+          ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       floatingActionButtonAnimator: FloatingActionButtonAnimator.scaling,
       floatingActionButton: Container(
@@ -511,25 +521,5 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
                     )));
           }),
     );
-  }
-
-  Future<bool> onWillPop() {
-    if (globalKey.currentState?.isDrawerOpen == true) {
-      globalKey.currentState?.closeDrawer();
-      return Future.value(false);
-    }
-    if (globalKey.currentState?.isEndDrawerOpen == true) {
-      globalKey.currentState?.closeEndDrawer();
-      return Future.value(false);
-    }
-    DateTime now = DateTime.now();
-    if (_currentBackPressTime == null ||
-        now.difference(_currentBackPressTime!) > const Duration(seconds: 2)) {
-      _currentBackPressTime = now;
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('再按一次退出')));
-      return Future.value(false);
-    }
-    return Future.value(true);
   }
 }

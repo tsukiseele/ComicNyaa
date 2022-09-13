@@ -78,7 +78,7 @@ class _GalleryViewState extends State<GalleryView>
   void _clearSelections() {
     setState(() {
       _selects.clear();
-      widget.controller.onItemSelect!(_selects);
+      widget.controller.onItemSelect?.call(_selects);
     });
   }
 

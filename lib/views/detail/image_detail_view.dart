@@ -6,6 +6,7 @@ import 'package:comic_nyaa/utils/extensions.dart';
 import 'package:comic_nyaa/utils/num_extensions.dart';
 import 'package:comic_nyaa/utils/string_extensions.dart';
 import 'package:comic_nyaa/utils/uri_extensions.dart';
+import 'package:comic_nyaa/views/main_view.dart';
 import 'package:comic_nyaa/widget/nyaa_tag_item.dart';
 import 'package:comic_nyaa/widget/nyaa_tags.dart';
 import 'package:extended_image/extended_image.dart';
@@ -17,6 +18,7 @@ import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import '../../app/preference.dart';
 import '../../library/http/http.dart';
+import '../../utils/flutter_utils.dart';
 
 class ImageDetailView extends StatefulWidget {
   const ImageDetailView({Key? key, required this.models, this.index = 0})
@@ -376,7 +378,11 @@ class ImageDetailViewState extends State<ImageDetailView>
                   NyaaTags(
                       itemCount: tags.length,
                       builder: (ctx, index) =>
-                          NyaaTagItem(text: tags[index], color: Colors.teal)),
+                          NyaaTagItem(text: tags[index], color: Colors.teal, onTap: () {
+                            RouteUtil.push(
+                                context,
+                                MainView(site: widget.models[0].getOrigin().site, keywords: tags[index]));
+                          },)),
                   _buildTitleView('预览源'),
                   _buildLink(_models[_currentIndex].sampleUrl ?? '无'),
                   _buildTitleView('压缩源'),

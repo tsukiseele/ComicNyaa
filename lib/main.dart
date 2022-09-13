@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:comic_nyaa/views/back_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_displaymode/flutter_displaymode.dart';
@@ -42,7 +43,7 @@ class _ComicNyaaState extends State<ComicNyaa> {
         fontFamily: 'ComicNeue',
         primarySwatch: Colors.teal,
       ),
-      home: const MainView(title: 'Home'),
+      home: const BackView(child: MainView()),
     );
   }
 
