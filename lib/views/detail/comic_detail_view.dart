@@ -7,6 +7,7 @@ import 'package:comic_nyaa/utils/flutter_utils.dart';
 import 'package:comic_nyaa/views/detail/image_detail_view.dart';
 import 'package:comic_nyaa/widget/nyaa_tag_item.dart';
 import 'package:comic_nyaa/widget/nyaa_tags.dart';
+import 'package:comic_nyaa/widget/simple_network_image.dart';
 import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
@@ -126,9 +127,10 @@ class ComicDetailViewState extends State<ComicDetailView>
                         padding: const EdgeInsets.all(4),
                         child: Hero(
                             tag: widget.model.coverUrl ?? '',
-                            child: ExtendedImage.network(
+                            child: SimpleNetworkImage(
                               widget.model.coverUrl ?? '',
-                              height: 192,
+                              width: 120,
+                              headers: _origin.site.headers,
                             )),
                       ),
                     ),
