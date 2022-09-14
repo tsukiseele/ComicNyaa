@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:comic_nyaa/library/http/http_cache_manager.dart';
 import 'package:comic_nyaa/views/back_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -53,12 +54,22 @@ class _ComicNyaaState extends State<ComicNyaa> {
     setOptimalDisplayMode();
     // 初始化Mio
     Mio.setCustomRequest((url, {Map<String, String>? headers}) async {
-      /// Http Client
+      // 读取缓存
+      final cache = await HttpCacheManager.instance.getFileFromCache(url);
+      if (cache != null) {
+        return cache.file.readAsString();
+      }
+      /// 发送请求 Http Client
       headers ??= <String, String>{};
       headers['user-agent'] =
           r'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36';
       final response = await Http.client.get(Uri.parse(url), headers: headers);
-      return response.body;
+      final body = response.body;
+      // 写入缓存
+      if (response.statusCode >= 200 && response.statusCode < 400) {
+        HttpCacheManager.instance.putFile(url, response.bodyBytes);
+      }
+      return body;
 
       /// Dio Client
       // if (headers != null) {
@@ -81,11 +92,14 @@ class _ComicNyaaState extends State<ComicNyaa> {
     final List<DisplayMode> supported = await FlutterDisplayMode.supported;
     final DisplayMode active = await FlutterDisplayMode.active;
     final List<DisplayMode> sameResolution = supported
-        .where((DisplayMode m) => m.width == active.width && m.height == active.height)
+        .where((DisplayMode m) =>
+            m.width == active.width && m.height == active.height)
         .toList()
-      ..sort((DisplayMode a, DisplayMode b) => b.refreshRate.compareTo(a.refreshRate));
+      ..sort((DisplayMode a, DisplayMode b) =>
+          b.refreshRate.compareTo(a.refreshRate));
 
-    final DisplayMode mostOptimalMode = sameResolution.isNotEmpty ? sameResolution.first : active;
+    final DisplayMode mostOptimalMode =
+        sameResolution.isNotEmpty ? sameResolution.first : active;
 
     /// This setting is per session.
     /// Please ensure this was placed with `initState` of your root widget.

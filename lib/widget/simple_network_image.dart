@@ -64,12 +64,19 @@ class _SimpleNetworkImageState extends State<SimpleNetworkImage>
                   baseColor: const Color.fromRGBO(240, 240, 240, 1),
                   highlightColor: Colors.white,
                   child: Container(
-                    decoration: const BoxDecoration(color: Colors.white),
+                    color: Colors.white,
                   ),
                 ));
           case LoadState.failed:
             animationController?.forward();
-            return widget.error;
+            return widget.error ??
+                const AspectRatio(
+                    aspectRatio: .8,
+                    child: Icon(
+                      Icons.image_not_supported,
+                      size: 48,
+                      color: Colors.red,
+                    ));
           case LoadState.completed:
             animationController?.forward();
             return null;

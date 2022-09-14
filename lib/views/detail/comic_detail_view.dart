@@ -5,6 +5,7 @@ import 'package:comic_nyaa/library/mio/model/data_origin.dart';
 import 'package:comic_nyaa/models/typed_model.dart';
 import 'package:comic_nyaa/utils/flutter_utils.dart';
 import 'package:comic_nyaa/views/detail/image_detail_view.dart';
+import 'package:comic_nyaa/views/detail/nyaa_image_detail_view.dart';
 import 'package:comic_nyaa/widget/nyaa_tag_item.dart';
 import 'package:comic_nyaa/widget/nyaa_tags.dart';
 import 'package:comic_nyaa/widget/simple_network_image.dart';
@@ -225,58 +226,63 @@ class ComicDetailViewState extends State<ComicDetailView>
                   itemCount: _children.length,
                   shrinkWrap: true,
                   itemBuilder: (context, index) {
-                    final controller = AnimationController(
-                        value: 1,
-                        duration: const Duration(milliseconds: 300),
-                        vsync: this);
+                    // final controller = AnimationController(
+                    //     value: 1,
+                    //     duration: const Duration(milliseconds: 300),
+                    //     vsync: this);
                     return Material(
                         shadowColor: Colors.black45,
-                        //Colors.grey[100],
                         elevation: 2,
                         borderRadius:
                             const BorderRadius.all(Radius.circular(2.0)),
                         child: InkWell(
                             onTap: () => RouteUtil.push(
                                 context,
-                                ImageDetailView(
+                                NyaaImageDetailView(
                                   models: _children,
                                   index: index,
                                 )),
                             child: Column(
                               children: [
-                                ExtendedImage.network(getUrl(_children[index]),
-                                    headers: _origin.site.headers,
-                                    height: 160,
-                                    fit: BoxFit.cover,
-                                    opacity: controller,
-                                    loadStateChanged: (state) {
-                                  switch (state.extendedImageLoadState) {
-                                    case LoadState.loading:
-                                      controller.reset();
-                                      return Shimmer.fromColors(
-                                          baseColor: const Color.fromRGBO(
-                                              240, 240, 240, 1),
-                                          highlightColor: Colors.white,
-                                          child: AspectRatio(
-                                            aspectRatio: 0.8,
-                                            child: Container(
-                                              decoration: const BoxDecoration(
-                                                  color: Colors.white),
-                                            ),
-                                          ));
-                                    case LoadState.failed:
-                                      return const AspectRatio(
-                                          aspectRatio: 1,
-                                          child: Icon(
-                                            Icons.image_not_supported,
-                                            size: 64,
-                                            color: Colors.redAccent,
-                                          ));
-                                    case LoadState.completed:
-                                      controller.forward();
-                                      return null;
-                                  }
-                                }),
+                                SimpleNetworkImage(
+                                  getUrl(_children[index]),
+                                  headers: _origin.site.headers,
+                                  height: 160,
+                                  fit: BoxFit.cover,
+                                ),
+                                // ExtendedImage.network(getUrl(_children[index]),
+                                //     headers: _origin.site.headers,
+                                //     height: 160,
+                                //     fit: BoxFit.cover,
+                                //     opacity: controller,
+                                //     loadStateChanged: (state) {
+                                //   switch (state.extendedImageLoadState) {
+                                //     case LoadState.loading:
+                                //       controller.reset();
+                                //       return Shimmer.fromColors(
+                                //           baseColor: const Color.fromRGBO(
+                                //               240, 240, 240, 1),
+                                //           highlightColor: Colors.white,
+                                //           child: AspectRatio(
+                                //             aspectRatio: 0.8,
+                                //             child: Container(
+                                //               decoration: const BoxDecoration(
+                                //                   color: Colors.white),
+                                //             ),
+                                //           ));
+                                //     case LoadState.failed:
+                                //       return const AspectRatio(
+                                //           aspectRatio: 1,
+                                //           child: Icon(
+                                //             Icons.image_not_supported,
+                                //             size: 64,
+                                //             color: Colors.redAccent,
+                                //           ));
+                                //     case LoadState.completed:
+                                //       controller.forward();
+                                //       return null;
+                                //   }
+                                // }),
                                 Container(
                                   padding: const EdgeInsets.all(8.0),
                                   child: Text(_children[index].title ?? ''),
