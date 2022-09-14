@@ -8,7 +8,7 @@ class HttpCacheManager {
     Config(
       key,
       stalePeriod: const Duration(milliseconds: 15),
-      maxNrOfCacheObjects: 255,
+      maxNrOfCacheObjects: 512,
       repo: JsonCacheInfoRepository(databaseName: key),
       // fileSystem: IOFileSystem(key),
       // fileService: HttpFileService(),

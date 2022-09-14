@@ -187,11 +187,12 @@ class NyaaImageDetailViewState extends State<NyaaImageDetailView>
     progressText = getProgressText(current, total ?? 0);
     return Stack(
       children: [
-        ExtendedImage.network(
+        SimpleNetworkImage(
           placeholder,
           width: double.maxFinite,
           height: double.maxFinite,
           fit: BoxFit.contain,
+          disableAnimation: true,
         ),
         Positioned(
             left: 0,
@@ -232,10 +233,10 @@ class NyaaImageDetailViewState extends State<NyaaImageDetailView>
             },
             itemBuilder: (BuildContext context, int index) {
               final url = _images[index];
-              final placeholder = widget.models[_currentIndex].coverUrl ?? '';
+              final placeholder = widget.models[_currentIndex].coverUrl?.asUrl ?? '';
               if (url.isEmpty) {
                 return Hero(
-                    tag: placeholder,
+                    tag: placeholder + index.toString(),
                     child: buildLoading(placeholder));
               }
               void Function() animationListener = () {};

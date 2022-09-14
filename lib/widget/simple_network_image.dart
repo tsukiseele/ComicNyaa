@@ -15,6 +15,7 @@ class SimpleNetworkImage extends StatefulWidget {
     this.error,
     this.animationDuration = const Duration(milliseconds: 500),
     this.clearMemoryCacheIfFailed = true,
+        this.disableAnimation = false,
   }) : super(key: key);
 
   final String url;
@@ -26,6 +27,7 @@ class SimpleNetworkImage extends StatefulWidget {
   final Widget? error;
   final Widget? placeholder;
   final Duration animationDuration;
+  final bool disableAnimation;
 
   @override
   State<StatefulWidget> createState() {
@@ -40,8 +42,10 @@ class _SimpleNetworkImageState extends State<SimpleNetworkImage>
   @override
   void initState() {
     super.initState();
-    animationController =
-        AnimationController(duration: widget.animationDuration, vsync: this);
+    if (!widget.disableAnimation) {
+      animationController =
+          AnimationController(duration: widget.animationDuration, vsync: this);
+    }
   }
 
   @override

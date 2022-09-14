@@ -381,7 +381,7 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
       Container(
           margin: const EdgeInsets.only(bottom: 8),
           child: Stack(children: [
-            const SimpleNetworkImage(
+             const SimpleNetworkImage(
               'https://cdn.jsdelivr.net/gh/nyarray/LoliHost/images/94d6d0e7be187770e5d538539d95a12a.jpeg',
               fit: BoxFit.cover,
               width: double.maxFinite,
