@@ -17,6 +17,7 @@ import 'package:shimmer/shimmer.dart';
 
 import '../../models/typed_model.dart';
 import '../../utils/flutter_utils.dart';
+import '../detail/nyaa_image_detail_view.dart';
 
 class GalleryController {
   String keywords = '';
@@ -192,10 +193,11 @@ class _GalleryViewState extends State<GalleryView>
   }
 
   void _jump(TypedModel model) {
+    print('TTTTTTTTTTTTTTTTTTTTTT');
     Widget? target;
     switch (model.type) {
       case 'image':
-        target = ImageDetailView(models: [model]);
+        target = NyaaImageDetailView(models: [model]);
         break;
       case 'video':
         target = VideoDetailView(model: model);

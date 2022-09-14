@@ -1,7 +1,7 @@
 import 'dart:io';
 
-class TimeoutHttpClient {
-  TimeoutHttpClient(this.client,
+class HttpTimeoutClient {
+  HttpTimeoutClient(this.client,
       { required this.connectionTimeout, required this.idleTimeout}) {
     client.connectionTimeout = Duration(milliseconds: connectionTimeout);
     client.idleTimeout = Duration(milliseconds: connectionTimeout);

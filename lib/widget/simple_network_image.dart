@@ -4,26 +4,28 @@ import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
 
 class SimpleNetworkImage extends StatefulWidget {
-  const SimpleNetworkImage(this.url,
-      {Key? key,
-      this.width,
-      this.height,
-      this.duration = const Duration(milliseconds: 500),
-      this.headers,
-      this.fit = BoxFit.contain,
-      this.clearMemoryCacheIfFailed = true,
-      this.placeholder,
-      this.error})
-      : super(key: key);
+  const SimpleNetworkImage(
+    this.url, {
+    Key? key,
+    this.width,
+    this.height,
+    this.headers,
+    this.fit = BoxFit.contain,
+    this.placeholder,
+    this.error,
+    this.animationDuration = const Duration(milliseconds: 500),
+    this.clearMemoryCacheIfFailed = true,
+  }) : super(key: key);
+
   final String url;
   final double? width;
   final double? height;
-  final Duration duration;
   final Map<String, String>? headers;
   final BoxFit fit;
   final bool clearMemoryCacheIfFailed;
   final Widget? error;
   final Widget? placeholder;
+  final Duration animationDuration;
 
   @override
   State<StatefulWidget> createState() {
@@ -38,7 +40,8 @@ class _SimpleNetworkImageState extends State<SimpleNetworkImage>
   @override
   void initState() {
     super.initState();
-    animationController = AnimationController(duration: widget.duration, vsync: this);
+    animationController =
+        AnimationController(duration: widget.animationDuration, vsync: this);
   }
 
   @override
@@ -61,12 +64,19 @@ class _SimpleNetworkImageState extends State<SimpleNetworkImage>
                   baseColor: const Color.fromRGBO(240, 240, 240, 1),
                   highlightColor: Colors.white,
                   child: Container(
-                    decoration: const BoxDecoration(color: Colors.white),
+                    color: Colors.white,
                   ),
                 ));
           case LoadState.failed:
             animationController?.forward();
-            return widget.error;
+            return widget.error ??
+                const AspectRatio(
+                    aspectRatio: .8,
+                    child: Icon(
+                      Icons.image_not_supported,
+                      size: 48,
+                      color: Colors.red,
+                    ));
           case LoadState.completed:
             animationController?.forward();
             return null;
