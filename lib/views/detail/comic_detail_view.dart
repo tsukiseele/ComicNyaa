@@ -7,13 +7,11 @@ import 'package:comic_nyaa/utils/flutter_utils.dart';
 import 'package:comic_nyaa/views/detail/image_detail_view.dart';
 import 'package:comic_nyaa/widget/nyaa_tag_item.dart';
 import 'package:comic_nyaa/widget/nyaa_tags.dart';
-import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
-import 'package:shimmer/shimmer.dart';
 
 import '../../data/download/nyaa_download_manager.dart';
 import '../../widget/simple_network_image.dart';
@@ -41,7 +39,7 @@ class ComicDetailViewState extends State<ComicDetailView> with TickerProviderSta
   late DataOrigin _origin;
   StreamSubscription<List<Map<String, dynamic>>>? _stream;
 
-  void initialized() {
+  void _initialized() {
     _scrollController.addListener(() {
       if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent) {
         while (_stream?.isPaused == true) {
@@ -94,7 +92,7 @@ class ComicDetailViewState extends State<ComicDetailView> with TickerProviderSta
 
   @override
   void initState() {
-    initialized();
+    _initialized();
 
     super.initState();
   }

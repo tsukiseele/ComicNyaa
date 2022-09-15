@@ -3,6 +3,3 @@ class StringUtil {
     return value != null && value.isNotEmpty ? value : defaultValue ?? '';
   }
 }
-extension StringExtensions on String {
-
-}

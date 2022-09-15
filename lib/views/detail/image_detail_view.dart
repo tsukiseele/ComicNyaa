@@ -176,7 +176,7 @@ class ImageDetailViewState extends State<ImageDetailView>
   AnimationController? _animationController;
   Animation<double>? _animation;
 
-  Widget buildLoading() {
+  Widget _buildLoading() {
     return const Center(
         child: SpinKitSpinningLines(
       color: Colors.teal,
@@ -209,7 +209,7 @@ class ImageDetailViewState extends State<ImageDetailView>
                   itemBuilder: (BuildContext context, int index) {
                     var item = _images[index];
                     if (item.isEmpty) {
-                      return buildLoading();
+                      return _buildLoading();
                     }
                     void Function() animationListener = () {};
                     Widget image = ExtendedImage.network(

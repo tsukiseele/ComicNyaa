@@ -46,7 +46,7 @@ class NyaaImageDetailViewState extends State<NyaaImageDetailView>
   int _currentIndex = 0;
   bool isFailed = false;
 
-  void initialized() async {
+  void _initialized() async {
     _animationController = AnimationController(
         vsync: this, duration: const Duration(milliseconds: 250));
     try {
@@ -55,7 +55,7 @@ class NyaaImageDetailViewState extends State<NyaaImageDetailView>
       _images = List.filled(_models.length, '');
       _origin = _models[0].getOrigin();
 
-      loadImage(_currentIndex);
+      _loadImage(_currentIndex);
 
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (_pageController.hasClients &&
@@ -70,13 +70,13 @@ class NyaaImageDetailViewState extends State<NyaaImageDetailView>
     }
   }
 
-  void loadImage(int index) async {
+  void _loadImage(int index) async {
     _cache.add(index);
     if (_images[index].isNotEmpty) {
       return;
     }
     TypedModel model = _models[index];
-    String image = getUrl(model);
+    String image = _getUrl(model);
     if (image.isEmpty) {
       final results = await Mio(_origin.site).parseAllChildren(model.toJson());
       final m = TypedModel.fromJson(results);
@@ -88,14 +88,14 @@ class NyaaImageDetailViewState extends State<NyaaImageDetailView>
         }
         if (models.length == 1) {
           model = models[0];
-          image = getUrl(models[0]);
+          image = _getUrl(models[0]);
         } else {
           Fluttertoast.showToast(msg: '解析异常：预料之外的子数据集');
           return;
         }
       } else {
         model = m;
-        image = getUrl(m);
+        image = _getUrl(m);
       }
     }
     setState(() {
@@ -105,20 +105,20 @@ class NyaaImageDetailViewState extends State<NyaaImageDetailView>
   }
 
   /// 预加载，默认预加载前后2页
-  void preload(int index, {int range = 2}) {
+  void _preload(int index, {int range = 2}) {
     int start = index - range > 0 ? index - range : 0;
     int end =
         index + range < _images.length ? index + range : _images.length - 1;
     if (start < end) {
       for (int i = start; i <= end; i++) {
-        if (!_cache.contains(i)) loadImage(i);
+        if (!_cache.contains(i)) _loadImage(i);
       }
     } else {
-      loadImage(index);
+      _loadImage(index);
     }
   }
 
-  String getUrl(TypedModel? item) {
+  String _getUrl(TypedModel? item) {
     if (item == null) return '';
     String url = "";
     try {
@@ -137,7 +137,7 @@ class NyaaImageDetailViewState extends State<NyaaImageDetailView>
     return Uri.encodeFull(url);
   }
 
-  void onDownload(TypedModel model) async {
+  void _onDownload(TypedModel model) async {
     try {
       final downloadLevel =
           (await NyaaPreferences.instance).downloadResourceLevel;
@@ -171,13 +171,13 @@ class NyaaImageDetailViewState extends State<NyaaImageDetailView>
   @override
   void initState() {
     super.initState();
-    initialized();
+    _initialized();
   }
 
   AnimationController? _animationController;
   Animation<double>? _animation;
 
-  Widget buildLoading(String placeholder, {int? current, int? total}) {
+  Widget _buildLoading(String placeholder, {int? current, int? total}) {
     double? progress;
     String progressText = 'Loading...';
     current ??= 0;
@@ -237,7 +237,7 @@ class NyaaImageDetailViewState extends State<NyaaImageDetailView>
                     onPageChanged: (int index) {
                       _currentIndex = index;
                       // 预加载
-                      preload(index);
+                      _preload(index);
                       setState(() {});
                     },
                     itemBuilder: (BuildContext context, int index) {
@@ -247,7 +247,7 @@ class NyaaImageDetailViewState extends State<NyaaImageDetailView>
                       if (url.isEmpty) {
                         return Hero(
                             tag: placeholder + index.toString(),
-                            child: buildLoading(placeholder));
+                            child: _buildLoading(placeholder));
                       }
                       void Function() animationListener = () {};
                       Widget image = ExtendedImage.network(
@@ -316,7 +316,7 @@ class NyaaImageDetailViewState extends State<NyaaImageDetailView>
                           switch (state.extendedImageLoadState) {
                             case LoadState.loading:
                               final event = state.loadingProgress;
-                              return buildLoading(placeholder,
+                              return _buildLoading(placeholder,
                                   current: event?.cumulativeBytesLoaded,
                                   total: event?.expectedTotalBytes);
                             case LoadState.failed:
@@ -337,7 +337,7 @@ class NyaaImageDetailViewState extends State<NyaaImageDetailView>
                         ),
                       );
                       image = InkWell(
-                        onLongPress: () => onDownload(_models[_currentIndex]),
+                        onLongPress: () => _onDownload(_models[_currentIndex]),
                         child: image,
                       );
                       if (index == _currentIndex) {
