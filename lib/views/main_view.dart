@@ -188,6 +188,9 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
                   itemCount: _gallerys.length,
                   isScrollToNewTab: true,
                   color: tabColors[_currentTabIndex % tabColors.length][100],
+                  tabBarColor: tabColors[_currentTabIndex % tabColors.length]
+                      [200],
+              elevation: 8,
                   indicator: const BoxDecoration(
                       color: Colors.white70,
                       boxShadow: [
@@ -252,7 +255,7 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
           margin: const EdgeInsets.only(bottom: 48),
           child: _currentTab?.controller.selects.isEmpty == true
               ? FloatingActionButton(
-            backgroundColor: tabColors[_currentTabIndex],
+                  backgroundColor: tabColors[_currentTabIndex],
                   onPressed: () => _currentTab?.controller.scrollController
                       ?.animateTo(0,
                           duration: const Duration(milliseconds: 1000),
@@ -338,7 +341,7 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
           FloatingSearchBarAction(
             showIfOpened: false,
             child: CircularButton(
-              icon: const Icon(Icons.extension),
+              icon: const Icon(Icons.send_time_extension),
               onPressed: () {
                 globalKey.currentState?.openEndDrawer();
               },
@@ -382,7 +385,7 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
       Container(
           margin: const EdgeInsets.only(bottom: 8),
           child: Stack(children: [
-             const SimpleNetworkImage(
+            const SimpleNetworkImage(
               'https://cdn.jsdelivr.net/gh/nyarray/LoliHost/images/94d6d0e7be187770e5d538539d95a12a.jpeg',
               fit: BoxFit.cover,
               width: double.maxFinite,

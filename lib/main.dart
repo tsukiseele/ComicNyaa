@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'package:comic_nyaa/library/http/http_cache_manager.dart';
+import 'package:comic_nyaa/utils/http_cache_manager.dart';
 import 'package:comic_nyaa/views/back_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -55,10 +55,11 @@ class _ComicNyaaState extends State<ComicNyaa> {
     // 初始化Mio
     Mio.setCustomRequest((url, {Map<String, String>? headers}) async {
       // 读取缓存
-      final cache = await HttpCacheManager.instance.getFileFromCache(url);
-      if (cache != null) {
-        return cache.file.readAsString();
-      }
+      // final cache = await HttpCacheManager.instance.getFileFromCache(url);
+      // if (cache != null) {
+      //   print('HTTP_CACHE_MANAGER::: READ <<<<<<<<<<<<<<<<< $url');
+      //   return cache.file.readAsString();
+      // }
       /// 发送请求 Http Client
       headers ??= <String, String>{};
       headers['user-agent'] =
@@ -66,9 +67,10 @@ class _ComicNyaaState extends State<ComicNyaa> {
       final response = await Http.client.get(Uri.parse(url), headers: headers);
       final body = response.body;
       // 写入缓存
-      if (response.statusCode >= 200 && response.statusCode < 400) {
-        HttpCacheManager.instance.putFile(url, response.bodyBytes);
-      }
+      // if (response.statusCode >= 200 && response.statusCode < 400) {
+      //   HttpCacheManager.instance.putFile(url, response.bodyBytes, eTag: url, maxAge: const Duration(minutes: 15));
+      //   print('HTTP_CACHE_MANAGER::: WRITE >>>>>>>>>>>>>>>>>>>> $url');
+      // }
       return body;
 
       /// Dio Client

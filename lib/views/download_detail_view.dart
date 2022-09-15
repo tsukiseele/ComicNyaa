@@ -28,7 +28,7 @@ class _DownloadDetailViewState extends State<DownloadDetailView> {
   Widget build(BuildContext context) {
     final tasks = widget.queue.tasks.toList();
     return Scaffold(
-      appBar: AppBar(title: const Text('下载详情')),
+      appBar: AppBar(title: Text(widget.queue.title)),
       body: Material(
           child: ListView(
         children:

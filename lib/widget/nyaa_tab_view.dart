@@ -11,28 +11,30 @@ class NyaaTabView extends StatefulWidget {
   final bool isScrollToNewTab;
   final Decoration? indicator;
   final Color? color;
+  final Color? tabBarColor;
   final Duration duration;
   final double elevation;
   final BorderRadius tabBarBorderRadius;
   final EdgeInsets tabBarPadding;
 
-  const NyaaTabView(
-      {Key? key,
-      required this.itemCount,
-      required this.tabBuilder,
-      required this.pageBuilder,
-      required this.onPositionChange,
-      required this.onScroll,
-      this.position,
-      this.isScrollToNewTab = false,
-      this.indicator,
-      this.stub,
-      this.color,
-      this.duration = const Duration(milliseconds: 1000),
-      this.elevation = 8,
-      this.tabBarBorderRadius = BorderRadius.zero,
-      this.tabBarPadding = const EdgeInsets.all(4)})
-      : super(key: key);
+  const NyaaTabView({
+    Key? key,
+    required this.itemCount,
+    required this.tabBuilder,
+    required this.pageBuilder,
+    required this.onPositionChange,
+    required this.onScroll,
+    this.position,
+    this.isScrollToNewTab = false,
+    this.indicator,
+    this.stub,
+    this.color,
+    this.tabBarColor,
+    this.duration = const Duration(milliseconds: 1000),
+    this.elevation = 8,
+    this.tabBarBorderRadius = BorderRadius.zero,
+    this.tabBarPadding = const EdgeInsets.all(4),
+  }) : super(key: key);
 
   @override
   State<NyaaTabView> createState() => _NyaaTabsState();
@@ -73,7 +75,9 @@ class _NyaaTabsState extends State<NyaaTabView> with TickerProviderStateMixin {
         _currentPosition = _currentPosition < 0 ? 0 : _currentPosition;
       }
 
-      final transitionPostion = widget.isScrollToNewTab && widget.itemCount > _currentCount && widget.itemCount > 1
+      final transitionPostion = widget.isScrollToNewTab &&
+              widget.itemCount > _currentCount &&
+              widget.itemCount > 1
           ? widget.itemCount - 2
           : _currentPosition;
 
@@ -94,7 +98,8 @@ class _NyaaTabsState extends State<NyaaTabView> with TickerProviderStateMixin {
             if (widget.isScrollToNewTab) {
               _currentPosition = widget.itemCount - 1;
             }
-            controller?.animateTo(_currentPosition, duration: const Duration(milliseconds: 1), curve: Curves.ease);
+            controller?.animateTo(_currentPosition,
+                duration: const Duration(milliseconds: 1), curve: Curves.ease);
             // onPositionChange();
           }
         });
@@ -123,7 +128,8 @@ class _NyaaTabsState extends State<NyaaTabView> with TickerProviderStateMixin {
               duration: widget.duration,
               child: TabBarView(
                 controller: controller,
-                children: List.generate(widget.itemCount, (index) => widget.pageBuilder(context, index)),
+                children: List.generate(widget.itemCount,
+                    (index) => widget.pageBuilder(context, index)),
               ))),
       Material(
           borderRadius: widget.tabBarBorderRadius,
@@ -131,14 +137,13 @@ class _NyaaTabsState extends State<NyaaTabView> with TickerProviderStateMixin {
           color: Colors.transparent,
           elevation: widget.elevation,
           child: AnimatedContainer(
-            color: widget.color,
+            color: widget.tabBarColor ?? widget.color,
             duration: widget.duration,
             child: TabBar(
               padding: widget.tabBarPadding,
               isScrollable: true,
               controller: controller,
-              labelColor: Theme.of(context).primaryColor,
-              unselectedLabelColor: Theme.of(context).hintColor,
+              labelColor: widget.tabBarColor ?? widget.color,
               enableFeedback: true,
               indicator: widget.indicator,
               tabs: List.generate(

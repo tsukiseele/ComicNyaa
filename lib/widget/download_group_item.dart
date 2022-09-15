@@ -181,7 +181,8 @@ class DownloadQueueItem extends StatelessWidget {
 
   Future<void> onRestart(NyaaDownloadTaskQueue tasks) async {
     await tasks.start();
-    Fluttertoast.showToast(msg: '任务已完成：${tasks.title}');
+    final successfulCount = tasks.tasks.where((item) => item.status == DownloadStatus.successful).length;
+    Fluttertoast.showToast(msg: '任务已完成: ${tasks.title}， 成功: $successfulCount 项，失败: ${tasks.tasks.length - successfulCount} 项');
     // (await NyaaDownloadManager.instance).restart(tasks.parent);
   }
 

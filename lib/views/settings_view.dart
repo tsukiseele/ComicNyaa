@@ -1,6 +1,5 @@
 import 'package:comic_nyaa/app/config.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_cache_manager/flutter_cache_manager.dart' as cache;
 import 'package:fluttertoast/fluttertoast.dart';
 
 class SettingsView extends StatefulWidget {
@@ -49,7 +48,6 @@ class _SettingsViewState extends State<StatefulWidget> {
   }
 
   static void _clearCache() async {
-    await cache.DefaultCacheManager().emptyCache();
     Fluttertoast.showToast(msg: '缓存已清除');
   }
 }
