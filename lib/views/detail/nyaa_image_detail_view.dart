@@ -241,7 +241,7 @@ class NyaaImageDetailViewState extends State<NyaaImageDetailView>
                     itemBuilder: (BuildContext context, int index) {
                       final url = _images[index];
                       final placeholder =
-                          widget.models[_currentIndex].coverUrl?.asUrl ?? '';
+                          widget.models[index].coverUrl?.asUrl ?? '';
                       if (url.isEmpty) {
                         return Hero(
                             tag: placeholder + index.toString(),
@@ -356,18 +356,20 @@ class NyaaImageDetailViewState extends State<NyaaImageDetailView>
               parallaxOffset: .1,
               color: Colors.transparent,
               boxShadow: const [],
-              collapsed: Container(
-                  color: Colors.black12,
-                  height: double.maxFinite,
-                  child: InkWell(
-                      onTap: () => _panelController.open(),
-                      child: const Icon(
-                        Icons.keyboard_arrow_up,
-                        color: Colors.white,
-                        size: 32,
-                      ))),
-              panelBuilder: (scrollController) =>
-                  _buildScrollPanel(scrollController),
+              collapsed: _buildExpandBar(),
+              panelBuilder: _buildScrollPanel,
+            )));
+  }
+
+  Widget _buildExpandBar() {
+    return InkWell(
+        onTap: () => _panelController.open(),
+        child: const Material(
+            color: Colors.black12,
+            child: Icon(
+              Icons.keyboard_arrow_up,
+              color: Colors.white,
+              size: 32,
             )));
   }
 
