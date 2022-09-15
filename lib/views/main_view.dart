@@ -44,11 +44,11 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
   int _lastScrollPosition = 0;
 
   final tabColors = [
-    Colors.blue[100],
-    Colors.green[100],
-    Colors.purple[100],
-    Colors.amber[100],
-    Colors.pink[100]
+    Colors.blue,
+    Colors.green,
+    Colors.purple,
+    Colors.amber,
+    Colors.pink
   ];
 
   Future<void> _initialize() async {
@@ -187,7 +187,7 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
                   onScroll: (double value) {},
                   itemCount: _gallerys.length,
                   isScrollToNewTab: true,
-                  color: tabColors[_currentTabIndex % tabColors.length],
+                  color: tabColors[_currentTabIndex % tabColors.length][100],
                   indicator: const BoxDecoration(
                       color: Colors.white70,
                       boxShadow: [
@@ -252,6 +252,7 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
           margin: const EdgeInsets.only(bottom: 48),
           child: _currentTab?.controller.selects.isEmpty == true
               ? FloatingActionButton(
+            backgroundColor: tabColors[_currentTabIndex],
                   onPressed: () => _currentTab?.controller.scrollController
                       ?.animateTo(0,
                           duration: const Duration(milliseconds: 1000),
