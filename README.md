@@ -28,9 +28,9 @@ See [LICENSE](./LICENSE])
 <!-- ![Home](https://cdn.jsdelivr.net/gh/nyarray/LoliHost/images/60654495c94c0d0fc9d0861d37cf84b5.jpeg)
 ![Sites](https://cdn.jsdelivr.net/gh/nyarray/LoliHost/images/fcb9dc4ccade0888e6ef759be9a1ee43.jpeg) -->
 <div style="display: flex;">
-  <img src="https://cdn.jsdelivr.net/gh/nyarray/LoliHost/images/3315716381642154294bf1eed154c62f.webp" alt="Home" width="35%"/>
-  <img src="https://cdn.jsdelivr.net/gh/nyarray/LoliHost/images/7144ce7c9cbf7cdec8f736bfe99259de.webp" alt="Sites" width="35%"/>
-  <img src="https://cdn.jsdelivr.net/gh/nyarray/LoliHost/images/2610e482e0c6396abfe23bbb42cb3538.webp" alt="Sites" width="35%"/>
+  <img src="https://cdn.jsdelivr.net/gh/nyarray/LoliHost/images/3315716381642154294bf1eed154c62f.webp" alt="Home" width="33%"/>
+  <img src="https://cdn.jsdelivr.net/gh/nyarray/LoliHost/images/7144ce7c9cbf7cdec8f736bfe99259de.webp" alt="Sites" width="33%"/>
+  <img src="https://cdn.jsdelivr.net/gh/nyarray/LoliHost/images/2610e482e0c6396abfe23bbb42cb3538.webp" alt="Sites" width="33%"/>
 </div>
 
 
