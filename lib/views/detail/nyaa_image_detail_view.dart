@@ -12,9 +12,7 @@ import 'package:comic_nyaa/widget/nyaa_tags.dart';
 import 'package:comic_nyaa/widget/simple_network_image.dart';
 import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:percent_indicator/circular_percent_indicator.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import '../../app/preference.dart';
@@ -266,7 +264,6 @@ class NyaaImageDetailViewState extends State<NyaaImageDetailView>
                           final image = state.widget.extendedImageState
                               .extendedImageInfo?.image;
                           final layout = state.gestureDetails?.layoutRect;
-                          // final screen = MediaQuery.of(context).size;
                           final doubleTapScales = <double>[1.0];
                           // 计算全屏缩放比例
                           if (image != null && layout != null) {

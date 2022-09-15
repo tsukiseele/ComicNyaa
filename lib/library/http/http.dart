@@ -19,13 +19,19 @@ class Http {
     final response = await client.send(request);
     final total = response.contentLength ?? 0;
     final List<int> bytes = [];
-    await for (final value in response.stream) {
-      bytes.addAll(value);
-      if (onProgress != null) onProgress(bytes.length, total);
+    try {
+      onProgress?.call(bytes.length, total);
+      await for (final value in response.stream) {
+        bytes.addAll(value);
+        onProgress?.call(bytes.length, total);
+      }
+      onProgress?.call(bytes.length, total);
+      File(path).writeAsBytes(bytes);
+    } catch(e) {
+      rethrow;
+    } finally {
+      client.close();
     }
-    if (onProgress != null) onProgress(bytes.length, total);
-    client.close();
-    File(path).writeAsBytes(bytes);
   }
 
   static Future<void> downloadFileBreakPointer(
