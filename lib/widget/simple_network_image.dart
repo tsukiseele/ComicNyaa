@@ -61,6 +61,7 @@ class _SimpleNetworkImageState extends State<SimpleNetworkImage>
       loadStateChanged: (state) {
         switch (state.extendedImageLoadState) {
           case LoadState.loading:
+            if (widget.disableAnimation) return null;
             animationController?.reset();
             return widget.placeholder ??
                 Center(

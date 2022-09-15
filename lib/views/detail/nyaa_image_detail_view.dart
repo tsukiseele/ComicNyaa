@@ -201,7 +201,8 @@ class NyaaImageDetailViewState extends State<NyaaImageDetailView>
             child: LinearProgressIndicator(
               value: progress,
               color: progress == null ? Colors.orange : Colors.blue,
-              backgroundColor: progress == null ? Colors.orange[100] : Colors.blue[100],
+              backgroundColor:
+                  progress == null ? Colors.orange[100] : Colors.blue[100],
               semanticsLabel: 'Loading...',
               semanticsValue: progressText,
             ))
@@ -215,146 +216,162 @@ class NyaaImageDetailViewState extends State<NyaaImageDetailView>
     final screenHeight = MediaQuery.of(context).size.height;
     final viewportHeight = screenHeight - padding.top - padding.bottom;
     return Scaffold(
-        body: SlidingUpPanel(
-      controller: _panelController,
-      body: Material(
-          color: Colors.black,
-          child: ExtendedImageGesturePageView.builder(
-            itemCount: _images.length,
-            scrollDirection: Axis.horizontal,
-            controller: ExtendedPageController(
-              initialPage: _currentIndex,
-            ),
-            onPageChanged: (int index) {
-              _currentIndex = index;
-              // 预加载
-              preload(index);
-              setState(() {});
-            },
-            itemBuilder: (BuildContext context, int index) {
-              final url = _images[index];
-              final placeholder = widget.models[_currentIndex].coverUrl?.asUrl ?? '';
-              if (url.isEmpty) {
-                return Hero(
-                    tag: placeholder + index.toString(),
-                    child: buildLoading(placeholder));
+        body: WillPopScope(
+            onWillPop: () {
+              if (_panelController.isPanelOpen) {
+                _panelController.close();
+                return Future.value(false);
               }
-              void Function() animationListener = () {};
-              Widget image = ExtendedImage.network(
-                url,
-                height: viewportHeight,
-                fit: BoxFit.contain,
-                mode: ExtendedImageMode.gesture,
-                handleLoadingProgress: true,
-                headers: _origin.site.headers,
-                onDoubleTap: (state) {
-                  // reset animation
-                  _animation?.removeListener(animationListener);
-                  _animationController?.stop();
-                  _animationController?.reset();
-                  // animation start
-                  final image =
-                      state.widget.extendedImageState.extendedImageInfo?.image;
-                  final layout = state.gestureDetails?.layoutRect;
-                  // final screen = MediaQuery.of(context).size;
-                  final doubleTapScales = <double>[1.0];
-                  // 计算全屏缩放比例
-                  if (image != null && layout != null) {
-                    // print('IMAGE_W: ${image.width}, IMAGE_H: ${image.height}');
-                    // print('CONTAINER_SIZE: ${layout.width} x ${layout.height}');
-                    // print('SCREEN_SIZE: ${screen.width} x ${screen.height}');
-                    final widthScale = image.width / layout.width;
-                    final heightScale = image.height / layout.height;
-                    if (widthScale > heightScale) {
-                      doubleTapScales.add(widthScale / heightScale);
-                      doubleTapScales.add(widthScale);
-                    } else {
-                      doubleTapScales.add(heightScale / widthScale);
-                      doubleTapScales.add(heightScale);
-                    }
-                  } else {
-                    doubleTapScales.add(2.0);
-                  }
-                  // 默认尺寸
-                  Offset? pointerDownPosition = state.pointerDownPosition;
-                  double begin = state.gestureDetails?.totalScale ?? 1.0;
-                  double end;
+              return Future.value(true);
+            },
+            child: SlidingUpPanel(
+              controller: _panelController,
+              body: Material(
+                  color: Colors.black,
+                  child: ExtendedImageGesturePageView.builder(
+                    itemCount: _images.length,
+                    scrollDirection: Axis.horizontal,
+                    controller: ExtendedPageController(
+                      initialPage: _currentIndex,
+                    ),
+                    onPageChanged: (int index) {
+                      _currentIndex = index;
+                      // 预加载
+                      preload(index);
+                      setState(() {});
+                    },
+                    itemBuilder: (BuildContext context, int index) {
+                      final url = _images[index];
+                      final placeholder =
+                          widget.models[_currentIndex].coverUrl?.asUrl ?? '';
+                      if (url.isEmpty) {
+                        return Hero(
+                            tag: placeholder + index.toString(),
+                            child: buildLoading(placeholder));
+                      }
+                      void Function() animationListener = () {};
+                      Widget image = ExtendedImage.network(
+                        url,
+                        height: viewportHeight,
+                        fit: BoxFit.contain,
+                        mode: ExtendedImageMode.gesture,
+                        handleLoadingProgress: true,
+                        headers: _origin.site.headers,
+                        onDoubleTap: (state) {
+                          // reset animation
+                          _animation?.removeListener(animationListener);
+                          _animationController?.stop();
+                          _animationController?.reset();
+                          // animation start
+                          final image = state.widget.extendedImageState
+                              .extendedImageInfo?.image;
+                          final layout = state.gestureDetails?.layoutRect;
+                          // final screen = MediaQuery.of(context).size;
+                          final doubleTapScales = <double>[1.0];
+                          // 计算全屏缩放比例
+                          if (image != null && layout != null) {
+                            // print('IMAGE_W: ${image.width}, IMAGE_H: ${image.height}');
+                            // print('CONTAINER_SIZE: ${layout.width} x ${layout.height}');
+                            // print('SCREEN_SIZE: ${screen.width} x ${screen.height}');
+                            final widthScale = image.width / layout.width;
+                            final heightScale = image.height / layout.height;
+                            if (widthScale > heightScale) {
+                              doubleTapScales.add(widthScale / heightScale);
+                              doubleTapScales.add(widthScale);
+                            } else {
+                              doubleTapScales.add(heightScale / widthScale);
+                              doubleTapScales.add(heightScale);
+                            }
+                          } else {
+                            doubleTapScales.add(2.0);
+                          }
+                          // 默认尺寸
+                          Offset? pointerDownPosition =
+                              state.pointerDownPosition;
+                          double begin =
+                              state.gestureDetails?.totalScale ?? 1.0;
+                          double end;
 
-                  int currentScaleIndex = doubleTapScales
-                      .indexWhere((item) => (begin - item).abs() < 0.01);
-                  end = doubleTapScales[
-                      currentScaleIndex + 1 < doubleTapScales.length
-                          ? currentScaleIndex + 1
-                          : 0];
-                  // print('SCALES::: $doubleTapScales');
-                  // print('begin: $begin, end: $end;');
-                  animationListener = () {
-                    state.handleDoubleTap(
-                        scale: _animation?.value,
-                        doubleTapPosition: pointerDownPosition);
-                  };
-                  _animation = Tween<double>(begin: begin, end: end).animate(
-                      CurvedAnimation(
-                          parent: _animationController!, curve: Curves.ease));
-                  _animation?.addListener(animationListener);
-                  _animationController?.forward();
-                },
-                loadStateChanged: (state) {
-                  switch (state.extendedImageLoadState) {
-                    case LoadState.loading:
-                      final event = state.loadingProgress;
-                      return buildLoading(placeholder, current: event?.cumulativeBytesLoaded, total: event?.expectedTotalBytes);
-                    case LoadState.failed:
-                      return const Center(
-                          child: Icon(Icons.image_not_supported, size: 64));
-                    case LoadState.completed:
-                      return null;
-                  }
-                },
-                initGestureConfigHandler: (ExtendedImageState state) =>
-                    GestureConfig(
-                  minScale: 0.1,
-                  maxScale: double.infinity,
-                  inPageView: true,
-                  initialScale: 1.0,
-                  cacheGesture: false,
-                ),
-              );
-              image = InkWell(
-                onLongPress: () => onDownload(_models[_currentIndex]),
-                child: image,
-              );
-              if (index == _currentIndex) {
-                return Hero(
-                  tag: url + index.toString(),
-                  child: image,
-                );
-              } else {
-                return image;
-              }
-            },
-          )),
-      minHeight: 64,
-      maxHeight: screenHeight * 0.667,
-      isDraggable: true,
-      backdropEnabled: true,
-      backdropOpacity: .3,
-      parallaxEnabled: true,
-      parallaxOffset: .1,
-      color: Colors.transparent,
-      boxShadow: const [],
-      collapsed: Container(
-          color: Colors.black12,
-          height: double.maxFinite,
-          child: InkWell(
-              onTap: () => _panelController.open(),
-              child: const Icon(
-                Icons.keyboard_arrow_up,
-                color: Colors.white,
-                size: 32,
-              ))),
-      panelBuilder: (scrollController) => _buildScrollPanel(scrollController),
-    ));
+                          int currentScaleIndex = doubleTapScales.indexWhere(
+                              (item) => (begin - item).abs() < 0.01);
+                          end = doubleTapScales[
+                              currentScaleIndex + 1 < doubleTapScales.length
+                                  ? currentScaleIndex + 1
+                                  : 0];
+                          // print('SCALES::: $doubleTapScales');
+                          // print('begin: $begin, end: $end;');
+                          animationListener = () {
+                            state.handleDoubleTap(
+                                scale: _animation?.value,
+                                doubleTapPosition: pointerDownPosition);
+                          };
+                          _animation = Tween<double>(begin: begin, end: end)
+                              .animate(CurvedAnimation(
+                                  parent: _animationController!,
+                                  curve: Curves.ease));
+                          _animation?.addListener(animationListener);
+                          _animationController?.forward();
+                        },
+                        loadStateChanged: (state) {
+                          switch (state.extendedImageLoadState) {
+                            case LoadState.loading:
+                              final event = state.loadingProgress;
+                              return buildLoading(placeholder,
+                                  current: event?.cumulativeBytesLoaded,
+                                  total: event?.expectedTotalBytes);
+                            case LoadState.failed:
+                              return const Center(
+                                  child: Icon(Icons.image_not_supported,
+                                      size: 64));
+                            case LoadState.completed:
+                              return null;
+                          }
+                        },
+                        initGestureConfigHandler: (ExtendedImageState state) =>
+                            GestureConfig(
+                          minScale: 0.1,
+                          maxScale: double.infinity,
+                          inPageView: true,
+                          initialScale: 1.0,
+                          cacheGesture: false,
+                        ),
+                      );
+                      image = InkWell(
+                        onLongPress: () => onDownload(_models[_currentIndex]),
+                        child: image,
+                      );
+                      if (index == _currentIndex) {
+                        return Hero(
+                          tag: url + index.toString(),
+                          child: image,
+                        );
+                      } else {
+                        return image;
+                      }
+                    },
+                  )),
+              minHeight: 64,
+              maxHeight: screenHeight * 0.667,
+              isDraggable: true,
+              backdropEnabled: true,
+              backdropOpacity: .3,
+              parallaxEnabled: true,
+              parallaxOffset: .1,
+              color: Colors.transparent,
+              boxShadow: const [],
+              collapsed: Container(
+                  color: Colors.black12,
+                  height: double.maxFinite,
+                  child: InkWell(
+                      onTap: () => _panelController.open(),
+                      child: const Icon(
+                        Icons.keyboard_arrow_up,
+                        color: Colors.white,
+                        size: 32,
+                      ))),
+              panelBuilder: (scrollController) =>
+                  _buildScrollPanel(scrollController),
+            )));
   }
 
   Widget _buildScrollPanel(ScrollController scrollController) {
