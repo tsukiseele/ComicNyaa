@@ -41,7 +41,6 @@ class ComicDetailView extends StatefulWidget {
   final String heroKey;
   final TypedModel model;
 
-
   @override
   State<StatefulWidget> createState() {
     return ComicDetailViewState();
@@ -114,21 +113,24 @@ class ComicDetailViewState extends State<ComicDetailView> with TickerProviderSta
     super.initState();
   }
 
-  Widget buildHeader(double statusBarHeight, List<String> tags) {
+  Widget _buildHeader(double statusBarHeight, List<String> tags) {
     return Container(
-        color: Theme.of(context).primaryColor.withOpacity(.75),
+        color: Theme.of(context).primaryColor.withOpacity(.667),
         padding: EdgeInsets.only(top: statusBarHeight + 8, bottom: 8, left: 8, right: 8),
         child: Column(children: [
           SizedBox(
               height: 192,
-              child: Row(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
-                Material(
-                  elevation: 8,
-                  color: Colors.transparent,
-                  child: Padding(
-                    padding: const EdgeInsets.all(4),
+              child: Row(children: [
+                Container(
+                  padding: const EdgeInsets.all(4),
+                  alignment: Alignment.center,
+                  child: Material(
+                    color: Colors.transparent,
+                    shadowColor: Colors.black45,
+                    elevation: 4,
                     child: Hero(
-                        tag: widget.heroKey,//(widget.model.coverUrl?.asUrl ?? '') + 0toString(), //widget.model.coverUrl ?? '',
+                        tag: widget.heroKey,
+                        //(widget.model.coverUrl?.asUrl ?? '') + 0toString(), //widget.model.coverUrl ?? '',
                         child: SimpleNetworkImage(
                           widget.model.coverUrl ?? '',
                           width: 120,
@@ -140,7 +142,7 @@ class ComicDetailViewState extends State<ComicDetailView> with TickerProviderSta
                 Expanded(
                   child: Container(
                       margin: const EdgeInsets.only(left: 8),
-                      child: Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
+                      child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
                         Expanded(
                             child: Text(
                           widget.model.title ?? 'Unknown',
@@ -202,7 +204,7 @@ class ComicDetailViewState extends State<ComicDetailView> with TickerProviderSta
       child: SmartRefresher(
           controller: _refreshController,
           scrollController: _scrollController,
-          header: SliverToBoxAdapter(child: buildHeader(statusBarHeight, tags)),
+          header: SliverToBoxAdapter(child: _buildHeader(statusBarHeight, tags)),
           child: _children.isNotEmpty
               ? MasonryGridView.count(
                   controller: _scrollController,
@@ -236,40 +238,6 @@ class ComicDetailViewState extends State<ComicDetailView> with TickerProviderSta
                                     fit: BoxFit.cover,
                                   ),
                                 ),
-
-                                // ExtendedImage.network(getUrl(_children[index]),
-                                //     headers: _origin.site.headers,
-                                //     height: 160,
-                                //     fit: BoxFit.cover,
-                                //     opacity: controller,
-                                //     loadStateChanged: (state) {
-                                //   switch (state.extendedImageLoadState) {
-                                //     case LoadState.loading:
-                                //       controller.reset();
-                                //       return Shimmer.fromColors(
-                                //           baseColor: const Color.fromRGBO(
-                                //               240, 240, 240, 1),
-                                //           highlightColor: Colors.white,
-                                //           child: AspectRatio(
-                                //             aspectRatio: 0.8,
-                                //             child: Container(
-                                //               decoration: const BoxDecoration(
-                                //                   color: Colors.white),
-                                //             ),
-                                //           ));
-                                //     case LoadState.failed:
-                                //       return const AspectRatio(
-                                //           aspectRatio: 1,
-                                //           child: Icon(
-                                //             Icons.image_not_supported,
-                                //             size: 64,
-                                //             color: Colors.redAccent,
-                                //           ));
-                                //     case LoadState.completed:
-                                //       controller.forward();
-                                //       return null;
-                                //   }
-                                // }),
                                 Container(
                                   padding: const EdgeInsets.all(8.0),
                                   child: Text(_children[index].title ?? ''),
