@@ -1,27 +1,41 @@
+/*
+ * Copyright (C) 2022. TsukiSeele
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 import 'dart:async';
 import 'dart:convert';
+import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:collection/collection.dart';
-import 'package:comic_nyaa/data/subscribe_provider.dart';
+import 'package:material_floating_search_bar/material_floating_search_bar.dart';
+import 'package:comic_nyaa/library/http/http.dart';
+import 'package:comic_nyaa/library/mio/model/site.dart';
 import 'package:comic_nyaa/library/mio/core/site_manager.dart';
+import 'package:comic_nyaa/data/subscribe_provider.dart';
 import 'package:comic_nyaa/utils/flutter_utils.dart';
 import 'package:comic_nyaa/views/download_view.dart';
 import 'package:comic_nyaa/views/settings_view.dart';
 import 'package:comic_nyaa/views/subscribe_view.dart';
 import 'package:comic_nyaa/widget/nyaa_tab_view.dart';
 import 'package:comic_nyaa/widget/simple_network_image.dart';
-import 'package:flutter/material.dart';
-
-import 'package:comic_nyaa/library/mio/model/site.dart';
-import 'package:fluttertoast/fluttertoast.dart';
-import 'package:material_floating_search_bar/material_floating_search_bar.dart';
-
-import '../app/config.dart';
-import '../data/download/nyaa_download_manager.dart';
-import '../library/http/http.dart';
-import '../models/typed_model.dart';
-import '../utils/string_extensions.dart';
-import '../widget/marquee_widget.dart';
-import 'pages/gallery_view.dart';
+import 'package:comic_nyaa/app/config.dart';
+import 'package:comic_nyaa/data/download/nyaa_download_manager.dart';
+import 'package:comic_nyaa/models/typed_model.dart';
+import 'package:comic_nyaa/widget/marquee_widget.dart';
+import 'package:comic_nyaa/views/pages/gallery_view.dart';
 
 class MainView extends StatefulWidget {
   const MainView({Key? key, this.site, this.keywords}) : super(key: key);
@@ -136,7 +150,6 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
 
   void _onGalleryScroll() {
     if (_galleryScrollController == null) return;
-    // if (_galleryScrollController!.positions.isEmpty) _galleryScrollController!.dispose();
     if (_galleryScrollController!.position.pixels < 128) {
       _floatingSearchBarController.isHidden
           ? _floatingSearchBarController.show()

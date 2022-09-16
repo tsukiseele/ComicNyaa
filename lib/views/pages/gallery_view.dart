@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:comic_nyaa/utils/uri_extensions.dart';
 import 'package:comic_nyaa/views/detail/comic_detail_view.dart';
-import 'package:comic_nyaa/views/detail/image_detail_view.dart';
 import 'package:comic_nyaa/views/detail/video_detail_view.dart';
 import 'package:comic_nyaa/widget/triangle_painter.dart';
 import 'package:comic_nyaa/library/mio/model/site.dart';

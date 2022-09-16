@@ -1,3 +1,20 @@
+/*
+ * Copyright (C) 2022. TsukiSeele
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
@@ -10,11 +27,6 @@ import '../model/site.dart';
 
 /// 站点内容解析器，通过加载JSON配置抓取网页内容，并返回JSON数据
 /// （因为Flutter不支持运行时反射，故不使用反射构建）
-///
-/// @author tsukiseele
-/// @date 2022.8.8
-/// @license Apache License 2.0
-///
 class Mio<T extends DataModel> {
   final Site? _site;
   int _page = 1;
