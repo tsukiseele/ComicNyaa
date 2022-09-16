@@ -387,7 +387,7 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
             ));
   }
 
-  void _onSearch(query, [String? suggest]) async {
+  void _onSearch(String query, [String? suggest]) async {
     print('MainView::onSearch ==> query: $query, suggest: $suggest');
     if (suggest != null) {
       int lastWordIndex = query.lastIndexOf(' ');
