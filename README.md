@@ -24,7 +24,7 @@
 - [ ] 更多的功能
 
 ## License
-See [LICENSE](./LICENSE])
+See [LICENSE](./LICENSE)
 
 
 ## Sample
