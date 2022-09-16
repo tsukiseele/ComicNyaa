@@ -42,7 +42,6 @@ class NyaaImageDetailViewState extends State<NyaaImageDetailView>
   late DataOrigin _origin;
   List<String> _images = [];
   int _currentIndex = 0;
-  bool isFailed = false;
 
   void _initialized() async {
     _animationController = AnimationController(
@@ -96,10 +95,12 @@ class NyaaImageDetailViewState extends State<NyaaImageDetailView>
         image = _getUrl(m);
       }
     }
-    setState(() {
-      _images[index] = image;
-      _models[index] = model;
-    });
+    if (mounted) {
+      setState(() {
+        _images[index] = image;
+        _models[index] = model;
+      });
+    }
   }
 
   /// 预加载，默认预加载前后2页

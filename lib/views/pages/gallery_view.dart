@@ -25,8 +25,8 @@ class GalleryController {
   ScrollController? scrollController;
   Map<int, TypedModel> selects = {};
   ValueChanged<Map<int, TypedModel>>? onItemSelect;
-  void Function(String keywords)? search;
-  void Function()? refresh;
+  Future<void>? Function(String keywords)? search;
+  Future<void>? Function()? refresh;
   late void Function() clearSelection;
 }
 
@@ -54,9 +54,9 @@ class _GalleryViewState extends State<GalleryView> with AutomaticKeepAliveClient
   Future<void> _initialize() async {
     widget.controller.scrollController = _scrollController;
     widget.controller.refresh = _refreshController.requestRefresh;
-    widget.controller.search = (String kwds) {
+    widget.controller.search = (String kwds) async  {
       _keywords = kwds;
-      _refreshController.requestRefresh();
+      await _refreshController.requestRefresh();
     };
     widget.controller.clearSelection = _clearSelections;
     setState(() {});

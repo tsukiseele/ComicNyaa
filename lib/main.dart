@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 import 'package:comic_nyaa/data/http_cache_provider.dart';
 import 'package:comic_nyaa/views/back_view.dart';
 import 'package:flutter/material.dart';
@@ -51,54 +50,34 @@ class _ComicNyaaState extends State<ComicNyaa> {
 
   @override
   void initState() {
+    _initialized();
+    super.initState();
+  }
+
+  _initialized() {
     // 初始化显示模式
     setOptimalDisplayMode();
     // 初始化Mio
     Mio.setCustomRequest((url, {Map<String, String>? headers}) async {
       // 读取缓存
-      // final cache = await HttpCacheManager.instance.getFileFromCache(url);
-      // if (cache != null) {
-      //   print('HTTP_CACHE_MANAGER::: READ <<<<<<<<<<<<<<<<< $url');
-      //   return cache.file.readAsString();
-      // }
       final cache = await HttpCache.instance.getAsString(url);
       if (cache != null) {
         print('HTTP_CACHE_MANAGER::: READ <<<<<<<<<<<<<<<<< $url');
         return cache;
       }
-      /// 发送请求 Http Client
+      // 发送请求 Http Client
       headers ??= <String, String>{};
       headers['user-agent'] =
           r'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36';
       final response = await Http.client.get(Uri.parse(url), headers: headers);
       final body = response.body;
       // 写入缓存
-      // if (response.statusCode >= 200 && response.statusCode < 400) {
-      //   HttpCacheManager.instance.putFile(url, response.bodyBytes, eTag: url, maxAge: const Duration(minutes: 15));
-      //   print('HTTP_CACHE_MANAGER::: WRITE >>>>>>>>>>>>>>>>>>>> $url');
-      // }
-
       if (response.statusCode >= 200 && response.statusCode < 400) {
         HttpCache.instance.put(url, response.bodyBytes);
         print('HTTP_CACHE_MANAGER::: WRITE >>>>>>>>>>>>>>>>>>>> $url');
       }
       return body;
-
-      /// Dio Client
-      // if (headers != null) {
-      // headers['user-agent'] = r'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36';
-      // }
-      // final response = await Http.client()
-      //     .get(url, options: Options(responseType: ResponseType.plain, headers: headers));
-      // return response.data.toString();
-      /// Standard Client
-      // HttpClientRequest request = await client.getUrl(Uri.parse(url));//.then((HttpClientRequest request) {
-      //   headers?.forEach((key, value) => request.headers.add(key, value));
-      //   request.headers.add('user-agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36');
-      // HttpClientResponse response =  await  request.close();
-      // return await response.transform(utf8.decoder).join();
     });
-    super.initState();
   }
 
   Future<void> setOptimalDisplayMode() async {

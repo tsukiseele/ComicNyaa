@@ -42,6 +42,7 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
   List<String> _autosuggest = [];
   int _currentTabIndex = 0;
   int _lastScrollPosition = 0;
+  String _keywords = '';
 
   final tabColors = [
     Colors.blue,
@@ -67,7 +68,7 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
     });
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       if (widget.keywords != null) {
-        _currentTab?.controller.search?.call(widget.keywords!);
+        _onSearch(widget.keywords!);
       }
     });
   }
@@ -171,8 +172,8 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
       drawerEdgeDragWidth: 64,
       drawerEnableOpenDragGesture: true,
       endDrawerEnableOpenDragGesture: true,
-      drawer: buildDrawer(),
-      endDrawer: buildEndDrawer(),
+      drawer: _buildDrawer(),
+      endDrawer: _buildEndDrawer(),
       body: Stack(
         fit: StackFit.expand,
         children: [
@@ -183,6 +184,8 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
                     setState(() => _currentTabIndex = index);
                     _listenGalleryScroll();
                     _listenGalleryItemSelected();
+                    _floatingSearchBarController.query =
+                        _currentTab?.controller.keywords ?? '';
                   },
                   onScroll: (double value) {},
                   itemCount: _gallerys.length,
@@ -190,7 +193,7 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
                   color: tabColors[_currentTabIndex % tabColors.length][100],
                   tabBarColor: tabColors[_currentTabIndex % tabColors.length]
                       [200],
-              elevation: 8,
+                  elevation: 8,
                   indicator: const BoxDecoration(
                       color: Colors.white70,
                       boxShadow: [
@@ -246,7 +249,7 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
                             ])));
                   })
               : Container(),
-          buildFloatingSearchBar(),
+          _buildFloatingSearchBar(),
         ],
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
@@ -273,21 +276,10 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
     );
   }
 
-  Widget buildFloatingSearchBar() {
+  Widget _buildFloatingSearchBar() {
     final isPortrait =
         MediaQuery.of(context).orientation == Orientation.portrait;
-
     return FloatingSearchBar(
-        title: Text(
-          StringUtil.value(_currentTab?.controller.keywords, 'Search...'),
-          style: TextStyle(
-              fontFamily: Config.uiFontFamily,
-              fontSize: 16,
-              color:
-                  StringUtil.value(_currentTab?.controller.keywords, '').isEmpty
-                      ? Colors.black26
-                      : Colors.black87),
-        ),
         controller: _floatingSearchBarController,
         automaticallyImplyDrawerHamburger: false,
         automaticallyImplyBackButton: false,
@@ -295,13 +287,14 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
         scrollPadding: const EdgeInsets.only(top: 8, bottom: 8),
         // implicitDuration: const Duration(milliseconds: 250),
         transitionDuration: const Duration(milliseconds: 200),
+        debounceDelay: const Duration(milliseconds: 500),
         transitionCurve: Curves.easeInOut,
         // physics: const BouncingScrollPhysics(),
         axisAlignment: isPortrait ? 0.0 : -1.0,
         openAxisAlignment: 0.0,
         width: isPortrait ? 600 : 500,
-        debounceDelay: const Duration(milliseconds: 500),
-        // clearQueryOnClose: false,
+        clearQueryOnClose: false,
+        closeOnBackdropTap: true,
         hintStyle: const TextStyle(
             fontFamily: Config.uiFontFamily,
             fontSize: 16,
@@ -309,9 +302,11 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
         queryStyle:
             const TextStyle(fontFamily: Config.uiFontFamily, fontSize: 16),
         onQueryChanged: (query) async {
+          _keywords = _floatingSearchBarController.query;
+          final lastWordIndex = query.lastIndexOf(' ');
+          final word = query.substring(lastWordIndex > 0 ? lastWordIndex : 0);
           final response = await Http.client.get(Uri.parse(
-              'https://danbooru.donmai.us/autocomplete.json?search[query]=$query&search[type]=tag_query&limit=10'));
-
+              'https://danbooru.donmai.us/autocomplete.json?search[query]=$word&search[type]=tag_query&limit=10'));
           final result =
               List<Map<String, dynamic>>.from(jsonDecode(response.body));
           setState(() {
@@ -342,18 +337,22 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
             showIfOpened: false,
             child: CircularButton(
               icon: const Icon(Icons.send_time_extension),
-              onPressed: () {
-                globalKey.currentState?.openEndDrawer();
-              },
+              onPressed: () => globalKey.currentState?.openEndDrawer(),
             ),
           ),
           FloatingSearchBarAction.searchToClear(
             showIfClosed: false,
           ),
         ],
-        onSubmitted: (query) {
-          _currentTab?.controller.search!(query);
-          _floatingSearchBarController.close();
+        onSubmitted: (query) => _onSearch(query),
+        onFocusChanged: (isFocus) {
+          if (!isFocus) {
+            if (_floatingSearchBarController.query !=
+                _currentTab?.controller.keywords) {
+              setState(() => _floatingSearchBarController.query =
+                  _currentTab?.controller.keywords ?? '');
+            }
+          }
         },
         builder: (context, transition) => Material(
               color: Colors.white,
@@ -362,15 +361,11 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: _autosuggest
-                    .map((query) => ListTile(
+                    .map((suggest) => ListTile(
                         leading: const Icon(Icons.search),
-                        onTap: () {
-                          _currentTab?.controller.search!(query);
-                          _floatingSearchBarController.query = query;
-                          _floatingSearchBarController.close();
-                        },
+                        onTap: () => _onSearch(_keywords, suggest),
                         title: Text(
-                          query,
+                          suggest,
                           style: const TextStyle(
                               fontFamily: Config.uiFontFamily, fontSize: 14),
                         )))
@@ -379,7 +374,19 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
             ));
   }
 
-  Widget buildDrawer() {
+  void _onSearch(query, [String? suggest]) async {
+    print('MainView::onSearch ==> query: $query, suggest: $suggest');
+    if (suggest != null) {
+      int lastWordIndex = query.lastIndexOf(' ');
+      lastWordIndex = lastWordIndex > 0 ? lastWordIndex : 0;
+      query = query.substring(0, query.lastIndexOf(' ') + 1) + suggest;
+    }
+    _floatingSearchBarController.close();
+    _currentTab?.controller.search?.call(query);
+    setState(() => _floatingSearchBarController.query = query);
+  }
+
+  Widget _buildDrawer() {
     return Drawer(
         child: ListView(padding: EdgeInsets.zero, children: [
       Container(
@@ -442,7 +449,7 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
     ]));
   }
 
-  Widget buildEndDrawer() {
+  Widget _buildEndDrawer() {
     return Drawer(
       // width: 256,
       elevation: 8,

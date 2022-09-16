@@ -231,12 +231,12 @@ class Mio<T extends DataModel> {
           children.forEachIndexed((i, child) => child[r'$origin'] = newOriginInfo);
           // 判断是否继承父节点字段
           // if ($children.extend == true) {
-            $children.rules?.map((index, selector) {
-              if (selector.extend) {
-                children['s']
-              }
-            });
-            // extend && children.forEach((child, index) => (children[index] = Object.assign({}, item, child)))
+          //   $children.rules?.map((index, selector) {
+          //     if (selector.extend) {
+          //       children['s']
+          //     }
+          //   });
+          // extend && children.forEach((child, index) => (children[index] = Object.assign({}, item, child)))
           // }
           item['children'] != null
               ? item['children']?.addAll(children)
