@@ -24,7 +24,10 @@ import 'package:http/retry.dart';
 
 class NyaaClient extends http.BaseClient {
   NyaaClient({int connectionTimeout = 15000, int idleTimeout = 15000}) {
-    final client = HttpClient();
+    final SecurityContext context = SecurityContext();
+    context.allowLegacyUnsafeRenegotiation = true;
+
+    final client = HttpClient(context: context);
     // client.
     _inner = RetryClient(IOClient(HttpTimeoutClient(client,
             connectionTimeout: connectionTimeout, idleTimeout: idleTimeout)
