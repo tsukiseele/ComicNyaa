@@ -54,11 +54,9 @@ Future<HttpClientResponse> send(String url, {Map<String, String>? headers}) asyn
   SecurityContext context = SecurityContext(withTrustedRoots: true);
   HttpClient client = HttpClient(context: context);
   client.badCertificateCallback = (X509Certificate cert, String host, int port) => true;
-  // client.findProxy = (url) {
-  //   return HttpClient.findProxyFromEnvironment(
-  //       url, environment: {"http_proxy": '127.0.0.1:7890', "https_proxy": '127.0.0.1:7890'});
-  // };
-  client.connectionTimeout = const Duration(seconds: 15);
+  // client.findProxy = (url) =>
+  //     HttpClient.findProxyFromEnvironment(url, environment: {"http_proxy": '127.0.0.1:7890', "https_proxy": '127.0.0.1:7890'});
+  client.connectionTimeout = const Duration(seconds: 8);
   //
   Uri uri = Uri.parse(url);
   final targetHost = uri.host;
