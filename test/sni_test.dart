@@ -11,7 +11,7 @@ Future<String> readResponseAsText(HttpClientResponse response) {
   return completer.future;
 }
 
-getIpFromCf(HttpClient client, String host)async {
+getIpFromCf(HttpClient client, String host) async {
   final dnsReq = await client.getUrl(Uri.parse('https://1.1.1.1/dns-query?name=$host'));
   dnsReq.headers.add('Accept', 'application/dns-json');
   final dnsData = await readResponseAsText(await dnsReq.close());
@@ -20,7 +20,7 @@ getIpFromCf(HttpClient client, String host)async {
   return targetIp;
 }
 
-getIpFromGf(HttpClient client, String host)async {
+getIpFromGf(HttpClient client, String host) async {
   final dnsReq = await client.postUrl(Uri.parse('https://geekflare.com/api/geekflare-api/dnsrecord'));
   dnsReq.headers.add('Content-Type', 'application/json');
   dnsReq.write('{"url":"$host"}');
@@ -30,7 +30,7 @@ getIpFromGf(HttpClient client, String host)async {
   return targetIp;
 }
 
-getIpFromNc(HttpClient client, String host)async {
+getIpFromNc(HttpClient client, String host) async {
   final dnsReq = await client.getUrl(Uri.parse('https://networkcalc.com/api/dns/lookup/$host'));
   dnsReq.headers.add('Content-Type', 'application/json');
   final dnsData = await readResponseAsText(await dnsReq.close());
@@ -53,9 +53,7 @@ void main() async {
 Future<HttpClientResponse> send(String url, {Map<String, String>? headers}) async {
   SecurityContext context = SecurityContext(withTrustedRoots: true);
   HttpClient client = HttpClient(context: context);
-  client.badCertificateCallback = (X509Certificate cert, String host, int port) {
-    return true;
-  };
+  client.badCertificateCallback = (X509Certificate cert, String host, int port) => true;
   // client.findProxy = (url) {
   //   return HttpClient.findProxyFromEnvironment(
   //       url, environment: {"http_proxy": '127.0.0.1:7890', "https_proxy": '127.0.0.1:7890'});
