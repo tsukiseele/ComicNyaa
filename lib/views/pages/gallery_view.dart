@@ -197,7 +197,6 @@ class _GalleryViewState extends State<GalleryView> with AutomaticKeepAliveClient
         target = VideoDetailView(model: model);
         break;
       case 'comic':
-        print('KKKKKKKKKKKKKKKKKKKK::: $heroKey');
         target = ComicDetailView(model: model, heroKey: heroKey ?? model.toString().hashCode.toString());
         break;
     }

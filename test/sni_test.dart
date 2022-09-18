@@ -1,9 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-import 'package:http/http.dart';
 
-Future<String> readResponse(HttpClientResponse response) {
+Future<String> readResponseAsText(HttpClientResponse response) {
   final completer = Completer<String>();
   final contents = StringBuffer();
   response.transform(utf8.decoder).listen((data) {
@@ -12,46 +11,67 @@ Future<String> readResponse(HttpClientResponse response) {
   return completer.future;
 }
 
-class MyHttpOverrides extends HttpOverrides {
-  @override
-  HttpClient createHttpClient(SecurityContext? context) {
-    return super.createHttpClient(context)
-      ..badCertificateCallback =
-          (X509Certificate cert, String host, int port) => true;
-  }
+getIpFromCf(HttpClient client, String host)async {
+  final dnsReq = await client.getUrl(Uri.parse('https://1.1.1.1/dns-query?name=$host'));
+  dnsReq.headers.add('Accept', 'application/dns-json');
+  final dnsData = await readResponseAsText(await dnsReq.close());
+  final dns = Map<String, dynamic>.from(jsonDecode(dnsData));
+  final targetIp = dns['Answer'][0]['data'];
+  return targetIp;
 }
+
+getIpFromGf(HttpClient client, String host)async {
+  final dnsReq = await client.postUrl(Uri.parse('https://geekflare.com/api/geekflare-api/dnsrecord'));
+  dnsReq.headers.add('Content-Type', 'application/json');
+  dnsReq.write('{"url":"$host"}');
+  final dnsData = await readResponseAsText(await dnsReq.close());
+  final dns = Map<String, dynamic>.from(jsonDecode(dnsData));
+  final targetIp = dns['data']['A'][0]['address'];
+  return targetIp;
+}
+
+getIpFromNc(HttpClient client, String host)async {
+  final dnsReq = await client.getUrl(Uri.parse('https://networkcalc.com/api/dns/lookup/$host'));
+  dnsReq.headers.add('Content-Type', 'application/json');
+  final dnsData = await readResponseAsText(await dnsReq.close());
+  final dns = Map<String, dynamic>.from(jsonDecode(dnsData));
+  final targetIp = dns['records']['A'][0]['address'];
+  return targetIp;
+}
+
 void main() async {
-  SecurityContext context = SecurityContext(withTrustedRoots: true);
-
-  // SecureSocket socket = context.
-  HttpClient client = HttpClient(context: context);
-  client.findProxy = (url) {
-    return HttpClient.findProxyFromEnvironment(
-        url, environment: {"http_proxy": '127.0.0.1:7890', "https_proxy": '127.0.0.1:7890'});
+  const url = 'https://e-hentai.org';
+  final headers = {
+    'Cookie': 'igneous=ed27332b5; ipb_member_id=4249385; ipb_pass_hash=887e9708aaae76e7161526fd299cff64; sl=dm_1;'
   };
-  // client.get('https://e-hentai.org/', port, path)
-  HttpClientRequest request = await client.getUrl(Uri.parse('https://baidu.com/'));
-  // request.headers.add('host', 'e-hentai.org');
-  // request.headers.add('Cookie', 'igneous=ed27332b5; ipb_member_id=4249385; ipb_pass_hash=887e9708aaae76e7161526fd299cff64; sl=dm_1;');
-  HttpClientResponse response = await request.close();
-  final result = await readResponse(response);
-  print(result);
-  // """
-  //       通过 Cloudflare 的 DNS over HTTPS 请求真实的 IP 地址。
-  //       """
-  // URLS = (
-  //     "https://cloudflare-dns.com/dns-query",
-  //     "https://1.0.0.1/dns-query",
-  //     "https://1.1.1.1/dns-query",
-  //     "https://[2606:4700:4700::1001]/dns-query",
-  //     "https://[2606:4700:4700::1111]/dns-query",
-  // )
-  // params = {
-  //   "ct": "application/dns-json",
-  //   "name": hostname,
-  //   "type": "A",
-  //   "do": "false",
-  //   "cd": "false",
-  // }
+  final response = await send(url, headers: headers);
 
+  final result = await readResponseAsText(response);
+  print(result);
+}
+
+Future<HttpClientResponse> send(String url, {Map<String, String>? headers}) async {
+  SecurityContext context = SecurityContext(withTrustedRoots: true);
+  HttpClient client = HttpClient(context: context);
+  client.badCertificateCallback = (X509Certificate cert, String host, int port) {
+    return true;
+  };
+  // client.findProxy = (url) {
+  //   return HttpClient.findProxyFromEnvironment(
+  //       url, environment: {"http_proxy": '127.0.0.1:7890', "https_proxy": '127.0.0.1:7890'});
+  // };
+  client.connectionTimeout = const Duration(seconds: 15);
+  //
+  Uri uri = Uri.parse(url);
+  final targetHost = uri.host;
+  final targetIp = await getIpFromGf(client, targetHost);
+  uri = uri.replace(host: targetIp);
+  //
+  final request = await client.getUrl(uri);
+  request.headers.add('Host', targetHost);
+  if (headers != null) {
+    headers.forEach((name, value) => request.headers.add(name, value));
+  }
+  final response = await request.close();
+  return response;
 }

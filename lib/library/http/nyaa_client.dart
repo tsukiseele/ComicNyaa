@@ -32,7 +32,10 @@ class NyaaClient extends http.BaseClient {
     // context.allowLegacyUnsafeRenegotiation = true;
     
     final client = HttpClient();//HttpClient(context: context);
-  
+    client.badCertificateCallback =
+        (X509Certificate cert, String host, int port) {
+      return true;
+    };
     // client.
     _inner = RetryClient(IOClient(HttpTimeoutClient(client,
             connectionTimeout: connectionTimeout, idleTimeout: idleTimeout)

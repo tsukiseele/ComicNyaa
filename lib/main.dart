@@ -76,18 +76,27 @@ class _ComicNyaaState extends State<ComicNyaa> {
     setOptimalDisplayMode();
     // 初始化Mio
     Mio.setCustomRequest((url, {Map<String, String>? headers}) async {
+      // 发送请求 Http Client
+      headers ??= <String, String>{};
+      if (url.indexOf('exhentai') > 0) {
+        headers['Host'] = 'exhentai.org';
+        url = url.replaceFirst('exhentai.org', '178.175.129.254');
+      } else if (url.indexOf('e-hentai') > 0) {
+        headers['Host'] = 'e-hentai.org';
+        url = url.replaceFirst('e-hentai.org', '104.20.134.21');
+      }
       // 读取缓存
       final cache = await HttpCache.instance.getAsString(url);
       if (cache != null) {
         print('HTTP_CACHE_MANAGER::: READ <<<<<<<<<<<<<<<<< $url');
         return cache;
       }
-      // 发送请求 Http Client
-      headers ??= <String, String>{};
+      // HttpClientRequest request = await client.getUrl(Uri.parse('https://104.20.134.21/'));
       headers['user-agent'] =
           r'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36';
       final response = await Http.client.get(Uri.parse(url), headers: headers);
       final body = response.body;
+
       // 写入缓存
       if (response.statusCode >= 200 && response.statusCode < 400) {
         HttpCache.instance.put(url, response.bodyBytes);
