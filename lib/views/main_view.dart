@@ -59,11 +59,12 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
   String _keywords = '';
 
   final _tabColors = [
+    Colors.teal,
     Colors.blue,
-    Colors.green,
     Colors.purple,
+    Colors.green,
     Colors.amber,
-    Colors.pink
+    Colors.pink,
   ];
 
   MaterialColor _getTabColor(int index) {

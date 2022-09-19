@@ -27,7 +27,9 @@ import '../widget/download_item.dart';
 import 'download_detail_view.dart';
 
 class DownloadView extends StatefulWidget {
-  const DownloadView({Key? key, this.updateInterval = const Duration(milliseconds: 1000)}) : super(key: key);
+  const DownloadView(
+      {Key? key, this.updateInterval = const Duration(milliseconds: 1000)})
+      : super(key: key);
   final Duration updateInterval;
 
   @override
@@ -74,10 +76,25 @@ class _DownloadViewState extends State<DownloadView> {
             children: List.generate(_downloadList.length, (index) {
           final item = _downloadList[index];
           // print('SSSSSSSSSSSSSSSS::: IS_SINGLE => ${item.isSingle()}, ${item.tasks}');
-          return item.isSingle() ? DownloadItem(item.tasks.first, origin: item.parent.getOrigin()) : DownloadQueueItem(item, onTap: () => onShowDetail(item));
+          return item.isSingle()
+              ? DownloadItem(
+                  item.tasks.first,
+                  origin: item.parent.getOrigin(),
+                  onLongPress: () => _onDeleteItem(item),
+                )
+              : DownloadQueueItem(
+                  item,
+                  onTap: () => onShowDetail(item),
+                  onLongPress: () => _onDeleteItem(item),
+                );
         })),
       )),
     );
+  }
+
+  void _onDeleteItem(NyaaDownloadTaskQueue item) async {
+
+    (await NyaaDownloadManager.instance).downloadProvider.delete(item);
   }
 
   @override

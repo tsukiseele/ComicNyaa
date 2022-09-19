@@ -22,7 +22,7 @@ import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 
 class CacheProvider {
   CacheProvider(String name,
-      {this.maxAge = const Duration(minutes: 15),
+      {this.maxAge = const Duration(days: 7),
       this.maxCacheSize = 128,
       this.enableGZip = false}) {
     _cacheManager = CacheManager(

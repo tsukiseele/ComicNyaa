@@ -72,6 +72,13 @@ class NyaaDownloadManager {
     _tasks.insertAll(0, tasks);
   }
 
+  Future<void> delete(NyaaDownloadTaskQueue item) async {
+    item.pause();
+    (await NyaaDownloadManager.instance)
+        .downloadProvider
+        .delete(item);
+    tasks.remove(item);
+  }
   restart(NyaaDownloadTaskQueue queue) {
     DownloadManager.instance.add(queue);
   }

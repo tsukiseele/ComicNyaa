@@ -74,9 +74,10 @@ IconData getIconDataByNumber(int number) {
 }
 
 class DownloadQueueItem extends StatelessWidget {
-  const DownloadQueueItem(this.item, {Key? key, this.onTap}) : super(key: key);
+  const DownloadQueueItem(this.item, {Key? key, this.onTap, this.onLongPress}) : super(key: key);
   final NyaaDownloadTaskQueue item;
   final void Function()? onTap;
+  final void Function()? onLongPress;
 
   Widget _buildProgressText(DownloadProgress? progress) {
     if (progress == null) {
@@ -111,6 +112,7 @@ class DownloadQueueItem extends StatelessWidget {
             clipBehavior: Clip.hardEdge,
             child: InkWell(
                 onTap: onTap,
+                onLongPress: onLongPress,
                 child: Row(mainAxisSize: MainAxisSize.min, children: [
                   Material(
                       color: Colors.grey[100],

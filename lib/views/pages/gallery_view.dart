@@ -357,21 +357,22 @@ class _GalleryViewState extends State<GalleryView>
               //   ],
               // ),
               _selects.containsKey(index)
-                  ? Positioned(
-                      right: 0,
-                      bottom: 0,
-                      child: triangle(
-                        width: 32,
-                        height: 32,
-                        color: Theme.of(context).primaryColor,
-                        direction: TriangleDirection.bottomRight,
-                        contentAlignment: Alignment.bottomRight,
-                        child: const Icon(
-                          Icons.check_rounded,
-                          color: Colors.white,
-                          size: 18,
-                        ),
-                      ))
+                  ? Positioned.fill(
+                      child: Container(
+                          color: widget.color?.withOpacity(.33),
+                          alignment: Alignment.bottomRight,
+                          child: triangle(
+                            width: 32,
+                            height: 32,
+                            color: widget.color ?? Theme.of(context).primaryColor,
+                            direction: TriangleDirection.bottomRight,
+                            contentAlignment: Alignment.bottomRight,
+                            child: const Icon(
+                              Icons.check_rounded,
+                              color: Colors.white,
+                              size: 18,
+                            ),
+                          )))
                   : Container(),
             ]));
   }

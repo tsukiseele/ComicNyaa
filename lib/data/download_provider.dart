@@ -18,6 +18,7 @@
 import 'dart:io';
 
 import 'package:comic_nyaa/data/download/nyaa_download_task_queue.dart';
+import 'package:comic_nyaa/library/download/downloadable_queue.dart';
 import 'package:comic_nyaa/utils/extensions.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -90,8 +91,12 @@ class DownloadProvider {
     return maps.map((item) => NyaaDownloadTaskQueue.fromJson(item)).toList();
   }
 
-  Future<int> delete(int id) async {
+  Future<int> deleteById(int id) async {
     return await _db.delete(tableDownload, where: '$columnId = ?', whereArgs: [id]);
+  }
+
+  Future<int> delete(NyaaDownloadTaskQueue item) async {
+    return await _db.delete(tableDownload, where: '$columnId = ?', whereArgs: [item.id]);
   }
 
   Future<int> update(NyaaDownloadTaskQueue task) async {

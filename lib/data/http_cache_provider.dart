@@ -19,5 +19,5 @@ import 'package:comic_nyaa/library/cache/cache_provider.dart';
 
 class HttpCache {
   HttpCache._();
-  static final CacheProvider instance = CacheProvider('HttpCache', maxCacheSize: 512, enableGZip: true);
+  static final CacheProvider instance = CacheProvider('http_cache', maxCacheSize: 512, maxAge: const Duration(minutes: 10), enableGZip: true);
 }

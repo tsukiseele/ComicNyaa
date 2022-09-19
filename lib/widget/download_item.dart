@@ -27,9 +27,11 @@ import '../utils/num_extensions.dart';
 import 'download_group_item.dart';
 
 class DownloadItem extends StatelessWidget {
-  const DownloadItem(this.item, {Key? key, this.origin}) : super(key: key);
+  const DownloadItem(this.item, {Key? key, this.origin, this.onTap, this.onLongPress}) : super(key: key);
   final NyaaDownloadTask item;
   final DataOrigin? origin;
+  final void Function()? onTap;
+  final void Function()? onLongPress;
 
   Widget _buildProgressText(DownloadProgress? progress) {
     if (progress == null) {
@@ -65,8 +67,8 @@ class DownloadItem extends StatelessWidget {
             borderRadius: BorderRadius.circular(2),
             clipBehavior: Clip.hardEdge,
             child: InkWell(
-                onTap: () {
-                },
+                onTap: onTap,
+                onLongPress: onLongPress,
                 child: Row(mainAxisSize: MainAxisSize.min, children: [
                   Material(
                     color: Colors.grey[100],
