@@ -137,11 +137,11 @@ class Selector {
   String? replacement;
   bool? merge;
   bool? flat; // $children only
-  bool? extend; // $children only
+  bool? extended; // $children only
   Rules? rules; // $children only
   Rules? parent; // $children only
 
-  Selector({this.regex, this.selector, this.capture, this.replacement, this.flat, this.extend, this.rules});
+  Selector({this.regex, this.selector, this.capture, this.replacement, this.flat, this.extended, this.rules});
 
   Selector.fromJson(Map<String, dynamic> json) {
     regex = json['regex'];
@@ -150,7 +150,7 @@ class Selector {
     replacement = json['replacement'];
     merge = json['merge']?.toString().parseBool();
     flat = json['flat']?.toString().parseBool();
-    extend = json['extend']?.toString().parseBool();
+    extended = json['extended']?.toString().parseBool();
     rules = json['rules'] != null ? Rules.fromJson(json['rules']) : null;
     parent = json['parent'] != null ? Rules.fromJson(json['parent']) : null;
   }
@@ -163,7 +163,7 @@ class Selector {
     data['replacement'] = replacement;
     data['merge'] = merge;
     data['flat'] = flat;
-    data['extend'] = extend;
+    data['extended'] = extended;
     if (rules != null) {
       data['rules'] = rules!.toJson();
     }

@@ -36,8 +36,7 @@ import 'package:comic_nyaa/data/download/nyaa_download_manager.dart';
 import 'package:comic_nyaa/views/main_view.dart';
 
 class ComicDetailView extends StatefulWidget {
-  const ComicDetailView({Key? key, required this.model, required this.heroKey})
-      : super(key: key);
+  const ComicDetailView({Key? key, required this.model, required this.heroKey}) : super(key: key);
   final title = '漫画';
   final String heroKey;
   final TypedModel model;
@@ -48,8 +47,7 @@ class ComicDetailView extends StatefulWidget {
   }
 }
 
-class ComicDetailViewState extends State<ComicDetailView>
-    with TickerProviderStateMixin {
+class ComicDetailViewState extends State<ComicDetailView> with TickerProviderStateMixin {
   final RefreshController _refreshController = RefreshController();
   final ScrollController _scrollController = ScrollController();
   final List<TypedModel> _children = [];
@@ -59,8 +57,7 @@ class ComicDetailViewState extends State<ComicDetailView>
 
   void _initialized() {
     _scrollController.addListener(() {
-      if (_scrollController.position.pixels >=
-          _scrollController.position.maxScrollExtent) {
+      if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent) {
         while (_stream?.isPaused == true) {
           _stream?.resume();
         }
@@ -69,9 +66,7 @@ class ComicDetailViewState extends State<ComicDetailView>
     final model = widget.model;
     _origin = model.getOrigin();
     _tags.addAll(model.tags?.split(' ').toSet() ?? {});
-    _stream = Mio(_origin.site)
-        .parseChildren(item: model.toJson())
-        .listen((List<Map<String, dynamic>> data) {
+    _stream = Mio(_origin.site).parseChildren(item: model.toJson()).listen((List<Map<String, dynamic>> data) {
       _stream?.pause();
       _getNext(data);
     });
@@ -105,58 +100,53 @@ class ComicDetailViewState extends State<ComicDetailView>
   }
 
   Widget _buildHeader(double statusBarHeight, List<String> tags) {
-    return Container(
-        color: Theme.of(context).primaryColor.withOpacity(.667),
-        padding: EdgeInsets.only(
-            top: statusBarHeight + 8, bottom: 8, left: 8, right: 8),
-        child: Column(children: [
-          SizedBox(
-              height: 192,
-              child: Row(children: [
-                Container(
-                  padding: const EdgeInsets.all(4),
-                  alignment: Alignment.center,
-                  child: Material(
-                    color: Colors.transparent,
-                    shadowColor: Colors.black45,
-                    elevation: 4,
-                    child: Hero(
-                        tag: widget.heroKey,
-                        child: SimpleNetworkImage(
-                          widget.model.availableCoverUrl,
-                          width: 120,
-                          headers: _origin.site.headers,
-                          disableAnimation: true,
-                        )),
-                  ),
-                ),
-                Expanded(
-                  child: Container(
-                      margin: const EdgeInsets.only(left: 8),
-                      child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
+    return Column(children: [
+      Material(
+          elevation: 4,
+          child: Container(
+              color: Theme.of(context).primaryColor.withOpacity(.667),
+              padding: EdgeInsets.only(top: statusBarHeight + 8, bottom: 0, left: 0, right: 0),
+              child: SizedBox(
+                  height: 192,
+                  child: Row(children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      alignment: Alignment.center,
+                      child: Material(
+                        color: Colors.transparent,
+                        shadowColor: Colors.black45,
+                        elevation: 4,
+                        child: Hero(
+                            tag: widget.heroKey,
+                            child: SimpleNetworkImage(
+                              widget.model.availableCoverUrl,
+                              width: 120,
+                              headers: _origin.site.headers,
+                              disableAnimation: true,
+                            )),
+                      ),
+                    ),
+                    Expanded(
+                      child: Container(
+                          margin: const EdgeInsets.only(left: 8, top: 8),
+                          child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
                             Expanded(
                                 child: Text(
                               widget.model.title ?? 'Unknown',
                               maxLines: 5,
-                              style: const TextStyle(
-                                  color: Colors.white, fontSize: 20),
+                              style: const TextStyle(color: Colors.white, fontSize: 20),
                             )),
                             // Spacer(),
                             Row(children: [
                               Expanded(
-                                  child: Text('${_children.length}页',
-                                      style: const TextStyle(
-                                          color: Colors.white, fontSize: 18))),
+                                  child:
+                                      Text('${_children.length}页', style: const TextStyle(color: Colors.white, fontSize: 18))),
                               IconButton(
                                   padding: const EdgeInsets.all(4),
                                   iconSize: 32,
                                   onPressed: () {
                                     RouteUtil.push(
-                                        context,
-                                        ImageDetailView(
-                                            models: _children, heroKey: widget.heroKey, index: 0));
+                                        context, ImageDetailView(models: _children, heroKey: widget.heroKey, index: 0));
                                   },
                                   icon: const Icon(
                                     Icons.remove_red_eye,
@@ -166,10 +156,8 @@ class ComicDetailViewState extends State<ComicDetailView>
                                   padding: const EdgeInsets.all(4),
                                   iconSize: 32,
                                   onPressed: () async {
-                                    (await NyaaDownloadManager.instance)
-                                        .add(widget.model);
-                                    Fluttertoast.showToast(
-                                        msg: '下载已添加：${widget.model.title}');
+                                    (await NyaaDownloadManager.instance).add(widget.model);
+                                    Fluttertoast.showToast(msg: '下载已添加：${widget.model.title}');
                                   },
                                   icon: const Icon(
                                     Icons.download,
@@ -177,23 +165,24 @@ class ComicDetailViewState extends State<ComicDetailView>
                                   )),
                             ])
                           ])),
-                )
-              ])),
-          Container(
-              margin: const EdgeInsets.only(top: 16),
-              child: NyaaTags(
-                  itemCount: tags.length,
-                  builder: (context, index) => NyaaTagItem(
-                        text: tags[index],
-                        onTap: () {
-                          RouteUtil.push(
-                              context,
-                              MainView(
-                                  site: widget.model.getOrigin().site,
-                                  keywords: tags[index]));
-                        },
-                      )))
-        ]));
+                    )
+                  ])))),
+      Container(
+          margin: const EdgeInsets.only(top: 8),
+          padding: const EdgeInsets.only(bottom: 8),
+          decoration: const BoxDecoration(border: Border(bottom: BorderSide(color: Colors.black12))),
+          child: Column(children: [
+            NyaaTags(
+                itemCount: tags.length,
+                builder: (context, index) => NyaaTagItem(
+                      text: tags[index],
+                      color: Colors.teal,
+                      onTap: () {
+                        RouteUtil.push(context, MainView(site: widget.model.getOrigin().site, keywords: tags[index]));
+                      },
+                    ))
+          ]))
+    ]);
   }
 
   @override
@@ -209,12 +198,11 @@ class ComicDetailViewState extends State<ComicDetailView>
       child: SmartRefresher(
           controller: _refreshController,
           scrollController: _scrollController,
-          header:
-              SliverToBoxAdapter(child: _buildHeader(statusBarHeight, tags)),
+          header: SliverToBoxAdapter(child: _buildHeader(statusBarHeight, tags)),
           child: _children.isNotEmpty
               ? MasonryGridView.count(
                   controller: _scrollController,
-                  padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
+                  padding: const EdgeInsets.all(8),
                   crossAxisCount: 3,
                   mainAxisSpacing: 8.0,
                   crossAxisSpacing: 8.0,
@@ -222,11 +210,11 @@ class ComicDetailViewState extends State<ComicDetailView>
                   shrinkWrap: true,
                   itemBuilder: (context, index) {
                     final imageUrl = _children[index].availableCoverUrl;
+                    // print('CURL: $imageUrl');
                     return Material(
                         shadowColor: Colors.black45,
                         elevation: 2,
-                        borderRadius:
-                            const BorderRadius.all(Radius.circular(2.0)),
+                        borderRadius: const BorderRadius.all(Radius.circular(2.0)),
                         child: InkStack(
                             onTap: () => RouteUtil.push(
                                 context,
@@ -237,6 +225,7 @@ class ComicDetailViewState extends State<ComicDetailView>
                                 )),
                             children: [
                               Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
                                 children: [
                                   Hero(
                                     tag: '${widget.heroKey}-$imageUrl-$index',
@@ -244,7 +233,8 @@ class ComicDetailViewState extends State<ComicDetailView>
                                       imageUrl,
                                       headers: _origin.site.headers,
                                       height: 160,
-                                      fit: BoxFit.cover,
+                                      // width: double.maxFinite,
+                                      fit: BoxFit.contain,
                                     ),
                                   ),
                                   Container(

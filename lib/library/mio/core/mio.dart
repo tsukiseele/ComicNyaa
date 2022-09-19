@@ -34,16 +34,15 @@ class Mio<T extends DataModel> {
   String? _sectionName;
 
   static Future<String> Function(String url, {Map<String, String>? headers})
-      _request = (url, {Map<String, String>? headers}) async {
+  _request = (url, {Map<String, String>? headers}) async {
     HttpClientRequest request = await HttpClient().getUrl(Uri.parse(url));
     headers?.forEach((key, value) => request.headers.add(key, value));
     HttpClientResponse response = await request.close();
     return await response.transform(utf8.decoder).join();
   };
 
-  static void setCustomRequest(
-      Future<String> Function(String url, {Map<String, String>? headers})
-          request) {
+  static void setCustomRequest(Future<String> Function(String url, {Map<String, String>? headers})
+  request) {
     _request = request;
   }
 
@@ -63,8 +62,7 @@ class Mio<T extends DataModel> {
 
   /// 解析Site对象，返回结果集
   /// @returns {Promise<<T extends Meta>[]>}
-  Future<List<Map<String, dynamic>>> parseSite(
-      [bool isParseChildren = false]) async {
+  Future<List<Map<String, dynamic>>> parseSite([bool isParseChildren = false]) async {
     final site = _site;
     final sectionName = currentSectionName;
     if (site == null) throw Exception('Site cannot be null!');
@@ -96,8 +94,7 @@ class Mio<T extends DataModel> {
     return result;
   }
 
-  Future<void> parseAllChildrenOfList(
-      List<Map<String, dynamic>> list, Rules rules) async {
+  Future<void> parseAllChildrenOfList(List<Map<String, dynamic>> list, Rules rules) async {
     await Future.wait(list.map((item) => parseAllChildren(item)));
   }
 
@@ -111,7 +108,7 @@ class Mio<T extends DataModel> {
       {Future<bool> Function(List<Map<String, dynamic>>)? callback}) async {
     final DataModel model = DataModel.fromJson(item);
     final DataOriginInfo dataOriginInfo =
-        DataOriginInfo.fromJson(item[r'$origin']);
+    DataOriginInfo.fromJson(item[r'$origin']);
     final DataOrigin dataOrigin = model.getOrigin();
     final depth = dataOriginInfo.depth ?? 0;
     final section = dataOrigin.getChildSectionByDepth(depth);
@@ -137,8 +134,8 @@ class Mio<T extends DataModel> {
         keys = newKeys;
         // 生成新的数据源
         final newOriginInfo = DataOriginInfo(
-                dataOriginInfo.siteId, dataOriginInfo.sectionName,
-                depth: depth + 1)
+            dataOriginInfo.siteId, dataOriginInfo.sectionName,
+            depth: depth + 1)
             .toJson();
         // 递归解析Children
         if (children.isNotEmpty) {
@@ -157,7 +154,7 @@ class Mio<T extends DataModel> {
             print('FLAT CHILDREN ITEM: ${item.toString()}');
             break;
           } else {
-            if ($children.extend == true) {
+            if ($children.extended == true) {
               // 判断并继承父节点字段
               // extend && children.forEach((child, index) => (children[index] = Object.assign({}, item, child)))
             }
@@ -178,18 +175,19 @@ class Mio<T extends DataModel> {
   ///
   bool equalsKeys(List<String> a, List<String> b) {
     if (a.length != b.length) return false;
-    return a.whereIndexed((index, element) => a[index] == b[index]).length ==
+    return a
+        .whereIndexed((index, element) => a[index] == b[index])
+        .length ==
         a.length;
   }
 
   /// 解析可用的子数据集合<br />
   /// 若<strong>deep = true</strong>，会递归解析。<br />
   /// 返回JSON数据流
-  Stream<List<Map<String, dynamic>>> parseChildren(
-      {required Map<String, dynamic> item, bool deep = false}) async* {
+  Stream<List<Map<String, dynamic>>> parseChildren({required Map<String, dynamic> item, bool deep = false}) async* {
     final DataModel model = DataModel.fromJson(item);
     final DataOriginInfo dataOriginInfo =
-        DataOriginInfo.fromJson(item[r'$origin']);
+    DataOriginInfo.fromJson(item[r'$origin']);
     final DataOrigin dataOrigin = model.getOrigin();
     final depth = dataOriginInfo.depth ?? 0;
     final site = dataOrigin.site;
@@ -209,7 +207,7 @@ class Mio<T extends DataModel> {
         final html = await _requestText(url, headers: site.headers);
         // print('PARSE CHILDREN START =======================================');
         List<Map<String, dynamic>> children =
-            parseRulesFromHtml(html, $children.rules!);
+        parseRulesFromHtml(html, $children.rules!);
         if (children.isEmpty) break;
         // print('parseChildren(): PARSE CHILDREN LENGTH ======================================= ${children.length}');
         List<String> newKeys = isMulitPage
@@ -220,8 +218,8 @@ class Mio<T extends DataModel> {
         keys = newKeys;
         page++;
         final newOriginInfo = DataOriginInfo(
-                dataOriginInfo.siteId, dataOriginInfo.sectionName,
-                depth: depth + 1)
+            dataOriginInfo.siteId, dataOriginInfo.sectionName,
+            depth: depth + 1)
             .toJson();
         // 解析下级子节点
         if (deep) {
@@ -242,9 +240,9 @@ class Mio<T extends DataModel> {
           // 构建解析状态
           children.forEachIndexed((i, child) => child[r'$origin'] = newOriginInfo);
           // 判断是否继承父节点字段
-          // if ($children.extend == true) {
+          // if ($children.extended == true) {
           //   $children.rules?.map((index, selector) {
-          //     if (selector.extend) {
+          //     if (selector.extended) {
           //       children['s']
           //     }
           //   });
@@ -272,7 +270,9 @@ class Mio<T extends DataModel> {
   /// @returns {List<Map<String, dynamic>>}
   List<Map<String, dynamic>> parseRulesFromHtml(String html, Rules rule) {
     // 检查无效响应
-    if (html.trim().isEmpty) return [];
+    if (html
+        .trim()
+        .isEmpty) return [];
     // 加载文档
     final doc = parse(html);
     final List<Map<String, dynamic>> resultSet = [];
@@ -325,6 +325,12 @@ class Mio<T extends DataModel> {
         item[key] = mergeProp;
       }
     });
+    // TODO: 解析扩展属性
+    // final extendedProps = resultSet.where((item) => item['extended'] != null);
+    //
+    // if (extendedProps.isNotEmpty) {
+    //
+    // }
     // print('RESULT SET === $resultSet');
     // 注入类型
     for (var item in resultSet) {
@@ -347,7 +353,9 @@ class Mio<T extends DataModel> {
     // 发送请求
     final html = await _requestText(url, headers: _site?.headers);
     // 检查无效响应
-    if (html.trim().isEmpty) return [];
+    if (html
+        .trim()
+        .isEmpty) return [];
     // print('HTMl: ${html}');
     // 解析文档
     return parseRulesFromHtml(html, rule);
