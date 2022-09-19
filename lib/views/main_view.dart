@@ -58,7 +58,7 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
   int _lastScrollPosition = 0;
   String _keywords = '';
 
-  final tabColors = [
+  final _tabColors = [
     Colors.blue,
     Colors.green,
     Colors.purple,
@@ -116,7 +116,7 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
   }
 
   void _addTab(Site site) {
-    _gallerys.add(GalleryView(site: site));
+    _gallerys.add(_buildTab(site));
   }
 
   void _removeTab(int index) {
@@ -203,8 +203,8 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
                   onScroll: (double value) {},
                   itemCount: _gallerys.length,
                   isScrollToNewTab: true,
-                  color: tabColors[_currentTabIndex % tabColors.length][100],
-                  tabBarColor: tabColors[_currentTabIndex % tabColors.length]
+                  color: _tabColors[_currentTabIndex % _tabColors.length][100],
+                  tabBarColor: _tabColors[_currentTabIndex % _tabColors.length]
                       [200],
                   elevation: 8,
                   indicator: const BoxDecoration(
@@ -267,26 +267,38 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       floatingActionButtonAnimator: FloatingActionButtonAnimator.scaling,
-      floatingActionButton: Container(
-          margin: const EdgeInsets.only(bottom: 48),
-          child: _currentTab?.controller.selects.isEmpty == true
-              ? FloatingActionButton(
-                  backgroundColor: tabColors[_currentTabIndex],
-                  onPressed: () => _currentTab?.controller.scrollController
-                      ?.animateTo(0,
-                          duration: const Duration(milliseconds: 1000),
-                          curve: Curves.ease),
-                  tooltip: 'Top',
-                  child: const Icon(Icons.arrow_upward),
-                )
-              : FloatingActionButton(
-                  onPressed: () {
-                    downloadSelections();
-                  },
-                  tooltip: 'Download',
-                  child: const Icon(Icons.download),
-                )),
+      floatingActionButton: _buildFab()
     );
+  }
+
+  GalleryView _buildTab(Site site) {
+    return GalleryView(
+        site: site,
+        heroKey: _gallerys.length.toString(),
+        color: _tabColors[_gallerys.isNotEmpty ? _tabColors.length % _gallerys.length : 0]);
+  }
+
+  Widget _buildFab() {
+    return  Container(
+        margin: const EdgeInsets.only(bottom: 48),
+        child: _currentTab?.controller.selects.isEmpty == true
+            ? FloatingActionButton(
+          backgroundColor: _tabColors[_currentTabIndex],
+          onPressed: () => _currentTab?.controller.scrollController
+              ?.animateTo(0,
+              duration: const Duration(milliseconds: 1000),
+              curve: Curves.ease),
+          tooltip: 'Top',
+          child: const Icon(Icons.arrow_upward),
+        )
+            : FloatingActionButton(
+          backgroundColor: _tabColors[_currentTabIndex],
+          onPressed: () {
+            downloadSelections();
+          },
+          tooltip: 'Download',
+          child: const Icon(Icons.download),
+        ));
   }
 
   Widget _buildFloatingSearchBar() {

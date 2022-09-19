@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:comic_nyaa/utils/uri_extensions.dart';
 import 'package:comic_nyaa/views/detail/comic_detail_view.dart';
 import 'package:comic_nyaa/views/detail/video_detail_view.dart';
+import 'package:comic_nyaa/widget/ink_wrapper.dart';
 import 'package:comic_nyaa/widget/triangle_painter.dart';
 import 'package:comic_nyaa/library/mio/model/site.dart';
 import 'package:comic_nyaa/library/mio/core/mio.dart';
@@ -30,17 +31,28 @@ class GalleryController {
 }
 
 class GalleryView extends StatefulWidget {
-  GalleryView({Key? key, required this.site}) : super(key: key);
-  final Site site;
+  GalleryView(
+      {Key? key,
+      required this.site,
+      required this.heroKey,
+      this.color,
+      this.scrollbarColor})
+      : super(key: key);
   final GalleryController controller = GalleryController();
+  final Site site;
+  final String heroKey;
+  final Color? color;
+  final Color? scrollbarColor;
 
   @override
   State<GalleryView> createState() => _GalleryViewState();
 }
 
-class _GalleryViewState extends State<GalleryView> with AutomaticKeepAliveClientMixin<GalleryView>, TickerProviderStateMixin {
+class _GalleryViewState extends State<GalleryView>
+    with AutomaticKeepAliveClientMixin<GalleryView>, TickerProviderStateMixin {
   late final ScrollController _scrollController = ScrollController();
-  final RefreshController _refreshController = RefreshController(initialRefresh: false);
+  final RefreshController _refreshController =
+      RefreshController(initialRefresh: false);
   final Map<int, double> _heightCache = {};
   final Map<int, TypedModel> _selects = {};
   List<TypedModel> _items = [];
@@ -53,7 +65,7 @@ class _GalleryViewState extends State<GalleryView> with AutomaticKeepAliveClient
   Future<void> _initialize() async {
     widget.controller.scrollController = _scrollController;
     widget.controller.refresh = _refreshController.requestRefresh;
-    widget.controller.search = (String kwds) async  {
+    widget.controller.search = (String kwds) async {
       _keywords = kwds;
       await _refreshController.requestRefresh();
     };
@@ -64,7 +76,8 @@ class _GalleryViewState extends State<GalleryView> with AutomaticKeepAliveClient
       if (!mounted) return;
       _refreshController.requestRefresh();
       _scrollController.addListener(() {
-        if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent) {
+        if (_scrollController.position.pixels >=
+            _scrollController.position.maxScrollExtent) {
           if (!_isLoading) {
             _onNext();
           }
@@ -81,7 +94,8 @@ class _GalleryViewState extends State<GalleryView> with AutomaticKeepAliveClient
   }
 
   /// 加载列表
-  Future<List<TypedModel>> _load({bool isNext = false, bool isReset = false}) async {
+  Future<List<TypedModel>> _load(
+      {bool isNext = false, bool isReset = false}) async {
     print('LIST SIZE: ${_items.length}');
     if (_isLoading) return [];
     try {
@@ -121,7 +135,8 @@ class _GalleryViewState extends State<GalleryView> with AutomaticKeepAliveClient
   }
 
   /// 获取数据
-  Future<List<TypedModel>> _getModels({Site? site, int? page, String? keywords}) async {
+  Future<List<TypedModel>> _getModels(
+      {Site? site, int? page, String? keywords}) async {
     widget.controller.keywords = _keywords;
     site = site ?? _currentSite;
     page = page ?? _page;
@@ -191,13 +206,17 @@ class _GalleryViewState extends State<GalleryView> with AutomaticKeepAliveClient
     Widget? target;
     switch (model.type) {
       case 'image':
-        target = NyaaImageDetailView(models: _items, index: index);
+        target = NyaaImageDetailView(
+            models: _items, heroKey: widget.heroKey, index: index);
         break;
       case 'video':
         target = VideoDetailView(model: model);
         break;
       case 'comic':
-        target = ComicDetailView(model: model, heroKey: heroKey ?? model.toString().hashCode.toString());
+        target = ComicDetailView(
+            model: model,
+            heroKey: heroKey ??
+                widget.heroKey + model.toString().hashCode.toString());
         break;
     }
     if (target != null) {
@@ -207,7 +226,9 @@ class _GalleryViewState extends State<GalleryView> with AutomaticKeepAliveClient
 
   void _onItemSelect(int index) {
     final item = _items[index];
-    setState(() => _selects.containsKey(index) ? _selects.remove(index) : _selects[index] = item);
+    setState(() => _selects.containsKey(index)
+        ? _selects.remove(index)
+        : _selects[index] = item);
     widget.controller.selects = _selects;
     if (widget.controller.onItemSelect != null) {
       widget.controller.onItemSelect!(_selects);
@@ -232,15 +253,23 @@ class _GalleryViewState extends State<GalleryView> with AutomaticKeepAliveClient
       Flexible(
         child: RawScrollbar(
             controller: _scrollController,
-            thumbColor: Colors.purpleAccent[100],
-            radius: const Radius.circular(4),
             thickness: 4,
+            interactive: true,
+            thumbVisibility: true,
+            thumbColor: widget.scrollbarColor,
+            radius: const Radius.circular(4),
+            trackVisibility: true,
+            trackColor: Colors.black,
+            trackBorderColor: Colors.black,
+            trackRadius: const Radius.circular(4),
             child: SmartRefresher(
                 enablePullDown: true,
                 enablePullUp: true,
                 header: WaterDropMaterialHeader(
                   distance: 48,
                   offset: _topOffset,
+                  backgroundColor:
+                      widget.color ?? Theme.of(context).primaryColor,
                 ),
                 controller: _refreshController,
                 scrollController: _scrollController,
@@ -255,106 +284,115 @@ class _GalleryViewState extends State<GalleryView> with AutomaticKeepAliveClient
                     crossAxisSpacing: 8.0,
                     itemCount: _items.length,
                     controller: _scrollController,
-                    itemBuilder: (context, index) {
-                      final controller =
-                          AnimationController(value: 1, duration: const Duration(milliseconds: 300), vsync: this);
-                      final heroKey = (_items[index].coverUrl?.asUrl ?? '') + index.toString();
-                      return Material(
-                          clipBehavior: Clip.hardEdge,
-                          shadowColor: Colors.black45,
-                          elevation: 2,
-                          borderRadius: const BorderRadius.all(Radius.circular(4.0)),
-                          child: InkWell(
-                              onTap: () {
-                                if (_selects.isEmpty) {
-                                  _jump(index, heroKey);
-                                } else {
-                                  _onItemSelect(index);
-                                }
-                              },
-                              onLongPress: () {
-                                if (_selects.isEmpty) {
-                                  _onItemSelect(index);
-                                } else {
-                                  _clearSelections();
-                                }
-                              },
-                              child: Stack(
-                                alignment: Alignment.center,
-                                children: [
-                                  // Column(
-                                  //   children: [
-                                  Hero(
-                                      tag: heroKey,
-                                      child: ExtendedImage.network(_items[index].coverUrl?.asUrl ?? '',
-                                          headers: _currentSite?.headers,
-                                          height: _heightCache[index],
-                                          opacity: controller,
-                                          fit: BoxFit.cover,
-                                          filterQuality: FilterQuality.low,
-                                          timeRetry: const Duration(milliseconds: 500),
-                                          timeLimit: const Duration(milliseconds: 5000), loadStateChanged: (state) {
-                                        switch (state.extendedImageLoadState) {
-                                          case LoadState.loading:
-                                            controller.reset();
-                                            return Shimmer.fromColors(
-                                                baseColor: const Color.fromRGBO(240, 240, 240, 1),
-                                                highlightColor: Colors.white,
-                                                child: AspectRatio(
-                                                  aspectRatio: 0.66,
-                                                  child: Container(
-                                                    decoration: const BoxDecoration(color: Colors.white),
-                                                  ),
-                                                ));
-                                          case LoadState.failed:
-                                            return const AspectRatio(
-                                                aspectRatio: 0.66, child: Icon(Icons.image_not_supported, size: 64));
-                                          case LoadState.completed:
-                                            controller.forward();
-                                            return null;
-                                        }
-                                      }, afterPaintImage: (canvas, rect, image, paint) {
-                                        _heightCache[index] = rect.height;
-                                      })),
-                                  // Container(
-                                  //   padding: const EdgeInsets.all(8.0),
-                                  //   child: Text(
-                                  //     _models[index].title ?? '',
-                                  //     maxLines: 3,
-                                  //   ),
-                                  // )
-                                  //   ],
-                                  // ),
-                                  _selects.containsKey(index)
-                                      ? Positioned(
-                                          right: 0,
-                                          bottom: 0,
-                                          child: triangle(
-                                            width: 32,
-                                            height: 32,
-                                            color: Theme.of(context).primaryColor,
-                                            direction: TriangleDirection.bottomRight,
-                                            contentAlignment: Alignment.bottomRight,
-                                            child: const Icon(
-                                              Icons.check_rounded,
-                                              color: Colors.white,
-                                              size: 18,
-                                            ),
-                                          ))
-                                      : Container()
-                                ],
-                              )));
-                    }))),
+                    itemBuilder: _buildItem))),
       ),
     ]);
+  }
+
+  Widget _buildItem(context, index) {
+    final controller = AnimationController(
+        value: 1, duration: const Duration(milliseconds: 300), vsync: this);
+    // tabIndex + url + itemIndex
+    final heroKey =
+        '${widget.heroKey}_${_items[index].coverUrl?.asUrl ?? ''}_$index';
+    return Material(
+        clipBehavior: Clip.hardEdge,
+        shadowColor: Colors.black45,
+        elevation: 2,
+        borderRadius: const BorderRadius.all(Radius.circular(4.0)),
+        child: InkStack(
+            alignment: Alignment.center,
+            splashColor: widget.color,
+            onTap: () {
+              if (_selects.isEmpty) {
+                _jump(index, heroKey);
+              } else {
+                _onItemSelect(index);
+              }
+            },
+            onLongPress: () {
+              if (_selects.isEmpty) {
+                _onItemSelect(index);
+              } else {
+                _clearSelections();
+              }
+            },
+            children: [
+              // Column(
+              //   children: [
+              Hero(
+                  tag: heroKey,
+                  child: ExtendedImage.network(
+                      _items[index].coverUrl?.asUrl ?? '',
+                      headers: _currentSite?.headers,
+                      height: _heightCache[index],
+                      opacity: controller,
+                      fit: BoxFit.cover,
+                      filterQuality: FilterQuality.low,
+                      timeRetry: const Duration(milliseconds: 500),
+                      timeLimit: const Duration(milliseconds: 5000),
+                      loadStateChanged: (state) {
+                    switch (state.extendedImageLoadState) {
+                      case LoadState.loading:
+                        controller.reset();
+                        return Shimmer.fromColors(
+                            baseColor: const Color.fromRGBO(240, 240, 240, 1),
+                            highlightColor: Colors.white,
+                            child: AspectRatio(
+                              aspectRatio: 0.66,
+                              child: Container(
+                                decoration:
+                                    const BoxDecoration(color: Colors.white),
+                              ),
+                            ));
+                      case LoadState.failed:
+                        return const AspectRatio(
+                            aspectRatio: 0.66,
+                            child: Icon(Icons.image_not_supported, size: 64));
+                      case LoadState.completed:
+                        controller.forward();
+                        return null;
+                    }
+                  }, afterPaintImage: (canvas, rect, image, paint) {
+                    _heightCache[index] = rect.height;
+                  })),
+              // Container(
+              //   padding: const EdgeInsets.all(8.0),
+              //   child: Text(
+              //     _models[index].title ?? '',
+              //     maxLines: 3,
+              //   ),
+              // )
+              //   ],
+              // ),
+              _selects.containsKey(index)
+                  ? Positioned(
+                      right: 0,
+                      bottom: 0,
+                      child: triangle(
+                        width: 32,
+                        height: 32,
+                        color: Theme.of(context).primaryColor,
+                        direction: TriangleDirection.bottomRight,
+                        contentAlignment: Alignment.bottomRight,
+                        child: const Icon(
+                          Icons.check_rounded,
+                          color: Colors.white,
+                          size: 18,
+                        ),
+                      ))
+                  : Container(),
+            ]));
   }
 
   @override
   void didUpdateWidget(covariant GalleryView oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.site.id != oldWidget.site.id) {
-      print('didUpdateWidget:::::: NAME: ${oldWidget.site.name} >>>>>>>> ${widget.site.name}');
-      print('didUpdateWidget:::::: DATA: ${widget.controller.items} <<<<<<<< ${oldWidget.controller.items}');
+      print(
+          'didUpdateWidget:::::: NAME: ${oldWidget.site.name} >>>>>>>> ${widget.site.name}');
+      print(
+          'didUpdateWidget:::::: DATA: ${widget.controller.items} <<<<<<<< ${oldWidget.controller.items}');
       // 销毁被旧的滚动控制器
       // oldWidget.controller.scrollController?.dispose();
       setState(() {

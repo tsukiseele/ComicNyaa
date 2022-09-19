@@ -37,12 +37,13 @@ import '../../library/http/http.dart';
 import '../../utils/flutter_utils.dart';
 
 class NyaaImageDetailView extends StatefulWidget {
-  const NyaaImageDetailView({Key? key, required this.models, this.index = 0})
+  const NyaaImageDetailView({Key? key, required this.models, this.heroKey = '', this.index = 0})
       : assert(models.length > 0),
         super(key: key);
   final title = '画廊';
   final List<TypedModel> models;
   final int index;
+  final String heroKey;
 
   @override
   State<StatefulWidget> createState() {
@@ -262,7 +263,7 @@ class NyaaImageDetailViewState extends State<NyaaImageDetailView>
                           widget.models[index].coverUrl?.asUrl ?? '';
                       if (url.isEmpty) {
                         return Hero(
-                            tag: placeholder + index.toString(),
+                            tag: '${widget.heroKey}_${placeholder}_$index',
                             child: _buildLoading(placeholder));
                       }
                       void Function() animationListener = () {};

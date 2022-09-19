@@ -29,7 +29,7 @@ class SearchView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final view = GalleryView(site: site);
+    final view = GalleryView(site: site, heroKey: '0');
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
 
       view.controller.search?.call(keywords);
