@@ -254,7 +254,7 @@ class _GalleryViewState extends State<GalleryView>
         child: RawScrollbar(
             controller: _scrollController,
             thickness: 4,
-            interactive: true,
+            // interactive: true,
             thumbVisibility: true,
             thumbColor: widget.scrollbarColor,
             radius: const Radius.circular(4),
@@ -319,6 +319,7 @@ class _GalleryViewState extends State<GalleryView>
                       opacity: controller,
                       fit: BoxFit.cover,
                       filterQuality: FilterQuality.low,
+                      retries: 2,
                       timeRetry: const Duration(milliseconds: 500),
                       timeLimit: const Duration(milliseconds: 5000),
                       loadStateChanged: (state) {

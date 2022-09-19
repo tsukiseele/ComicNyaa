@@ -66,6 +66,10 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
     Colors.pink
   ];
 
+  MaterialColor _getTabColor(int index) {
+    return _tabColors[index % _tabColors.length];
+  }
+
   Future<void> _initialize() async {
     await _checkUpdate();
     setState(() {
@@ -203,9 +207,8 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
                   onScroll: (double value) {},
                   itemCount: _gallerys.length,
                   isScrollToNewTab: true,
-                  color: _tabColors[_currentTabIndex % _tabColors.length][100],
-                  tabBarColor: _tabColors[_currentTabIndex % _tabColors.length]
-                      [200],
+                  color: _getTabColor(_currentTabIndex)[100],
+                  tabBarColor: _getTabColor(_currentTabIndex)[200],
                   elevation: 8,
                   indicator: const BoxDecoration(
                       color: Colors.white70,
@@ -275,7 +278,7 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
     return GalleryView(
         site: site,
         heroKey: _gallerys.length.toString(),
-        color: _tabColors[_gallerys.isNotEmpty ? _tabColors.length % _gallerys.length : 0]);
+        color: _getTabColor(_gallerys.length));
   }
 
   Widget _buildFab() {
@@ -283,7 +286,7 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
         margin: const EdgeInsets.only(bottom: 48),
         child: _currentTab?.controller.selects.isEmpty == true
             ? FloatingActionButton(
-          backgroundColor: _tabColors[_currentTabIndex],
+          backgroundColor: _getTabColor(_currentTabIndex),
           onPressed: () => _currentTab?.controller.scrollController
               ?.animateTo(0,
               duration: const Duration(milliseconds: 1000),
@@ -292,7 +295,7 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
           child: const Icon(Icons.arrow_upward),
         )
             : FloatingActionButton(
-          backgroundColor: _tabColors[_currentTabIndex],
+          backgroundColor: _getTabColor(_currentTabIndex),
           onPressed: () {
             downloadSelections();
           },
