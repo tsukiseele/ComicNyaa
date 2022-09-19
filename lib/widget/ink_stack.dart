@@ -50,7 +50,7 @@ class InkStack extends StatelessWidget {
             child: Material(
                 color: Colors.transparent,
                 child: InkWell(
-                  splashColor: splashColor,
+                  splashColor: splashColor ?? Theme.of(context).primaryColor,
                   onTap: onTap,
                   onLongPress: onLongPress,
                 )));

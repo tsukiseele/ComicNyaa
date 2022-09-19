@@ -56,7 +56,7 @@ dependencies:
   # Rebuild Launch Splash: flutter pub run flutter_native_splash:create
   flutter_native_splash: ^2.2.7
   # Rebuild Icon: flutter pub run flutter_launcher_icons:main
-#  flutter_launcher_icons: ^0.10.0
+  flutter_launcher_icons: ^0.10.0
 
 dev_dependencies:
   flutter_test:

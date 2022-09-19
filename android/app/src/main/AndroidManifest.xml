@@ -28,7 +28,7 @@
     </queries>
     <application
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@mipmap/launcher_icon"
         android:label="ComicNyaa"
         android:requestLegacyExternalStorage="true">
         <activity
