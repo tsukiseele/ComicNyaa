@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:comic_nyaa/models/typed_model.dart';
+import 'package:comic_nyaa/utils/uri_extensions.dart';
 
 import '../app/preference.dart';
 
@@ -8,6 +9,7 @@ extension ExtendedPath on Directory {
   Directory joinDir(Directory child) {
     return join(child.path);
   }
+
   Directory join(String child) {
     return Directory('$path${Platform.pathSeparator}$child');
   }
@@ -27,12 +29,30 @@ extension TypedModelEx on TypedModel {
         url = originUrl ?? largerUrl ?? sampleUrl;
         break;
     }
-    if (url == null || url.trim().isEmpty) {
-      return '';
+    return url ?? '';
+  }
+
+  String get availablePreviewUrl {
+    String? url;
+    if (children != null) {
+      final first = children!.first;
+      url = first.sampleUrl ?? first.largerUrl ?? first.originUrl;
     }
-    return url;
+    url = url ?? sampleUrl ?? largerUrl ?? originUrl;
+
+    return Uri.encodeFull(url ?? '').asUrl;
+  }
+
+  String get availableCoverUrl {
+    String? url;
+    if (children != null) {
+      final first = children!.first;
+      url = first.coverUrl ??
+          first.sampleUrl ??
+          first.largerUrl ??
+          first.originUrl;
+    }
+    url = url ?? coverUrl ?? sampleUrl ?? largerUrl ?? originUrl;
+    return Uri.encodeFull(url ?? '').asUrl;
   }
 }
-
-
-

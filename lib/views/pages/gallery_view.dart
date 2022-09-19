@@ -1,23 +1,41 @@
+/*
+ * Copyright (C) 2022. TsukiSeele
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 import 'dart:async';
-import 'package:comic_nyaa/utils/uri_extensions.dart';
-import 'package:comic_nyaa/views/detail/comic_detail_view.dart';
-import 'package:comic_nyaa/views/detail/video_detail_view.dart';
-import 'package:comic_nyaa/widget/ink_wrapper.dart';
-import 'package:comic_nyaa/widget/triangle_painter.dart';
+
+import 'package:comic_nyaa/utils/extensions.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:extended_image/extended_image.dart';
+import 'package:pull_to_refresh/pull_to_refresh.dart';
+import 'package:shimmer/shimmer.dart';
 import 'package:comic_nyaa/library/mio/model/site.dart';
 import 'package:comic_nyaa/library/mio/core/mio.dart';
 import 'package:comic_nyaa/models/typed_model.dart';
-import 'package:extended_image/extended_image.dart';
-import 'package:flutter/material.dart';
+import 'package:comic_nyaa/widget/ink_stack.dart';
+import 'package:comic_nyaa/widget/triangle_painter.dart';
+import 'package:comic_nyaa/views/detail/image_detail_view.dart';
+import 'package:comic_nyaa/views/detail/comic_detail_view.dart';
+import 'package:comic_nyaa/views/detail/video_detail_view.dart';
+import 'package:comic_nyaa/utils/flutter_utils.dart';
+import 'package:comic_nyaa/utils/uri_extensions.dart';
 
-import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
-import 'package:fluttertoast/fluttertoast.dart';
-import 'package:pull_to_refresh/pull_to_refresh.dart';
-import 'package:shimmer/shimmer.dart';
-
-import '../../models/typed_model.dart';
-import '../../utils/flutter_utils.dart';
-import '../detail/nyaa_image_detail_view.dart';
+import '../detail/image_detail_view.dart';
 
 class GalleryController {
   String keywords = '';
@@ -206,7 +224,7 @@ class _GalleryViewState extends State<GalleryView>
     Widget? target;
     switch (model.type) {
       case 'image':
-        target = NyaaImageDetailView(
+        target = ImageDetailView(
             models: _items, heroKey: widget.heroKey, index: index);
         break;
       case 'video':
@@ -293,8 +311,8 @@ class _GalleryViewState extends State<GalleryView>
     final controller = AnimationController(
         value: 1, duration: const Duration(milliseconds: 300), vsync: this);
     // tabIndex + url + itemIndex
-    final heroKey =
-        '${widget.heroKey}_${_items[index].coverUrl?.asUrl ?? ''}_$index';
+    final coverUrl = _items[index].availableCoverUrl;
+    final heroKey = '${widget.heroKey}-$coverUrl-$index';
     return Material(
         clipBehavior: Clip.hardEdge,
         shadowColor: Colors.black45,
@@ -312,8 +330,7 @@ class _GalleryViewState extends State<GalleryView>
               //   children: [
               Hero(
                   tag: heroKey,
-                  child: ExtendedImage.network(
-                      _items[index].coverUrl?.asUrl ?? '',
+                  child: ExtendedImage.network(coverUrl,
                       headers: _currentSite?.headers,
                       height: _heightCache[index],
                       opacity: controller,
@@ -364,7 +381,8 @@ class _GalleryViewState extends State<GalleryView>
                           child: triangle(
                             width: 32,
                             height: 32,
-                            color: widget.color ?? Theme.of(context).primaryColor,
+                            color:
+                                widget.color ?? Theme.of(context).primaryColor,
                             direction: TriangleDirection.bottomRight,
                             contentAlignment: Alignment.bottomRight,
                             child: const Icon(

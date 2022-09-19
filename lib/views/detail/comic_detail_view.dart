@@ -17,24 +17,23 @@
 
 import 'dart:async';
 
-import 'package:comic_nyaa/library/mio/core/mio.dart';
-import 'package:comic_nyaa/library/mio/model/data_origin.dart';
-import 'package:comic_nyaa/models/typed_model.dart';
-import 'package:comic_nyaa/utils/flutter_utils.dart';
-import 'package:comic_nyaa/views/detail/image_detail_view.dart';
-import 'package:comic_nyaa/widget/nyaa_tag_item.dart';
-import 'package:comic_nyaa/widget/nyaa_tags.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
-
-import '../../data/download/nyaa_download_manager.dart';
-import '../../widget/ink_wrapper.dart';
-import '../../widget/simple_network_image.dart';
-import '../main_view.dart';
-import 'nyaa_image_detail_view.dart';
+import 'package:comic_nyaa/library/mio/core/mio.dart';
+import 'package:comic_nyaa/library/mio/model/data_origin.dart';
+import 'package:comic_nyaa/models/typed_model.dart';
+import 'package:comic_nyaa/utils/extensions.dart';
+import 'package:comic_nyaa/utils/flutter_utils.dart';
+import 'package:comic_nyaa/views/detail/image_detail_view.dart';
+import 'package:comic_nyaa/widget/nyaa_tag_item.dart';
+import 'package:comic_nyaa/widget/nyaa_tags.dart';
+import 'package:comic_nyaa/widget/ink_stack.dart';
+import 'package:comic_nyaa/widget/simple_network_image.dart';
+import 'package:comic_nyaa/data/download/nyaa_download_manager.dart';
+import 'package:comic_nyaa/views/main_view.dart';
 
 class ComicDetailView extends StatefulWidget {
   const ComicDetailView({Key? key, required this.model, required this.heroKey})
@@ -99,31 +98,9 @@ class ComicDetailViewState extends State<ComicDetailView>
     return data;
   }
 
-  String getUrl(TypedModel? item) {
-    if (item == null) return '';
-    try {
-      final children = item.children != null ? item.children![0] : null;
-      if (children != null) {
-        return children.coverUrl ??
-            children.sampleUrl ??
-            children.largerUrl ??
-            children.originUrl ??
-            '';
-      }
-      return item.coverUrl ??
-          item.sampleUrl ??
-          item.largerUrl ??
-          item.originUrl ??
-          '';
-    } catch (e) {
-      rethrow;
-    }
-  }
-
   @override
   void initState() {
     _initialized();
-
     super.initState();
   }
 
@@ -145,9 +122,8 @@ class ComicDetailViewState extends State<ComicDetailView>
                     elevation: 4,
                     child: Hero(
                         tag: widget.heroKey,
-                        //(widget.model.coverUrl?.asUrl ?? '') + 0toString(), //widget.model.coverUrl ?? '',
                         child: SimpleNetworkImage(
-                          widget.model.coverUrl ?? '',
+                          widget.model.availableCoverUrl,
                           width: 120,
                           headers: _origin.site.headers,
                           disableAnimation: true,
@@ -180,7 +156,7 @@ class ComicDetailViewState extends State<ComicDetailView>
                                     RouteUtil.push(
                                         context,
                                         ImageDetailView(
-                                            models: _children, index: 0));
+                                            models: _children, heroKey: widget.heroKey, index: 0));
                                   },
                                   icon: const Icon(
                                     Icons.remove_red_eye,
@@ -245,7 +221,7 @@ class ComicDetailViewState extends State<ComicDetailView>
                   itemCount: _children.length,
                   shrinkWrap: true,
                   itemBuilder: (context, index) {
-                    final imageUrl = getUrl(_children[index]);
+                    final imageUrl = _children[index].availableCoverUrl;
                     return Material(
                         shadowColor: Colors.black45,
                         elevation: 2,
@@ -254,15 +230,16 @@ class ComicDetailViewState extends State<ComicDetailView>
                         child: InkStack(
                             onTap: () => RouteUtil.push(
                                 context,
-                                NyaaImageDetailView(
+                                ImageDetailView(
                                   models: _children,
+                                  heroKey: widget.heroKey,
                                   index: index,
                                 )),
                             children: [
                               Column(
                                 children: [
                                   Hero(
-                                    tag: imageUrl + index.toString(),
+                                    tag: '${widget.heroKey}-$imageUrl-$index',
                                     child: SimpleNetworkImage(
                                       imageUrl,
                                       headers: _origin.site.headers,

@@ -15,15 +15,14 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import 'package:comic_nyaa/widget/simple_network_image.dart';
-import 'package:comic_nyaa/widget/triangle_painter.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
-
-import '../data/download/nyaa_download_task_queue.dart';
-import '../library/download/downloadable.dart';
-import 'ink_wrapper.dart';
+import 'package:comic_nyaa/widget/simple_network_image.dart';
+import 'package:comic_nyaa/widget/triangle_painter.dart';
+import 'package:comic_nyaa/data/download/nyaa_download_task_queue.dart';
+import 'package:comic_nyaa/library/download/downloadable.dart';
+import 'package:comic_nyaa/widget/ink_stack.dart';
 
 const Color idle = Colors.grey;
 const Color downloading = Colors.blue;

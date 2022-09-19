@@ -22,7 +22,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 
 import 'package:comic_nyaa/data/download/nyaa_download_manager.dart';
 import 'package:comic_nyaa/data/download/nyaa_download_task_queue.dart';
-import 'package:comic_nyaa/widget/dialog_helper.dart';
+import 'package:comic_nyaa/widget/custom_dialog.dart';
 import 'package:comic_nyaa/widget/download_group_item.dart';
 import 'package:comic_nyaa/widget/download_item.dart';
 import 'package:comic_nyaa/views/download_detail_view.dart';
