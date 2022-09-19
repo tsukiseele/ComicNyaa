@@ -303,20 +303,10 @@ class _GalleryViewState extends State<GalleryView>
         child: InkStack(
             alignment: Alignment.center,
             splashColor: widget.color,
-            onTap: () {
-              if (_selects.isEmpty) {
-                _jump(index, heroKey);
-              } else {
-                _onItemSelect(index);
-              }
-            },
-            onLongPress: () {
-              if (_selects.isEmpty) {
-                _onItemSelect(index);
-              } else {
-                _clearSelections();
-              }
-            },
+            onTap: () =>
+                _selects.isEmpty ? _jump(index, heroKey) : _onItemSelect(index),
+            onLongPress: () =>
+                _selects.isEmpty ? _onItemSelect(index) : _clearSelections(),
             children: [
               // Column(
               //   children: [
