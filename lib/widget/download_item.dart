@@ -17,6 +17,7 @@
 
 import 'package:comic_nyaa/data/download/nyaa_download_task.dart';
 import 'package:comic_nyaa/library/mio/model/data_origin.dart';
+import 'package:comic_nyaa/widget/ink_wrapper.dart';
 import 'package:comic_nyaa/widget/simple_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -66,10 +67,10 @@ class DownloadItem extends StatelessWidget {
             elevation: 1,
             borderRadius: BorderRadius.circular(2),
             clipBehavior: Clip.hardEdge,
-            child: InkWell(
+            child: InkStack(
                 onTap: onTap,
                 onLongPress: onLongPress,
-                child: Row(mainAxisSize: MainAxisSize.min, children: [
+                children: [Row(mainAxisSize: MainAxisSize.min, children: [
                   Material(
                     color: Colors.grey[100],
                     child: SimpleNetworkImage(
@@ -136,14 +137,13 @@ class DownloadItem extends StatelessWidget {
                           ])
                         ])),
                   )
-                ]))));
+                ])])));
   }
   Future<void> onRestart(NyaaDownloadTask task) async {
-    task.start();
+    await task.start();
     Fluttertoast.showToast(msg: '任务已完成：${task.title}');
     // (await NyaaDownloadManager.instance).restart(tasks.parent);
   }
-
 
   Future<void> onPause(NyaaDownloadTask task) async {
     task.pause();
