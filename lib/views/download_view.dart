@@ -17,14 +17,16 @@
 
 import 'dart:async';
 
-import 'package:comic_nyaa/data/download/nyaa_download_manager.dart';
-import 'package:comic_nyaa/utils/flutter_utils.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
-import '../data/download/nyaa_download_task_queue.dart';
-import '../widget/download_group_item.dart';
-import '../widget/download_item.dart';
-import 'download_detail_view.dart';
+import 'package:comic_nyaa/data/download/nyaa_download_manager.dart';
+import 'package:comic_nyaa/data/download/nyaa_download_task_queue.dart';
+import 'package:comic_nyaa/widget/dialog_helper.dart';
+import 'package:comic_nyaa/widget/download_group_item.dart';
+import 'package:comic_nyaa/widget/download_item.dart';
+import 'package:comic_nyaa/views/download_detail_view.dart';
+import 'package:comic_nyaa/utils/flutter_utils.dart';
 
 class DownloadView extends StatefulWidget {
   const DownloadView(
@@ -75,26 +77,41 @@ class _DownloadViewState extends State<DownloadView> {
         child: ListView(
             children: List.generate(_downloadList.length, (index) {
           final item = _downloadList[index];
-          // print('SSSSSSSSSSSSSSSS::: IS_SINGLE => ${item.isSingle()}, ${item.tasks}');
           return item.isSingle()
               ? DownloadItem(
                   item.tasks.first,
                   origin: item.parent.getOrigin(),
-                  onLongPress: () => _onDeleteItem(item),
+                  onLongPress: () => _onItemLongPress(item),
                 )
               : DownloadQueueItem(
                   item,
                   onTap: () => onShowDetail(item),
-                  onLongPress: () => _onDeleteItem(item),
+                  onLongPress: () => _onItemLongPress(item),
                 );
         })),
       )),
     );
   }
 
-  void _onDeleteItem(NyaaDownloadTaskQueue item) async {
+  void _onItemLongPress(NyaaDownloadTaskQueue item) {
+    OptionsDialog(context,
+        title: item.title,
+        optionsBuilder: (context, dialog) => [
+              ListTile(
+                leading: const Icon(Icons.delete),
+                title: const Text('删除'),
+                onTap: () {
+                  _onDeleteItem(item);
+                  dialog.dismiss();
+                },
+              )
+            ]).show();
+  }
 
-    (await NyaaDownloadManager.instance).downloadProvider.delete(item);
+  void _onDeleteItem(NyaaDownloadTaskQueue item) async {
+    (await NyaaDownloadManager.instance).delete(item);
+    _update();
+    Fluttertoast.showToast(msg: '${item.title} 已删除！');
   }
 
   @override
