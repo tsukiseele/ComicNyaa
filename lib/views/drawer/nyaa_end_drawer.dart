@@ -52,7 +52,6 @@ class NyaaEndDrawer extends StatelessWidget {
       }
     }
     final group = siteTypeMap.entries.toList();
-
     return Drawer(
         elevation: 8,
         child: ListView.builder(
@@ -63,44 +62,49 @@ class NyaaEndDrawer extends StatelessWidget {
               if (index < 0) return _buildHeader();
               final groupItem = group[index];
               return ExpansionTile(
-                title: ListTile(
-                  leading: Icon(_getIconDataByType(groupItem.key)),
-                  title: Text('${groupItem.key}s'.toUpperCase(), style: const TextStyle(fontSize: 16)),
+                leading: Icon(
+                  _getIconDataByType(groupItem.key),
+                  size: 32,
                 ),
+                title: Text('${groupItem.key}s'.toUpperCase(),
+                    style: const TextStyle(fontSize: 16)),
                 children: List.generate(groupItem.value.length, (index) {
                   final site = groupItem.value[index];
-                  return Material(
-                      child: InkWell(
-                          onTap: () => onItemTap?.call(site),
-                          child: ListTile(
-                            leading: SizedBox(
-                                width: 32,
-                                height: 32,
-                                child:Material(borderRadius: BorderRadius.circular(8), clipBehavior: Clip.hardEdge,child: SimpleNetworkImage(
-                                  site.icon ?? '',
-                                  fit: BoxFit.cover,
-                                  error: const Icon(Icons.image_not_supported,
-                                      size: 32),
-                                ))),
-                            title: Text(
-                              site.name ?? '',
-                              style: const TextStyle(
-                                  fontFamily: Config.uiFontFamily,
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold),
-                              textAlign: TextAlign.start,
-                              maxLines: 1,
-                              softWrap: false,
-                              overflow: TextOverflow.fade,
-                            ),
-                            subtitle: Text(
-                              site.details ?? '',
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                  fontSize: 14, color: Colors.black26),
-                            ),
-                          )));
+                  return ListTile(
+                    dense: true,
+                    contentPadding: const EdgeInsets.only(left: 32, right: 8),
+                    onTap: () => onItemTap?.call(site),
+                    leading: SizedBox(
+                        width: 32,
+                        height: 32,
+                        child: Material(
+                            borderRadius: BorderRadius.circular(8),
+                            clipBehavior: Clip.hardEdge,
+                            child: SimpleNetworkImage(
+                              site.icon ?? '',
+                              fit: BoxFit.cover,
+                              error: const Icon(Icons.image_not_supported,
+                                  size: 32),
+                            ))),
+                    title: Text(
+                      site.name ?? '',
+                      style: const TextStyle(
+                          fontFamily: Config.uiFontFamily,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold),
+                      textAlign: TextAlign.start,
+                      maxLines: 1,
+                      softWrap: false,
+                      overflow: TextOverflow.fade,
+                    ),
+                    subtitle: Text(
+                      site.details ?? '',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style:
+                          const TextStyle(fontSize: 14, color: Colors.black26),
+                    ),
+                  );
                 }),
               );
             }));
@@ -109,10 +113,12 @@ class NyaaEndDrawer extends StatelessWidget {
   Widget _buildHeader() {
     return const Padding(
         padding: EdgeInsets.only(bottom: 8),
-        child: SimpleNetworkImage(
-          'https://cdn.jsdelivr.net/gh/nyarray/LoliHost/images/7c4f1d7ea2dadd3ca835b9b2b9219681.webp',
-          fit: BoxFit.cover,
-          height: 160 + kToolbarHeight,
-        ));
+        child: Material(
+            elevation: 4,
+            child: SimpleNetworkImage(
+              'https://cdn.jsdelivr.net/gh/nyarray/LoliHost/images/7c4f1d7ea2dadd3ca835b9b2b9219681.webp',
+              fit: BoxFit.cover,
+              height: 160 + kToolbarHeight,
+            )));
   }
 }

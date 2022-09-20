@@ -112,7 +112,7 @@ class DownloadQueueItem extends StatelessWidget {
             elevation: 1,
             borderRadius: BorderRadius.circular(2),
             clipBehavior: Clip.hardEdge,
-            child: InkStack(onTap: onTap, onLongPress: onLongPress, children: [
+            child: InkWell(onTap: onTap, onLongPress: onLongPress, child:
               Row(mainAxisSize: MainAxisSize.min, children: [
                 Material(
                     color: Colors.grey[100],
@@ -193,14 +193,12 @@ class DownloadQueueItem extends StatelessWidget {
                                 child: _buildProgressText(item.progress),
                               )),
                               item.status == DownloadStatus.loading
-                                  ? GestureDetector(
-                                      excludeFromSemantics: false,
+                                  ? InkWell(
                                       onTap: () => onPause(item),
                                       child: const Padding(
                                           padding: EdgeInsets.all(4),
                                           child: Icon(Icons.pause)))
-                                  : GestureDetector(
-                                      excludeFromSemantics: false,
+                                  : InkWell(
                                       onTap: () => onRestart(item),
                                       child: const Padding(
                                           padding: EdgeInsets.all(4),
@@ -209,7 +207,7 @@ class DownloadQueueItem extends StatelessWidget {
                           ])),
                 )
               ])
-            ])));
+            )));
   }
 
   Future<void> onRestart(NyaaDownloadTaskQueue tasks) async {

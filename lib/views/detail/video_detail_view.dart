@@ -70,6 +70,7 @@ class VideoDetailViewState extends State<VideoDetailView> {
       this.model = model;
     });
   }
+
   String getUrl(TypedModel? item) {
     if (item == null) return '';
     try {
