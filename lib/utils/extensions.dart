@@ -53,6 +53,6 @@ extension TypedModelEx on TypedModel {
           first.originUrl;
     }
     url = url ?? coverUrl ?? sampleUrl ?? largerUrl ?? originUrl;
-    return url?.asUrl;
+    return url?.asUrl ?? '';
   }
 }
