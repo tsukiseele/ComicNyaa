@@ -2,15 +2,6 @@
 一个跨平台的漫画/图库聚合的流式阅读器，所有数据源均采用插件式加载.  
 > ポトフちゃんとワトラちゃんがすごくかわいいです！
 
-## Support 
-
-- Android 5.1+
-- IOS 未测试
-- Window 未来可能支持
-
-## Usage
-- 注意：中国大陆用户请配合梯子使用
-
 ## Futures
 - [x] 使用插件式的资源解析器
 - [x] 对图库以及漫画的阅读基础支持
@@ -23,10 +14,6 @@
 - [ ] 相对友好的规则编辑器
 - [ ] 更多的功能
 
-## License
-See [LICENSE](./LICENSE)
-
-
 ## Sample
 <!-- ![Home](https://cdn.jsdelivr.net/gh/tsukiseele/ComicNyaa/images/60654495c94c0d0fc9d0861d37cf84b5.jpeg)
 ![Sites](https://cdn.jsdelivr.net/gh/nyarray/LoliHost/images/fcb9dc4ccade0888e6ef759be9a1ee43.jpeg) -->
@@ -37,6 +24,17 @@ See [LICENSE](./LICENSE)
   <img src="https://cdn.jsdelivr.net/gh/tsukiseele/ComicNyaa/sample/4.webp" alt="Download" width="24%"/>
 </div>
 
+## Support 
+
+- Android 5.1+
+- IOS 未测试
+- Window 未来可能支持
+
+## Usage
+- 注意：中国大陆用户请配合梯子使用
+
+## License
+See [LICENSE](./LICENSE)
 
 ## Getting Started
 
