@@ -48,13 +48,7 @@ class GalleryController {
 }
 
 class GalleryView extends StatefulWidget {
-  GalleryView(
-      {Key? key,
-      required this.site,
-      required this.heroKey,
-      this.color,
-      this.scrollbarColor})
-      : super(key: key);
+  GalleryView({Key? key, required this.site, required this.heroKey, this.color, this.scrollbarColor}) : super(key: key);
   final GalleryController controller = GalleryController();
   final Site site;
   final String heroKey;
@@ -65,11 +59,9 @@ class GalleryView extends StatefulWidget {
   State<GalleryView> createState() => _GalleryViewState();
 }
 
-class _GalleryViewState extends State<GalleryView>
-    with AutomaticKeepAliveClientMixin<GalleryView>, TickerProviderStateMixin {
+class _GalleryViewState extends State<GalleryView> with AutomaticKeepAliveClientMixin<GalleryView>, TickerProviderStateMixin {
   late final ScrollController _scrollController = ScrollController();
-  final RefreshController _refreshController =
-      RefreshController(initialRefresh: false);
+  final RefreshController _refreshController = RefreshController(initialRefresh: false);
   final Map<int, double> _heightCache = {};
   final Map<int, TypedModel> _selects = {};
   List<TypedModel> _items = [];
@@ -93,8 +85,7 @@ class _GalleryViewState extends State<GalleryView>
       if (!mounted) return;
       _refreshController.requestRefresh();
       _scrollController.addListener(() {
-        if (_scrollController.position.pixels >=
-            _scrollController.position.maxScrollExtent) {
+        if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent) {
           if (!_isLoading) {
             _onNext();
           }
@@ -111,8 +102,7 @@ class _GalleryViewState extends State<GalleryView>
   }
 
   /// 加载列表
-  Future<List<TypedModel>> _load(
-      {bool isNext = false, bool isReset = false}) async {
+  Future<List<TypedModel>> _load({bool isNext = false, bool isReset = false}) async {
     print('LIST SIZE: ${_items.length}');
     if (_isLoading) return [];
     try {
@@ -152,8 +142,7 @@ class _GalleryViewState extends State<GalleryView>
   }
 
   /// 获取数据
-  Future<List<TypedModel>> _getModels(
-      {Site? site, int? page, String? keywords}) async {
+  Future<List<TypedModel>> _getModels({Site? site, int? page, String? keywords}) async {
     widget.controller.keywords = _keywords;
     site = site ?? _currentSite;
     page = page ?? _page;
@@ -223,17 +212,13 @@ class _GalleryViewState extends State<GalleryView>
     Widget? target;
     switch (model.$type) {
       case 'image':
-        target = ImageDetailView(
-            models: _items, heroKey: widget.heroKey, index: index);
+        target = ImageDetailView(models: _items, heroKey: widget.heroKey, index: index);
         break;
       case 'video':
         target = VideoDetailView(model: model);
         break;
       case 'comic':
-        target = ComicDetailView(
-            model: model,
-            heroKey: heroKey ??
-                widget.heroKey + model.toString().hashCode.toString());
+        target = ComicDetailView(model: model, heroKey: heroKey ?? widget.heroKey + model.toString().hashCode.toString());
         break;
     }
     if (target != null) {
@@ -243,9 +228,7 @@ class _GalleryViewState extends State<GalleryView>
 
   void _onItemSelect(int index) {
     final item = _items[index];
-    setState(() => _selects.containsKey(index)
-        ? _selects.remove(index)
-        : _selects[index] = item);
+    setState(() => _selects.containsKey(index) ? _selects.remove(index) : _selects[index] = item);
     widget.controller.selects = _selects;
     if (widget.controller.onItemSelect != null) {
       widget.controller.onItemSelect!(_selects);
@@ -271,22 +254,16 @@ class _GalleryViewState extends State<GalleryView>
         child: RawScrollbar(
             controller: _scrollController,
             thickness: 4,
-            // interactive: true,
             thumbVisibility: true,
-            thumbColor: widget.scrollbarColor,
+            thumbColor: widget.scrollbarColor ?? widget.color,
             radius: const Radius.circular(4),
-            trackVisibility: true,
-            trackColor: Colors.black,
-            trackBorderColor: Colors.black,
-            trackRadius: const Radius.circular(4),
             child: SmartRefresher(
                 enablePullDown: true,
                 enablePullUp: true,
                 header: WaterDropMaterialHeader(
                   distance: 48,
                   offset: _topOffset,
-                  backgroundColor:
-                      widget.color ?? Theme.of(context).primaryColor,
+                  backgroundColor: widget.color ?? Theme.of(context).primaryColor,
                 ),
                 controller: _refreshController,
                 scrollController: _scrollController,
@@ -307,8 +284,7 @@ class _GalleryViewState extends State<GalleryView>
   }
 
   Widget _buildItem(context, index) {
-    final controller = AnimationController(
-        value: 1, duration: const Duration(milliseconds: 300), vsync: this);
+    final controller = AnimationController(value: 1, duration: const Duration(milliseconds: 300), vsync: this);
     // tabIndex + url + itemIndex
     final coverUrl = _items[index].availableCoverUrl;
     final heroKey = '${widget.heroKey}-$coverUrl-$index';
@@ -320,10 +296,8 @@ class _GalleryViewState extends State<GalleryView>
         child: InkStack(
             alignment: Alignment.center,
             splashColor: widget.color,
-            onTap: () =>
-                _selects.isEmpty ? _jump(index, heroKey) : _onItemSelect(index),
-            onLongPress: () =>
-                _selects.isEmpty ? _onItemSelect(index) : _clearSelections(),
+            onTap: () => _selects.isEmpty ? _jump(index, heroKey) : _onItemSelect(index),
+            onLongPress: () => _selects.isEmpty ? _onItemSelect(index) : _clearSelections(),
             children: [
               // Column(
               //   children: [
@@ -337,8 +311,7 @@ class _GalleryViewState extends State<GalleryView>
                       filterQuality: FilterQuality.low,
                       retries: 2,
                       timeRetry: const Duration(milliseconds: 500),
-                      timeLimit: const Duration(milliseconds: 5000),
-                      loadStateChanged: (state) {
+                      timeLimit: const Duration(milliseconds: 5000), loadStateChanged: (state) {
                     switch (state.extendedImageLoadState) {
                       case LoadState.loading:
                         controller.reset();
@@ -348,14 +321,11 @@ class _GalleryViewState extends State<GalleryView>
                             child: AspectRatio(
                               aspectRatio: 0.66,
                               child: Container(
-                                decoration:
-                                    const BoxDecoration(color: Colors.white),
+                                decoration: const BoxDecoration(color: Colors.white),
                               ),
                             ));
                       case LoadState.failed:
-                        return const AspectRatio(
-                            aspectRatio: 0.66,
-                            child: Icon(Icons.image_not_supported, size: 64));
+                        return const AspectRatio(aspectRatio: 0.66, child: Icon(Icons.image_not_supported, size: 64));
                       case LoadState.completed:
                         controller.forward();
                         return null;
@@ -380,8 +350,7 @@ class _GalleryViewState extends State<GalleryView>
                           child: triangle(
                             width: 32,
                             height: 32,
-                            color:
-                                widget.color ?? Theme.of(context).primaryColor,
+                            color: widget.color ?? Theme.of(context).primaryColor,
                             direction: TriangleDirection.bottomRight,
                             contentAlignment: Alignment.bottomRight,
                             child: const Icon(
@@ -398,10 +367,8 @@ class _GalleryViewState extends State<GalleryView>
   void didUpdateWidget(covariant GalleryView oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.site.id != oldWidget.site.id) {
-      print(
-          'didUpdateWidget:::::: NAME: ${oldWidget.site.name} >>>>>>>> ${widget.site.name}');
-      print(
-          'didUpdateWidget:::::: DATA: ${widget.controller.items} <<<<<<<< ${oldWidget.controller.items}');
+      print('didUpdateWidget:::::: NAME: ${oldWidget.site.name} >>>>>>>> ${widget.site.name}');
+      print('didUpdateWidget:::::: DATA: ${widget.controller.items} <<<<<<<< ${oldWidget.controller.items}');
       // 销毁被旧的滚动控制器
       // oldWidget.controller.scrollController?.dispose();
       setState(() {

@@ -51,8 +51,7 @@ class MainView extends StatefulWidget {
 
 class _MainViewState extends State<MainView> with TickerProviderStateMixin {
   final globalKey = GlobalKey<ScaffoldState>();
-  final FloatingSearchBarController _floatingSearchBarController =
-      FloatingSearchBarController();
+  final FloatingSearchBarController _floatingSearchBarController = FloatingSearchBarController();
   final List<GalleryView> _gallerys = [];
   ScrollController? _galleryScrollController;
   List<Site> _sites = [];
@@ -159,21 +158,13 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
   void _onGalleryScroll() {
     if (_galleryScrollController == null) return;
     if (_galleryScrollController!.position.pixels < 128) {
-      _floatingSearchBarController.isHidden
-          ? _floatingSearchBarController.show()
-          : null;
-    } else if (_galleryScrollController!.position.pixels >
-        _lastScrollPosition + 64) {
+      _floatingSearchBarController.isHidden ? _floatingSearchBarController.show() : null;
+    } else if (_galleryScrollController!.position.pixels > _lastScrollPosition + 64) {
       _lastScrollPosition = _galleryScrollController!.position.pixels.toInt();
-      _floatingSearchBarController.isVisible
-          ? _floatingSearchBarController.hide()
-          : null;
-    } else if (_galleryScrollController!.position.pixels <
-        _lastScrollPosition - 64) {
+      _floatingSearchBarController.isVisible ? _floatingSearchBarController.hide() : null;
+    } else if (_galleryScrollController!.position.pixels < _lastScrollPosition - 64) {
       _lastScrollPosition = _galleryScrollController!.position.pixels.toInt();
-      _floatingSearchBarController.isHidden
-          ? _floatingSearchBarController.show()
-          : null;
+      _floatingSearchBarController.isHidden ? _floatingSearchBarController.show() : null;
     }
   }
 
@@ -212,8 +203,7 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
                       setState(() => _currentTabIndex = index);
                       _listenGalleryScroll();
                       _listenGalleryItemSelected();
-                      _floatingSearchBarController.query =
-                          _currentTab?.controller.keywords ?? '';
+                      _floatingSearchBarController.query = _currentTab?.controller.keywords ?? '';
                     },
                     onScroll: (double value) {},
                     itemCount: _gallerys.length,
@@ -223,12 +213,9 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
                     elevation: 8,
                     indicator: const BoxDecoration(
                         color: Colors.white70,
-                        boxShadow: [
-                          BoxShadow(color: Colors.black12, blurRadius: 8)
-                        ],
+                        boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 8)],
                         borderRadius: BorderRadius.all(Radius.circular(20))),
-                    pageBuilder: (BuildContext context, int index) =>
-                        _gallerys[index],
+                    pageBuilder: (BuildContext context, int index) => _gallerys[index],
                     tabBuilder: (BuildContext context, int index) {
                       return InkWell(
                           onLongPress: () {
@@ -248,30 +235,19 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
                                 Container(
                                   width: 40,
                                   height: 40,
-                                  padding: EdgeInsets.only(
-                                      top: 8,
-                                      bottom: 8,
-                                      right: _currentTabIndex == index ? 8 : 0),
-                                  child: SimpleNetworkImage(
-                                      _gallerys[index].site.icon ?? '',
-                                      fit: BoxFit.contain,
-                                      clearMemoryCacheIfFailed: false),
+                                  padding: EdgeInsets.only(top: 8, bottom: 8, right: _currentTabIndex == index ? 8 : 0),
+                                  child: SimpleNetworkImage(_gallerys[index].site.icon ?? '',
+                                      fit: BoxFit.contain, clearMemoryCacheIfFailed: false),
                                 ),
                                 _currentTabIndex == index
                                     ? SizedBox(
-                                        width: _currentTabIndex == index
-                                            ? 96.0
-                                            : null,
+                                        width: _currentTabIndex == index ? 96.0 : null,
                                         child: MarqueeWidget(
                                             direction: Axis.horizontal,
-                                            child: Text(
-                                                _gallerys[index].site.name ??
-                                                    'unknown',
+                                            child: Text(_gallerys[index].site.name ?? 'unknown',
                                                 overflow: TextOverflow.ellipsis,
                                                 maxLines: 1,
-                                                style: const TextStyle(
-                                                    fontSize: 16,
-                                                    color: Colors.black87))))
+                                                style: const TextStyle(fontSize: 16, color: Colors.black87))))
                                     : Container()
                               ])));
                     })
@@ -286,9 +262,10 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
 
   GalleryView _buildTab(Site site) {
     return GalleryView(
-        site: site,
-        heroKey: _gallerys.length.toString(),
-        color: _getTabColor(_gallerys.length));
+      site: site,
+      heroKey: _gallerys.length.toString(),
+      color: _getTabColor(_gallerys.length),
+    );
   }
 
   Widget _buildFab() {
@@ -298,9 +275,7 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
             ? FloatingActionButton(
                 backgroundColor: _getTabColor(_currentTabIndex),
                 onPressed: () => _currentTab?.controller.scrollController
-                    ?.animateTo(0,
-                        duration: const Duration(milliseconds: 1000),
-                        curve: Curves.ease),
+                    ?.animateTo(0, duration: const Duration(milliseconds: 1000), curve: Curves.ease),
                 tooltip: 'Top',
                 child: const Icon(Icons.arrow_upward),
               )
@@ -315,8 +290,7 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
   }
 
   Widget _buildFloatingSearchBar() {
-    final isPortrait =
-        MediaQuery.of(context).orientation == Orientation.portrait;
+    final isPortrait = MediaQuery.of(context).orientation == Orientation.portrait;
     return FloatingSearchBar(
         controller: _floatingSearchBarController,
         automaticallyImplyDrawerHamburger: false,
@@ -333,23 +307,17 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
         width: isPortrait ? 600 : 500,
         clearQueryOnClose: false,
         closeOnBackdropTap: true,
-        hintStyle: const TextStyle(
-            fontFamily: Config.uiFontFamily,
-            fontSize: 16,
-            color: Colors.black26),
-        queryStyle:
-            const TextStyle(fontFamily: Config.uiFontFamily, fontSize: 16),
+        hintStyle: const TextStyle(fontFamily: Config.uiFontFamily, fontSize: 16, color: Colors.black26),
+        queryStyle: const TextStyle(fontFamily: Config.uiFontFamily, fontSize: 16),
         onQueryChanged: (query) async {
           _keywords = _floatingSearchBarController.query;
           final lastWordIndex = query.lastIndexOf(' ');
           final word = query.substring(lastWordIndex > 0 ? lastWordIndex : 0);
-          final response = await Http.client.get(Uri.parse(
-              'https://danbooru.donmai.us/autocomplete.json?search[query]=$word&search[type]=tag_query&limit=10'));
-          final result =
-              List<Map<String, dynamic>>.from(jsonDecode(response.body));
+          final response = await Http.client.get(
+              Uri.parse('https://danbooru.donmai.us/autocomplete.json?search[query]=$word&search[type]=tag_query&limit=10'));
+          final result = List<Map<String, dynamic>>.from(jsonDecode(response.body));
           setState(() {
-            _autosuggest =
-                result.map((item) => item['value'] as String).toList();
+            _autosuggest = result.map((item) => item['value'] as String).toList();
             print('_autosuggest: $_autosuggest');
           });
         },
@@ -364,10 +332,7 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
                   child: SimpleNetworkImage(_currentTab?.site.icon ?? '',
                       error: Text(
                         _currentTab?.site.name?.substring(0, 1) ?? '',
-                        style: const TextStyle(
-                            fontFamily: Config.uiFontFamily,
-                            fontSize: 18,
-                            color: Colors.teal),
+                        style: const TextStyle(fontFamily: Config.uiFontFamily, fontSize: 18, color: Colors.teal),
                       )))),
         ],
         actions: [
@@ -385,10 +350,8 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
         onSubmitted: (query) => _onSearch(query),
         onFocusChanged: (isFocus) {
           if (!isFocus) {
-            if (_floatingSearchBarController.query !=
-                _currentTab?.controller.keywords) {
-              setState(() => _floatingSearchBarController.query =
-                  _currentTab?.controller.keywords ?? '');
+            if (_floatingSearchBarController.query != _currentTab?.controller.keywords) {
+              setState(() => _floatingSearchBarController.query = _currentTab?.controller.keywords ?? '');
             }
           }
         },
@@ -404,8 +367,7 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
                         onTap: () => _onSearch(_keywords, suggest),
                         title: Text(
                           suggest,
-                          style: const TextStyle(
-                              fontFamily: Config.uiFontFamily, fontSize: 14),
+                          style: const TextStyle(fontFamily: Config.uiFontFamily, fontSize: 14),
                         )))
                     .toList(),
               ),

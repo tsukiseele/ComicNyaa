@@ -74,6 +74,7 @@ class _ComicDetailViewState extends State<ComicDetailView> with TickerProviderSt
       _getNext(data);
     });
     _model = TypedModel.fromJson(await Mio(_origin.site).parseExtended(item: json));
+    setState(() {});
   }
 
 
