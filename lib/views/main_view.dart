@@ -38,6 +38,8 @@ import 'package:comic_nyaa/models/typed_model.dart';
 import 'package:comic_nyaa/widget/marquee_widget.dart';
 import 'package:comic_nyaa/views/pages/gallery_view.dart';
 
+import 'drawer/nyaa_drawer.dart';
+
 class MainView extends StatefulWidget {
   const MainView({Key? key, this.site, this.keywords}) : super(key: key);
   final Site? site;
@@ -191,7 +193,7 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
         drawerEnableOpenDragGesture: true,
         endDrawerEnableOpenDragGesture: true,
         resizeToAvoidBottomInset: false,
-        drawer: _buildDrawer(),
+        drawer: const NyaaDrawer(),
         endDrawer: NyaaEndDrawer(
           sites: _sites,
           onItemTap: (site) {
@@ -422,68 +424,9 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
     setState(() => _floatingSearchBarController.query = query);
   }
 
-  Widget _buildDrawer() {
-    return Drawer(
-        child: ListView(padding: EdgeInsets.zero, children: [
-      Container(
-          margin: const EdgeInsets.only(bottom: 8),
-          child: Stack(children: [
-            const SimpleNetworkImage(
-              'https://cdn.jsdelivr.net/gh/nyarray/LoliHost/images/94d6d0e7be187770e5d538539d95a12a.jpeg',
-              fit: BoxFit.cover,
-              width: double.maxFinite,
-              height: 160 + kToolbarHeight,
-            ),
-            Positioned.fill(
-              child: Container(
-                  decoration: BoxDecoration(
-                      color: Colors.white,
-                      gradient: LinearGradient(
-                          begin: FractionalOffset.topCenter,
-                          end: FractionalOffset.bottomCenter,
-                          colors: [
-                            Colors.grey.withOpacity(0.0),
-                            Colors.black45,
-                          ],
-                          stops: const [
-                            0.0,
-                            1.0
-                          ])),
-                  padding: const EdgeInsets.all(8),
-                  alignment: Alignment.bottomLeft,
-                  child: Text(
-                      "Os iustī meditabitur sapientiam, Et lingua eius loquetur iudicium.",
-                      style: TextStyle(color: Colors.teal[200], fontSize: 18,
-                          // fontWeight: FontWeight.bold,
-                          shadows: [
-                            Shadow(color: Colors.teal[100]!, blurRadius: 8)
-                          ]))),
-            ),
-          ])),
-      ListTile(
-          title: const Text('主页'),
-          selected: true,
-          selectedTileColor: const Color.fromRGBO(0, 127, 127, .2),
-          onTap: () {},
-          iconColor: Colors.teal,
-          leading: const Icon(Icons.home)),
-      ListTile(
-          title: const Text('订阅'),
-          onTap: () => RouteUtil.push(context, const SubscribeView()),
-          iconColor: Colors.black87,
-          leading: const Icon(Icons.collections_bookmark)),
-      ListTile(
-          title: const Text('下载'),
-          onTap: () => RouteUtil.push(context, const DownloadView()),
-          iconColor: Colors.black87,
-          leading: const Icon(Icons.download)),
-      ListTile(
-          title: const Text('设置'),
-          onTap: () => RouteUtil.push(context, const SettingsView()),
-          iconColor: Colors.black87,
-          leading: const Icon(Icons.tune))
-    ]));
-  }
+  // Widget _buildDrawer() {
+  //
+  // }
 
 // Widget _buildEndDrawer() {
 //   return Drawer(
