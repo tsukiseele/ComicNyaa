@@ -33,7 +33,6 @@ import 'package:comic_nyaa/views/detail/image_detail_view.dart';
 import 'package:comic_nyaa/views/detail/comic_detail_view.dart';
 import 'package:comic_nyaa/views/detail/video_detail_view.dart';
 import 'package:comic_nyaa/utils/flutter_utils.dart';
-import 'package:comic_nyaa/utils/uri_extensions.dart';
 
 import '../detail/image_detail_view.dart';
 
@@ -182,7 +181,7 @@ class _GalleryViewState extends State<GalleryView>
         return;
       }
       for (var model in _preloadItems) {
-        ExtendedImage.network(model.coverUrl ?? '');
+        ExtendedImage.network(model.coverUrl ?? '').image.resolve(const ImageConfiguration());
         // DynamicCacheImageProvider(model.coverUrl ?? '').resolve(const ImageConfiguration());
       }
     } catch (e) {
@@ -220,9 +219,9 @@ class _GalleryViewState extends State<GalleryView>
   }
 
   void _jump(int index, String? heroKey) {
-    TypedModel model = _items[index];
+    final model = _items[index];
     Widget? target;
-    switch (model.type) {
+    switch (model.$type) {
       case 'image':
         target = ImageDetailView(
             models: _items, heroKey: widget.heroKey, index: index);

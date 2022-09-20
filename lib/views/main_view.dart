@@ -17,6 +17,7 @@
 
 import 'dart:async';
 import 'dart:convert';
+import 'package:comic_nyaa/views/drawer/nyaa_end_drawer.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:collection/collection.dart';
@@ -185,94 +186,100 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      key: globalKey,
-      resizeToAvoidBottomInset: false,
-      drawerEdgeDragWidth: 64,
-      drawerEnableOpenDragGesture: true,
-      endDrawerEnableOpenDragGesture: true,
-      drawer: _buildDrawer(),
-      endDrawer: _buildEndDrawer(),
-      body: Stack(
-        fit: StackFit.expand,
-        children: [
-          _gallerys.isNotEmpty
-              ? NyaaTabView(
-                  position: _currentTabIndex,
-                  onPositionChange: (int index) {
-                    setState(() => _currentTabIndex = index);
-                    _listenGalleryScroll();
-                    _listenGalleryItemSelected();
-                    _floatingSearchBarController.query =
-                        _currentTab?.controller.keywords ?? '';
-                  },
-                  onScroll: (double value) {},
-                  itemCount: _gallerys.length,
-                  isScrollToNewTab: true,
-                  color: _getTabColor(_currentTabIndex)[100],
-                  tabBarColor: _getTabColor(_currentTabIndex)[200],
-                  elevation: 8,
-                  indicator: const BoxDecoration(
-                      color: Colors.white70,
-                      boxShadow: [
-                        BoxShadow(color: Colors.black12, blurRadius: 8)
-                      ],
-                      borderRadius: BorderRadius.all(Radius.circular(20))),
-                  pageBuilder: (BuildContext context, int index) =>
-                      _gallerys[index],
-                  tabBuilder: (BuildContext context, int index) {
-                    return InkWell(
-                        onLongPress: () {
-                          if (_gallerys.length > 1) {
-                            setState(() => _removeTab(index));
-                          } else {
-                            Fluttertoast.showToast(msg: '您不能删除最后一个标签页');
-                          }
-                        },
-                        onTap: () {
-                          setState(() => _currentTabIndex = index);
-                        },
-                        child: AnimatedSize(
-                            duration: const Duration(milliseconds: 250),
-                            curve: Curves.ease,
-                            child: Row(children: [
-                              Container(
-                                width: 40,
-                                height: 40,
-                                padding: EdgeInsets.only(
-                                    top: 8,
-                                    bottom: 8,
-                                    right: _currentTabIndex == index ? 8 : 0),
-                                child: SimpleNetworkImage(
-                                    _gallerys[index].site.icon ?? '',
-                                    fit: BoxFit.contain,
-                                    clearMemoryCacheIfFailed: false),
-                              ),
-                              _currentTabIndex == index
-                                  ? SizedBox(
-                                      width: _currentTabIndex == index
-                                          ? 96.0
-                                          : null,
-                                      child: MarqueeWidget(
-                                          direction: Axis.horizontal,
-                                          child: Text(
-                                              _gallerys[index].site.name ??
-                                                  'unknown',
-                                              overflow: TextOverflow.ellipsis,
-                                              maxLines: 1,
-                                              style: const TextStyle(
-                                                  fontSize: 16,
-                                                  color: Colors.black87))))
-                                  : Container()
-                            ])));
-                  })
-              : Container(),
-          _buildFloatingSearchBar(),
-        ],
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-      floatingActionButtonAnimator: FloatingActionButtonAnimator.scaling,
-      floatingActionButton: _buildFab()
-    );
+        key: globalKey,
+        drawerEdgeDragWidth: 64,
+        drawerEnableOpenDragGesture: true,
+        endDrawerEnableOpenDragGesture: true,
+        resizeToAvoidBottomInset: false,
+        drawer: _buildDrawer(),
+        endDrawer: NyaaEndDrawer(
+          sites: _sites,
+          onItemTap: (site) {
+            setState(() => _addTab(site));
+            globalKey.currentState?.closeEndDrawer();
+          },
+        ),
+        // endDrawer: _buildEndDrawer(),
+        body: Stack(
+          fit: StackFit.expand,
+          children: [
+            _gallerys.isNotEmpty
+                ? NyaaTabView(
+                    position: _currentTabIndex,
+                    onPositionChange: (int index) {
+                      setState(() => _currentTabIndex = index);
+                      _listenGalleryScroll();
+                      _listenGalleryItemSelected();
+                      _floatingSearchBarController.query =
+                          _currentTab?.controller.keywords ?? '';
+                    },
+                    onScroll: (double value) {},
+                    itemCount: _gallerys.length,
+                    isScrollToNewTab: true,
+                    color: _getTabColor(_currentTabIndex)[100],
+                    tabBarColor: _getTabColor(_currentTabIndex)[200],
+                    elevation: 8,
+                    indicator: const BoxDecoration(
+                        color: Colors.white70,
+                        boxShadow: [
+                          BoxShadow(color: Colors.black12, blurRadius: 8)
+                        ],
+                        borderRadius: BorderRadius.all(Radius.circular(20))),
+                    pageBuilder: (BuildContext context, int index) =>
+                        _gallerys[index],
+                    tabBuilder: (BuildContext context, int index) {
+                      return InkWell(
+                          onLongPress: () {
+                            if (_gallerys.length > 1) {
+                              setState(() => _removeTab(index));
+                            } else {
+                              Fluttertoast.showToast(msg: '您不能删除最后一个标签页');
+                            }
+                          },
+                          onTap: () {
+                            setState(() => _currentTabIndex = index);
+                          },
+                          child: AnimatedSize(
+                              duration: const Duration(milliseconds: 250),
+                              curve: Curves.ease,
+                              child: Row(children: [
+                                Container(
+                                  width: 40,
+                                  height: 40,
+                                  padding: EdgeInsets.only(
+                                      top: 8,
+                                      bottom: 8,
+                                      right: _currentTabIndex == index ? 8 : 0),
+                                  child: SimpleNetworkImage(
+                                      _gallerys[index].site.icon ?? '',
+                                      fit: BoxFit.contain,
+                                      clearMemoryCacheIfFailed: false),
+                                ),
+                                _currentTabIndex == index
+                                    ? SizedBox(
+                                        width: _currentTabIndex == index
+                                            ? 96.0
+                                            : null,
+                                        child: MarqueeWidget(
+                                            direction: Axis.horizontal,
+                                            child: Text(
+                                                _gallerys[index].site.name ??
+                                                    'unknown',
+                                                overflow: TextOverflow.ellipsis,
+                                                maxLines: 1,
+                                                style: const TextStyle(
+                                                    fontSize: 16,
+                                                    color: Colors.black87))))
+                                    : Container()
+                              ])));
+                    })
+                : Container(),
+            _buildFloatingSearchBar(),
+          ],
+        ),
+        floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+        floatingActionButtonAnimator: FloatingActionButtonAnimator.scaling,
+        floatingActionButton: _buildFab());
   }
 
   GalleryView _buildTab(Site site) {
@@ -283,26 +290,26 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
   }
 
   Widget _buildFab() {
-    return  Container(
+    return Container(
         margin: const EdgeInsets.only(bottom: 48),
         child: _currentTab?.controller.selects.isEmpty == true
             ? FloatingActionButton(
-          backgroundColor: _getTabColor(_currentTabIndex),
-          onPressed: () => _currentTab?.controller.scrollController
-              ?.animateTo(0,
-              duration: const Duration(milliseconds: 1000),
-              curve: Curves.ease),
-          tooltip: 'Top',
-          child: const Icon(Icons.arrow_upward),
-        )
+                backgroundColor: _getTabColor(_currentTabIndex),
+                onPressed: () => _currentTab?.controller.scrollController
+                    ?.animateTo(0,
+                        duration: const Duration(milliseconds: 1000),
+                        curve: Curves.ease),
+                tooltip: 'Top',
+                child: const Icon(Icons.arrow_upward),
+              )
             : FloatingActionButton(
-          backgroundColor: _getTabColor(_currentTabIndex),
-          onPressed: () {
-            downloadSelections();
-          },
-          tooltip: 'Download',
-          child: const Icon(Icons.download),
-        ));
+                backgroundColor: _getTabColor(_currentTabIndex),
+                onPressed: () {
+                  downloadSelections();
+                },
+                tooltip: 'Download',
+                child: const Icon(Icons.download),
+              ));
   }
 
   Widget _buildFloatingSearchBar() {
@@ -478,73 +485,73 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
     ]));
   }
 
-  Widget _buildEndDrawer() {
-    return Drawer(
-      // width: 256,
-      elevation: 8,
-      child: ListView.builder(
-          padding: const EdgeInsets.all(0),
-          itemCount: _sites.length + 1,
-          itemBuilder: (ctx, i) {
-            final index = i - 1;
-            if (index < 0) {
-              return const Padding(
-                  padding: EdgeInsets.only(bottom: 8),
-                  child: SimpleNetworkImage(
-                    'https://cdn.jsdelivr.net/gh/nyarray/LoliHost/images/7c4f1d7ea2dadd3ca835b9b2b9219681.webp',
-                    fit: BoxFit.cover,
-                    height: 160 + kToolbarHeight,
-                  ));
-            }
-            return Material(
-                child: InkWell(
-                    onTap: () {
-                      setState(() {
-                        // _tabs.add(_sites[index]);
-                        _addTab(_sites[index]);
-                        globalKey.currentState?.closeEndDrawer();
-                      });
-                      setState(() {});
-                    },
-                    child: ListTile(
-                      leading: SizedBox(
-                          width: 32,
-                          height: 32,
-                          child: SimpleNetworkImage(
-                            _sites[index].icon ?? '',
-                            fit: BoxFit.cover,
-                            error:
-                                const Icon(Icons.image_not_supported, size: 32),
-                          )),
-                      title: Text(
-                        _sites[index].name ?? '',
-                        style: const TextStyle(
-                            fontFamily: Config.uiFontFamily,
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold),
-                        textAlign: TextAlign.start,
-                        maxLines: 1,
-                        softWrap: false,
-                        overflow: TextOverflow.fade,
-                      ),
-                      subtitle: Text(
-                        _sites[index].details ?? '',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                            fontSize: 14, color: Colors.black26),
-                      ),
-                      trailing: Icon(
-                          _sites[index].type == 'comic'
-                              ? Icons.photo_library
-                              : _sites[index].type == 'image'
-                                  ? Icons.image
-                                  : _sites[index].type == 'video'
-                                      ? Icons.video_collection
-                                      : Icons.quiz,
-                          color: Theme.of(context).primaryColor),
-                    )));
-          }),
-    );
-  }
+// Widget _buildEndDrawer() {
+//   return Drawer(
+//     // width: 256,
+//     elevation: 8,
+//     child: ListView.builder(
+//         padding: const EdgeInsets.all(0),
+//         itemCount: _sites.length + 1,
+//         itemBuilder: (ctx, i) {
+//           final index = i - 1;
+//           if (index < 0) {
+//             return const Padding(
+//                 padding: EdgeInsets.only(bottom: 8),
+//                 child: SimpleNetworkImage(
+//                   'https://cdn.jsdelivr.net/gh/nyarray/LoliHost/images/7c4f1d7ea2dadd3ca835b9b2b9219681.webp',
+//                   fit: BoxFit.cover,
+//                   height: 160 + kToolbarHeight,
+//                 ));
+//           }
+//           return Material(
+//               child: InkWell(
+//                   onTap: () {
+//                     setState(() {
+//                       // _tabs.add(_sites[index]);
+//                       _addTab(_sites[index]);
+//                       globalKey.currentState?.closeEndDrawer();
+//                     });
+//                     setState(() {});
+//                   },
+//                   child: ListTile(
+//                     leading: SizedBox(
+//                         width: 32,
+//                         height: 32,
+//                         child: SimpleNetworkImage(
+//                           _sites[index].icon ?? '',
+//                           fit: BoxFit.cover,
+//                           error:
+//                               const Icon(Icons.image_not_supported, size: 32),
+//                         )),
+//                     title: Text(
+//                       _sites[index].name ?? '',
+//                       style: const TextStyle(
+//                           fontFamily: Config.uiFontFamily,
+//                           fontSize: 18,
+//                           fontWeight: FontWeight.bold),
+//                       textAlign: TextAlign.start,
+//                       maxLines: 1,
+//                       softWrap: false,
+//                       overflow: TextOverflow.fade,
+//                     ),
+//                     subtitle: Text(
+//                       _sites[index].details ?? '',
+//                       maxLines: 1,
+//                       overflow: TextOverflow.ellipsis,
+//                       style: const TextStyle(
+//                           fontSize: 14, color: Colors.black26),
+//                     ),
+//                     trailing: Icon(
+//                         _sites[index].type == 'comic'
+//                             ? Icons.photo_library
+//                             : _sites[index].type == 'image'
+//                                 ? Icons.image
+//                                 : _sites[index].type == 'video'
+//                                     ? Icons.video_collection
+//                                     : Icons.quiz,
+//                         color: Theme.of(context).primaryColor),
+//                   )));
+//         }),
+//   );
+// }
 }

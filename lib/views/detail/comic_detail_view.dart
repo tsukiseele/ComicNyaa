@@ -43,19 +43,20 @@ class ComicDetailView extends StatefulWidget {
 
   @override
   State<StatefulWidget> createState() {
-    return ComicDetailViewState();
+    return _ComicDetailViewState();
   }
 }
 
-class ComicDetailViewState extends State<ComicDetailView> with TickerProviderStateMixin {
+class _ComicDetailViewState extends State<ComicDetailView> with TickerProviderStateMixin {
   final RefreshController _refreshController = RefreshController();
   final ScrollController _scrollController = ScrollController();
   final List<TypedModel> _children = [];
   final Set<String> _tags = {};
+  late TypedModel _model;
   late DataOrigin _origin;
   StreamSubscription<List<Map<String, dynamic>>>? _stream;
 
-  void _initialized() {
+  void _initialized() async {
     _scrollController.addListener(() {
       if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent) {
         while (_stream?.isPaused == true) {
@@ -63,14 +64,18 @@ class ComicDetailViewState extends State<ComicDetailView> with TickerProviderSta
         }
       }
     });
-    final model = widget.model;
-    _origin = model.getOrigin();
-    _tags.addAll(model.tags?.split(' ').toSet() ?? {});
-    _stream = Mio(_origin.site).parseChildren(item: model.toJson()).listen((List<Map<String, dynamic>> data) {
+    _model = widget.model;
+    _origin = _model.getOrigin();
+    _tags.addAll(_model.tags?.split(' ').toSet() ?? {});
+    final json = _model.toJson();
+    //
+    _stream = Mio(_origin.site).parseChildren(item: json).listen((List<Map<String, dynamic>> data) {
       _stream?.pause();
       _getNext(data);
     });
+    _model = TypedModel.fromJson(await Mio(_origin.site).parseExtended(item: json));
   }
+
 
   _getNext(List<Map<String, dynamic>> data) async {
     try {
@@ -81,7 +86,6 @@ class ComicDetailViewState extends State<ComicDetailView> with TickerProviderSta
             if (tag.trim().isNotEmpty) _tags.add(tag);
           });
         }
-        // _tags = models[0].tags!.split(RegExp(r'[\s,]+'));
       }
       setState(() {
         _children.addAll(models);
@@ -119,7 +123,7 @@ class ComicDetailViewState extends State<ComicDetailView> with TickerProviderSta
                         child: Hero(
                             tag: widget.heroKey,
                             child: SimpleNetworkImage(
-                              widget.model.availableCoverUrl,
+                             _model.availableCoverUrl,
                               width: 120,
                               headers: _origin.site.headers,
                               disableAnimation: true,
@@ -132,7 +136,7 @@ class ComicDetailViewState extends State<ComicDetailView> with TickerProviderSta
                           child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
                             Expanded(
                                 child: Text(
-                              widget.model.title ?? 'Unknown',
+                              _model.title ?? 'Unknown',
                               maxLines: 5,
                               style: const TextStyle(color: Colors.white, fontSize: 20),
                             )),
@@ -156,8 +160,8 @@ class ComicDetailViewState extends State<ComicDetailView> with TickerProviderSta
                                   padding: const EdgeInsets.all(4),
                                   iconSize: 32,
                                   onPressed: () async {
-                                    (await NyaaDownloadManager.instance).add(widget.model);
-                                    Fluttertoast.showToast(msg: '下载已添加：${widget.model.title}');
+                                    (await NyaaDownloadManager.instance).add(_model);
+                                    Fluttertoast.showToast(msg: '下载已添加：${_model.title}');
                                   },
                                   icon: const Icon(
                                     Icons.download,
@@ -178,7 +182,7 @@ class ComicDetailViewState extends State<ComicDetailView> with TickerProviderSta
                       text: tags[index],
                       color: Colors.teal,
                       onTap: () {
-                        RouteUtil.push(context, MainView(site: widget.model.getOrigin().site, keywords: tags[index]));
+                        RouteUtil.push(context, MainView(site: _model.getOrigin().site, keywords: tags[index]));
                       },
                     ))
           ]))

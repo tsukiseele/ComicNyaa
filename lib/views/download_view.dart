@@ -54,17 +54,12 @@ class _DownloadViewState extends State<DownloadView> {
   void loopUpdateStatus() {
     _update();
     _timer = Timer.periodic(widget.updateInterval, (timer) => _update());
-    // WidgetsBinding.instance.addPostFrameCallback((timeStamp) => ));
   }
 
   Future<void> _update() async {
     final tasks = (await NyaaDownloadManager.instance).tasks;
     setState(() => _downloadList = tasks);
     notifier.notify();
-  }
-
-  void onShowDetail(NyaaDownloadTaskQueue item) {
-    RouteUtil.push(context, DownloadDetailView(item, notifier: notifier));
   }
 
   @override
@@ -91,6 +86,12 @@ class _DownloadViewState extends State<DownloadView> {
         })),
       )),
     );
+  }
+
+  void onShowDetail(NyaaDownloadTaskQueue item) {
+    print('SSSSSSSSSSSSSSSSSSSSSSSSSSSS');
+
+    RouteUtil.push(context, DownloadDetailView(item, notifier: notifier));
   }
 
   void _onItemLongPress(NyaaDownloadTaskQueue item) {

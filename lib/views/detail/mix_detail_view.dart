@@ -104,7 +104,7 @@ class MixDetailViewState extends State<MixDetailView> {
             padding: const EdgeInsets.all(8.0),
             child: Column(children: [
               Center(
-                child: widget.model.type == 'image'
+                child: widget.model.$type == 'image'
                     ? Image.network(getUrl(children))
                     : _controller?.value.isInitialized ?? false
                     ? AspectRatio(
@@ -114,7 +114,7 @@ class MixDetailViewState extends State<MixDetailView> {
                     : Container(),
               ),
               Offstage(
-                offstage: widget.model.type == 'video',
+                offstage: widget.model.$type == 'video',
                 child: Row(
                   children: [
                     Offstage(

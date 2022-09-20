@@ -242,9 +242,10 @@ class _ImageDetailViewState extends State<ImageDetailView>
                       final url = _images[index];
                       final placeholder =
                           widget.models[index].availableCoverUrl;
+                      final heroTag = '${widget.heroKey}-$placeholder-$index';
                       if (url.isEmpty) {
                         return Hero(
-                            tag: '${widget.heroKey}-$placeholder-$index',
+                            tag: heroTag,
                             child: _buildLoading(placeholder));
                       }
                       void Function() animationListener = () {};
@@ -339,7 +340,7 @@ class _ImageDetailViewState extends State<ImageDetailView>
                       );
                       if (index == _currentIndex) {
                         return Hero(
-                          tag: '$url-$index',
+                          tag: heroTag,
                           child: image,
                         );
                       } else {

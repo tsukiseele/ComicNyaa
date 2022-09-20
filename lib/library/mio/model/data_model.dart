@@ -18,29 +18,40 @@
 import '../core/site_manager.dart';
 import 'data_origin.dart';
 
+
+const String k$type = r'$type';
+const String k$children = r'$children';
+const String k$extended = r'$extended';
+const String k$origin = r'$origin';
+const String k$key = r'$key';
+
+const String fieldChildren = r'children';
+
 /// 抓取数据模型
 /// 子类必须实现 toJson() 和 fromJson() 完成序列化
-///
 class DataModel<T> {
-  String? type;
+  String? $type;
   // List<String>? sources;
   List<T>? children; // 需要在子类实现序列化
   String? $children;
+  String? $extended;
   DataOriginInfo? $origin;
 
   DataModel.fromJson(Map<String, dynamic> json) {
-    type = json['type'];
-    $children = json[r'$children'];
-    $origin = json[r'$origin'] != null
-        ? DataOriginInfo.fromJson(json[r'$origin'])
+    $type = json[k$type];
+    $children = json[k$children];
+    $extended = json[k$extended];
+    $origin = json[k$origin] != null
+        ? DataOriginInfo.fromJson(json[k$origin])
         : null;
   }
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
-    data['type'] = type;
-    data[r'$children'] = $children;
-    if ($origin != null) data[r'$origin'] = $origin!.toJson();
+    data[k$type] = $type;
+    data[k$children] = $children;
+    data[k$extended] = $extended;
+    if ($origin != null) data[k$origin] = $origin!.toJson();
     return data;
   }
 

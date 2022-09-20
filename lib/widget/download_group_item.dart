@@ -193,12 +193,14 @@ class DownloadQueueItem extends StatelessWidget {
                                 child: _buildProgressText(item.progress),
                               )),
                               item.status == DownloadStatus.loading
-                                  ? InkWell(
+                                  ? GestureDetector(
+                                      excludeFromSemantics: false,
                                       onTap: () => onPause(item),
                                       child: const Padding(
                                           padding: EdgeInsets.all(4),
                                           child: Icon(Icons.pause)))
-                                  : InkWell(
+                                  : GestureDetector(
+                                      excludeFromSemantics: false,
                                       onTap: () => onRestart(item),
                                       child: const Padding(
                                           padding: EdgeInsets.all(4),
@@ -211,6 +213,7 @@ class DownloadQueueItem extends StatelessWidget {
   }
 
   Future<void> onRestart(NyaaDownloadTaskQueue tasks) async {
+    print('RRRRRRRRRRRRRRRRRRRRRRRRRRRRRR');
     await tasks.start();
     final successfulCount = tasks.tasks
         .where((item) => item.status == DownloadStatus.successful)

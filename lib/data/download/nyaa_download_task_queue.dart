@@ -86,17 +86,22 @@ class NyaaDownloadTaskQueue extends DownloadTaskQueue<NyaaDownloadTask> {
       // 执行初始化逻辑，生成任务组
       final origin = parent.getOrigin();
       headers = origin.site.headers;
+
+      Map<String, dynamic> parentJson = parent.toJson();
+      // 解析扩展属性
+      parentJson = await Mio(origin.site).parseExtended(item: parentJson);
+      // 解析子树
       parent = TypedModel.fromJson(
-          await Mio(origin.site).parseAllChildren(parent.toJson()));
-      if (title.isEmpty) title = parent.title ?? '';
+          await Mio(origin.site).parseAllChildren(parentJson));
+      title = parent.title ?? '';
       final children = parent.children;
       if (children == null || children.isEmpty) {
         add(NyaaDownloadTask.fromUrl(directory, parent.getUrl(level),
             title: parent.title, cover: parent.coverUrl, headers: headers));
       } else if (children.length == 1) {
-        add(NyaaDownloadTask.fromUrl(directory, children[0].getUrl(level),
-            title: StringUtil.value(children[0].title, parent.title),
-            cover: StringUtil.value(children[0].coverUrl, parent.coverUrl),
+        add(NyaaDownloadTask.fromUrl(directory, children.first.getUrl(level),
+            title: StringUtil.value(children.first.title, parent.title),
+            cover: StringUtil.value(children.first.coverUrl, parent.coverUrl),
             headers: headers));
       } else {
         // 一旦使用散列码，虽然能避免任务名重复，但是将失去缓存检测，这里不使用散列

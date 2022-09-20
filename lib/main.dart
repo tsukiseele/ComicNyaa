@@ -85,12 +85,13 @@ class _ComicNyaaState extends State<ComicNyaa> {
         headers['Host'] = 'e-hentai.org';
         url = url.replaceFirst('e-hentai.org', '104.20.134.21');
       }
+      print('REQUEST::: $url');
       // 读取缓存
-      final cache = await HttpCache.instance.getAsString(url);
-      if (cache != null) {
-        print('HTTP_CACHE_MANAGER::: READ <<<<<<<<<<<<<<<<< $url');
-        return cache;
-      }
+      // final cache = await HttpCache.instance.getAsString(url);
+      // if (cache != null) {
+      //   print('HTTP_CACHE_MANAGER::: READ <<<<<<<<<<<<<<<<< $url');
+      //   return cache;
+      // }
       // HttpClientRequest request = await client.getUrl(Uri.parse('https://104.20.134.21/'));
       headers['user-agent'] =
           r'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36';
