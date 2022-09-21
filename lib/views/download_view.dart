@@ -89,8 +89,6 @@ class _DownloadViewState extends State<DownloadView> {
   }
 
   void onShowDetail(NyaaDownloadTaskQueue item) {
-    print('SSSSSSSSSSSSSSSSSSSSSSSSSSSS');
-
     RouteUtil.push(context, DownloadDetailView(item, notifier: notifier));
   }
 

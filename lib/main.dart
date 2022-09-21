@@ -61,7 +61,8 @@ class _ComicNyaaState extends State<ComicNyaa> {
         fontFamily: 'ComicNeue',
         primarySwatch: Colors.teal,
       ),
-      home: const BackView(child: MainView()),
+      home: const MainView(enableBackControl: true),
+      // home: const BackView(child: MainView())
     );
   }
 

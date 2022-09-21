@@ -15,34 +15,28 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import 'package:comic_nyaa/views/main_view.dart';
 import 'package:flutter/material.dart';
 
 class BackView extends StatefulWidget {
-  const BackView({Key? key, required this.child}) : super(key: key);
+  const BackView({Key? key, required this.child, this.onBack}) : super(key: key);
   final Widget child;
+  final bool Function()? onBack;
 
   @override
   State<StatefulWidget> createState() => _BackViewState();
 }
 
 class _BackViewState extends State<BackView> {
-  final globalKey = GlobalKey<ScaffoldState>();
+  // final globalKey = GlobalKey<ScaffoldState>();
   DateTime? _currentBackPressTime = DateTime.now();
 
   @override
-  Widget build(BuildContext context) {
-    return WillPopScope(onWillPop: onWillPop, child: widget.child);
-  }
+  Widget build(BuildContext context) =>
+    WillPopScope(onWillPop: onWillPop, child: widget.child);
 
   Future<bool> onWillPop() {
-    if (globalKey.currentState?.isDrawerOpen == true) {
-      globalKey.currentState?.closeDrawer();
-      return Future.value(false);
-    }
-    if (globalKey.currentState?.isEndDrawerOpen == true) {
-      globalKey.currentState?.closeEndDrawer();
-      return Future.value(false);
-    }
+    if (widget.onBack?.call() == false) return Future.value(false);
     DateTime now = DateTime.now();
     if (_currentBackPressTime == null ||
         now.difference(_currentBackPressTime!) > const Duration(seconds: 2)) {
@@ -53,4 +47,5 @@ class _BackViewState extends State<BackView> {
     }
     return Future.value(true);
   }
+
 }
