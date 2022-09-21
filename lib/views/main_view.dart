@@ -217,32 +217,15 @@ class MainViewState extends State<MainView> with TickerProviderStateMixin {
           : view,
     );
   }
-
+  
   Widget _buildEndDrawer() {
-    return  NyaaEndDrawer(
+    return NyaaEndDrawer(
       sites: _sites,
       onItemTap: (site) {
-        // print('DRAWER WRITE CACHE::: $key');
         setState(() => _addTab(site));
         globalKey.currentState?.closeEndDrawer();
       },
     );
-    const key = 'endDrawer';
-    Widget? drawer = WidgetCacheProvider().get(key);
-    print('DRAWER READ CACHE::: $key');
-    if (drawer == null || _sites.isEmpty) {
-      drawer = NyaaEndDrawer(
-        sites: _sites,
-        onItemTap: (site) {
-          // print('DRAWER WRITE CACHE::: $key');
-          setState(() => _addTab(site));
-          globalKey.currentState?.closeEndDrawer();
-        },
-      );
-      WidgetCacheProvider().put(key, drawer);
-    }
-    return drawer;
-
   }
 
   Widget _buildMain() {
