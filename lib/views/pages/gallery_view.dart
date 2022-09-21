@@ -327,7 +327,8 @@ class _GalleryViewState extends State<GalleryView>
               Hero(
                   tag: heroKey,
                   child: AnimatedSize(
-                      duration: const Duration(milliseconds: 250),
+                      duration: const Duration(milliseconds: 150),
+                      curve: Curves.easeOut,
                       child: ExtendedImage.network(coverUrl,
                           headers: _currentSite?.headers,
                           height: _heightCache[index],

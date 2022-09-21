@@ -22,13 +22,20 @@ import '../../library/mio/model/site.dart';
 import '../../widget/simple_network_image.dart';
 
 class NyaaEndDrawer extends StatelessWidget {
-  NyaaEndDrawer({Key? key, required this.sites, required this.onItemTap})
-      : super(key: key);
+  NyaaEndDrawer._({Key? key, required this.sites, this.onItemTap}) : super(key: key);
+
+  factory NyaaEndDrawer({Key? key, required List<Site> sites, required void Function(Site site)? onItemTap}) {
+    final widget = NyaaEndDrawer._(sites: sites, onItemTap: onItemTap);
+
+    return sites.isEmpty ? widget : (_instance ??= widget);
+  }
+
+  static NyaaEndDrawer? _instance;
   final List<Site> sites;
   final void Function(Site site)? onItemTap;
-  final _expandState = <int, bool>{};
-  double _scrollPosition = 0.0;
   final _scrollController = ScrollController();
+  final Map<int, bool> _expandState = {};
+  double _scrollPosition = 0;
 
   IconData _getIconDataByType(String type) {
     switch (type) {
@@ -45,7 +52,6 @@ class NyaaEndDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
     final siteTypeMap = <String, List<Site>>{};
     for (final site in sites) {
       final type = site.type ?? 'unknown';
@@ -59,7 +65,7 @@ class NyaaEndDrawer extends StatelessWidget {
     final drawer = Drawer(
         elevation: 8,
         child: ListView.builder(
-          controller: _scrollController,
+            controller: _scrollController,
             padding: const EdgeInsets.all(0),
             itemCount: group.length + 1,
             itemBuilder: (ctx, i) {
@@ -73,8 +79,7 @@ class NyaaEndDrawer extends StatelessWidget {
                 ),
                 initiallyExpanded: _expandState[index] ?? false,
                 onExpansionChanged: (isExpand) => _expandState[index] = isExpand,
-                title: Text('${groupItem.key}s'.toUpperCase(),
-                    style: const TextStyle(fontSize: 16)),
+                title: Text('${groupItem.key}s'.toUpperCase(), style: const TextStyle(fontSize: 16)),
                 children: List.generate(groupItem.value.length, (index) {
                   final site = groupItem.value[index];
                   return ListTile(
@@ -90,15 +95,11 @@ class NyaaEndDrawer extends StatelessWidget {
                             child: SimpleNetworkImage(
                               site.icon ?? '',
                               fit: BoxFit.cover,
-                              error: const Icon(Icons.image_not_supported,
-                                  size: 32),
+                              error: const Icon(Icons.image_not_supported, size: 32),
                             ))),
                     title: Text(
                       site.name ?? '',
-                      style: const TextStyle(
-                          fontFamily: Config.uiFontFamily,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold),
+                      style: const TextStyle(fontFamily: Config.uiFontFamily, fontSize: 18, fontWeight: FontWeight.bold),
                       textAlign: TextAlign.start,
                       maxLines: 1,
                       softWrap: false,
@@ -108,8 +109,7 @@ class NyaaEndDrawer extends StatelessWidget {
                       site.details ?? '',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style:
-                          const TextStyle(fontSize: 14, color: Colors.black26),
+                      style: const TextStyle(fontSize: 14, color: Colors.black26),
                     ),
                   );
                 }),
@@ -117,10 +117,10 @@ class NyaaEndDrawer extends StatelessWidget {
             }));
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       if (_scrollController.positions.isNotEmpty) {
-        // print('INITIAL　ＰＯＳ::: $_scrollPosition');
+        print('INITIAL　ＰＯＳ::: $_scrollPosition');
         _scrollController.jumpTo(_scrollPosition);
         _scrollController.addListener(() {
-          // print('POS::: $_scrollPosition');
+          print('POS::: $_scrollPosition');
           _scrollPosition = _scrollController.position.pixels;
         });
       }

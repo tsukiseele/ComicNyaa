@@ -83,8 +83,8 @@ class _ComicNyaaState extends State<ComicNyaa> {
       headers ??= <String, String>{};
       // 域前置解析
       url = await sni.parse(url, headers: headers);
-      print('REQUEST::: $url');
-      print('HEADERS::: $headers');
+      // print('REQUEST::: $url');
+      // print('HEADERS::: $headers');
       // 读取缓存
       final cache = await HttpCache.instance.getAsString(url);
       if (cache != null) {
@@ -95,7 +95,7 @@ class _ComicNyaaState extends State<ComicNyaa> {
       //     r'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36';
       final response = await Http.client.get(Uri.parse(url), headers: headers);
       final body = response.body;
-      print('RESPONSE::: $body');
+      // print('RESPONSE::: $body');
       // 写入缓存
       if (response.statusCode >= 200 && response.statusCode < 300) {
         HttpCache.instance.put(url, response.bodyBytes);

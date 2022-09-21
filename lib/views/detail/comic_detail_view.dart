@@ -77,7 +77,6 @@ class _ComicDetailViewState extends State<ComicDetailView> with TickerProviderSt
     setState(() {});
   }
 
-
   _getNext(List<Map<String, dynamic>> data) async {
     try {
       final models = data.map((item) => TypedModel.fromJson(item)).toList();
@@ -197,7 +196,7 @@ class _ComicDetailViewState extends State<ComicDetailView> with TickerProviderSt
     return Scaffold(
         body: RawScrollbar(
       controller: _scrollController,
-      thumbColor: Colors.pink[300],
+      thumbColor: Colors.pink[200],
       radius: const Radius.circular(4),
       thickness: 4,
       child: SmartRefresher(
