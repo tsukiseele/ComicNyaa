@@ -17,7 +17,6 @@
 
 import 'dart:async';
 import 'package:comic_nyaa/data/http_cache_provider.dart';
-import 'package:comic_nyaa/views/back_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_displaymode/flutter_displaymode.dart';
@@ -93,12 +92,11 @@ class _ComicNyaaState extends State<ComicNyaa> {
       //   print('HTTP_CACHE_MANAGER::: READ <<<<<<<<<<<<<<<<< $url');
       //   return cache;
       // }
-      // HttpClientRequest request = await client.getUrl(Uri.parse('https://104.20.134.21/'));
-      headers['user-agent'] =
-          r'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36';
+      // headers['User-Agent'] =
+      //     r'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36';
       final response = await Http.client.get(Uri.parse(url), headers: headers);
       final body = response.body;
-
+      print('RESPONSE::: $body');
       // 写入缓存
       if (response.statusCode >= 200 && response.statusCode < 400) {
         HttpCache.instance.put(url, response.bodyBytes);

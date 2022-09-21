@@ -15,19 +15,18 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import 'package:comic_nyaa/views/main_view.dart';
 import 'package:flutter/material.dart';
 
-class BackView extends StatefulWidget {
-  const BackView({Key? key, required this.child, this.onBack}) : super(key: key);
+class BackControl extends StatefulWidget {
+  const BackControl({Key? key, required this.child, this.onBack}) : super(key: key);
   final Widget child;
   final bool Function()? onBack;
 
   @override
-  State<StatefulWidget> createState() => _BackViewState();
+  State<StatefulWidget> createState() => _BackControlState();
 }
 
-class _BackViewState extends State<BackView> {
+class _BackControlState extends State<BackControl> {
   // final globalKey = GlobalKey<ScaffoldState>();
   DateTime? _currentBackPressTime = DateTime.now();
 
