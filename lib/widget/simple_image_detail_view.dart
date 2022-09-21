@@ -60,7 +60,6 @@ class _SimpleImageDetailViewState extends State<SimpleImageDetailView>
   late DataOrigin _origin;
   List<String> _images = [];
   int _currentIndex = 0;
-  bool isFailed = false;
   AnimationController? _animationController;
   Animation<double>? _animation;
 
