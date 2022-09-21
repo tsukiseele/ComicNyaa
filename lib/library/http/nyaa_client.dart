@@ -24,19 +24,14 @@ import 'package:http/retry.dart';
 
 class NyaaClient extends http.BaseClient {
   NyaaClient({int connectionTimeout = 15000, int idleTimeout = 15000}) {
-    // final SecurityContext context = SecurityContext();
-    // final SecureSocket socket = SecureSocket.
-    // context.
-  
-
-    // context.allowLegacyUnsafeRenegotiation = true;
-    
-    final client = HttpClient();//HttpClient(context: context);
+    final SecurityContext context = SecurityContext(withTrustedRoots: true);
+    context.allowLegacyUnsafeRenegotiation = true;
+    final client = HttpClient(context: context);
+    // final client = HttpClient();
     client.badCertificateCallback =
         (X509Certificate cert, String host, int port) {
       return true;
     };
-    // client.
     _inner = RetryClient(IOClient(HttpTimeoutClient(client,
             connectionTimeout: connectionTimeout, idleTimeout: idleTimeout)
         .client));

@@ -35,6 +35,7 @@ import 'package:comic_nyaa/models/typed_model.dart';
 import 'package:comic_nyaa/widget/marquee_widget.dart';
 import 'package:comic_nyaa/views/pages/gallery_view.dart';
 
+import '../data/widget_cache_provider.dart';
 import 'drawer/nyaa_drawer.dart';
 
 class MainView extends StatefulWidget {
@@ -218,11 +219,7 @@ class MainViewState extends State<MainView> with TickerProviderStateMixin {
   }
 
   Widget _buildEndDrawer() {
-    // const key = 'endDrawer';
-    Widget? drawer; // = WidgetCacheProvider().get(key);
-    // print('DRAWER READ CACHE::: $key');
-    // if (drawer == null || _sites.isEmpty) {
-    drawer = NyaaEndDrawer(
+    return  NyaaEndDrawer(
       sites: _sites,
       onItemTap: (site) {
         // print('DRAWER WRITE CACHE::: $key');
@@ -230,9 +227,22 @@ class MainViewState extends State<MainView> with TickerProviderStateMixin {
         globalKey.currentState?.closeEndDrawer();
       },
     );
-    // WidgetCacheProvider().put(key, drawer);
-    // }
+    const key = 'endDrawer';
+    Widget? drawer = WidgetCacheProvider().get(key);
+    print('DRAWER READ CACHE::: $key');
+    if (drawer == null || _sites.isEmpty) {
+      drawer = NyaaEndDrawer(
+        sites: _sites,
+        onItemTap: (site) {
+          // print('DRAWER WRITE CACHE::: $key');
+          setState(() => _addTab(site));
+          globalKey.currentState?.closeEndDrawer();
+        },
+      );
+      WidgetCacheProvider().put(key, drawer);
+    }
     return drawer;
+
   }
 
   Widget _buildMain() {

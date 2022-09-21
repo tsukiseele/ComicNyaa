@@ -22,10 +22,13 @@ import '../../library/mio/model/site.dart';
 import '../../widget/simple_network_image.dart';
 
 class NyaaEndDrawer extends StatelessWidget {
-  const NyaaEndDrawer({Key? key, required this.sites, required this.onItemTap})
+  NyaaEndDrawer({Key? key, required this.sites, required this.onItemTap})
       : super(key: key);
   final List<Site> sites;
   final void Function(Site site)? onItemTap;
+  final _expandState = <int, bool>{};
+  double _scrollPosition = 0.0;
+  final _scrollController = ScrollController();
 
   IconData _getIconDataByType(String type) {
     switch (type) {
@@ -42,6 +45,7 @@ class NyaaEndDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
     final siteTypeMap = <String, List<Site>>{};
     for (final site in sites) {
       final type = site.type ?? 'unknown';
@@ -52,9 +56,10 @@ class NyaaEndDrawer extends StatelessWidget {
       }
     }
     final group = siteTypeMap.entries.toList();
-    return Drawer(
+    final drawer = Drawer(
         elevation: 8,
         child: ListView.builder(
+          controller: _scrollController,
             padding: const EdgeInsets.all(0),
             itemCount: group.length + 1,
             itemBuilder: (ctx, i) {
@@ -66,6 +71,8 @@ class NyaaEndDrawer extends StatelessWidget {
                   _getIconDataByType(groupItem.key),
                   size: 32,
                 ),
+                initiallyExpanded: _expandState[index] ?? false,
+                onExpansionChanged: (isExpand) => _expandState[index] = isExpand,
                 title: Text('${groupItem.key}s'.toUpperCase(),
                     style: const TextStyle(fontSize: 16)),
                 children: List.generate(groupItem.value.length, (index) {
@@ -108,6 +115,17 @@ class NyaaEndDrawer extends StatelessWidget {
                 }),
               );
             }));
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      if (_scrollController.positions.isNotEmpty) {
+        // print('INITIAL　ＰＯＳ::: $_scrollPosition');
+        _scrollController.jumpTo(_scrollPosition);
+        _scrollController.addListener(() {
+          // print('POS::: $_scrollPosition');
+          _scrollPosition = _scrollController.position.pixels;
+        });
+      }
+    });
+    return drawer;
   }
 
   Widget _buildHeader() {

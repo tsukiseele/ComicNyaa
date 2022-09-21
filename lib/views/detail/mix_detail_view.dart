@@ -43,7 +43,6 @@ class MixDetailViewState extends State<MixDetailView> {
     try {
       final model = widget.model;
       _origin = model.getOrigin();
-      print('model.\$section: ${_origin.section}');
       final dynamicResult = await Mio(_origin.site).parseAllChildren(model.toJson());
 
       print('data: $dynamicResult');

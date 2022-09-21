@@ -16,6 +16,7 @@
  */
 
 import 'dart:async';
+import 'dart:convert';
 import 'package:comic_nyaa/data/http_cache_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -23,6 +24,7 @@ import 'package:flutter_displaymode/flutter_displaymode.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'app/config.dart';
 import 'library/http/http.dart';
+import 'library/http/sni.dart' as sni;
 import 'library/mio/core/mio.dart';
 import 'views/main_view.dart';
 
@@ -71,34 +73,31 @@ class _ComicNyaaState extends State<ComicNyaa> {
     super.initState();
   }
 
-  _initialized() {
+
+  void _initialized() {
     // 初始化显示模式
     setOptimalDisplayMode();
     // 初始化Mio
     Mio.setCustomRequest((url, {Map<String, String>? headers}) async {
       // 发送请求 Http Client
       headers ??= <String, String>{};
-      if (url.indexOf('exhentai') > 0) {
-        headers['Host'] = 'exhentai.org';
-        url = url.replaceFirst('exhentai.org', '178.175.129.254');
-      } else if (url.indexOf('e-hentai') > 0) {
-        headers['Host'] = 'e-hentai.org';
-        url = url.replaceFirst('e-hentai.org', '104.20.134.21');
-      }
+      // 域前置解析
+      url = await sni.parse(url, headers: headers);
       print('REQUEST::: $url');
+      print('HEADERS::: $headers');
       // 读取缓存
-      // final cache = await HttpCache.instance.getAsString(url);
-      // if (cache != null) {
-      //   print('HTTP_CACHE_MANAGER::: READ <<<<<<<<<<<<<<<<< $url');
-      //   return cache;
-      // }
+      final cache = await HttpCache.instance.getAsString(url);
+      if (cache != null) {
+        print('HTTP_CACHE_MANAGER::: READ <<<<<<<<<<<<<<<<< $url');
+        return cache;
+      }
       // headers['User-Agent'] =
       //     r'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36';
       final response = await Http.client.get(Uri.parse(url), headers: headers);
       final body = response.body;
       print('RESPONSE::: $body');
       // 写入缓存
-      if (response.statusCode >= 200 && response.statusCode < 400) {
+      if (response.statusCode >= 200 && response.statusCode < 300) {
         HttpCache.instance.put(url, response.bodyBytes);
         print('HTTP_CACHE_MANAGER::: WRITE >>>>>>>>>>>>>>>>>>>> $url');
       }
