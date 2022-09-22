@@ -22,11 +22,11 @@ import 'package:comic_nyaa/views/drawer/nyaa_end_drawer.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:collection/collection.dart';
+import 'package:luavm/luavm.dart';
 import 'package:material_floating_search_bar/material_floating_search_bar.dart';
 import 'package:comic_nyaa/library/http/http.dart';
 import 'package:comic_nyaa/library/mio/model/site.dart';
 import 'package:comic_nyaa/library/mio/core/site_manager.dart';
-import 'package:comic_nyaa/data/subscribe_provider.dart';
 import 'package:comic_nyaa/widget/nyaa_tab_view.dart';
 import 'package:comic_nyaa/widget/simple_network_image.dart';
 import 'package:comic_nyaa/app/config.dart';
@@ -36,7 +36,6 @@ import 'package:comic_nyaa/widget/marquee_widget.dart';
 import 'package:comic_nyaa/views/pages/gallery_view.dart';
 
 import '../data/subscribe/subscribe_manager.dart';
-import '../data/widget_cache_provider.dart';
 import 'drawer/nyaa_drawer.dart';
 
 class MainView extends StatefulWidget {
@@ -155,7 +154,8 @@ class MainViewState extends State<MainView> with TickerProviderStateMixin {
 
   void _onGalleryScroll() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (_galleryScrollController == null || _galleryScrollController?.positions.isNotEmpty != true) return;
+      if (_galleryScrollController == null ||
+          _galleryScrollController?.positions.isNotEmpty != true) return;
       if (_galleryScrollController!.position.pixels < 128) {
         _floatingSearchBarController.isHidden
             ? _floatingSearchBarController.show()
@@ -367,6 +367,10 @@ class MainViewState extends State<MainView> with TickerProviderStateMixin {
           final word = query.substring(lastWordIndex > 0 ? lastWordIndex : 0);
           final response = await Http.client.get(Uri.parse(
               'https://danbooru.donmai.us/autocomplete.json?search[query]=$word&search[type]=tag_query&limit=10'));
+          ////
+          final val = await Luavm.eval('name', 'return "Hello World"');
+          print('VVVVVVVVV:::$val');
+          ////
           final result =
               List<Map<String, dynamic>>.from(jsonDecode(response.body));
           setState(() {
