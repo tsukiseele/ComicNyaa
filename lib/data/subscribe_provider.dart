@@ -15,80 +15,117 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import 'package:collection/collection.dart';
-import 'package:comic_nyaa/utils/extensions.dart';
-import 'package:comic_nyaa/utils/uri_extensions.dart';
+import 'dart:io';
 
-import '../app/config.dart';
-import '../library/mio/core/site_manager.dart';
-import '../library/http/http.dart';
+import 'package:comic_nyaa/app/config.dart';
+import 'package:comic_nyaa/utils/extensions.dart';
+import 'package:sqflite/sqflite.dart';
+
+const String tableSubscribe = 'subscribe';
+const String columnId = 'id';
+const String columnName = 'name';
+const String columnUrl = 'url';
+const String columnUpdateDate = 'updateDate';
+const String columnVersion = 'version';
+
+const String createTableSubscribe = '''
+        CREATE TABLE $tableSubscribe ( 
+          $columnId INTEGER PRIMARY KEY AUTOINCREMENT, 
+          $columnName TEXT NOT NULL,
+          $columnUrl TEXT NOT NULL,
+          $columnUpdateDate TEXT NOT NULL,
+          $columnVersion INTEGER NOT NULL,
+        ''';
 
 class SubscribeProvider {
-  SubscribeProvider._();
+  late Database _db;
 
-  static final SubscribeProvider _instance = SubscribeProvider._();
-
-  factory SubscribeProvider() {
-    return _instance;
-  }
-
-  final _subscribes = [
-    Subscribe(name: 'Default', url: 'https://hlo.li/static/rules.zip')
-  ];
-
-  List<Subscribe> get subscribes {
-    return _subscribes;
-  }
-
-
-  Future<void> addSubscribe(Subscribe subscribe) async {
-    Subscribe? existed = _subscribes.firstWhereIndexedOrNull((i, item) {
-      if (item.equals(subscribe)) {
-        subscribes[i] = subscribe;
-        return true;
-      }
-      return false;
+  Future<SubscribeProvider> open(String path) async {
+    _db = await openDatabase(path, version: 1,
+        onCreate: (Database db, int version) async {
+      await db.execute(createTableSubscribe);
+      await insert(Subscribe(name: 'Default', url: 'https://hlo.li/static/rules.zip', version: 1, updateDate: DateTime.now().toIso8601String()));
+    }, onDowngrade: (Database db, int oldVersion, int newVersion) async {
+      await db.execute(createTableSubscribe);
     });
-    if (existed == null) _subscribes.add(subscribe);
-    return await updateSubscribe(subscribe);
+    return this;
   }
 
-  Future<void> removeSubscribe(Subscribe subscribe) async {
-    _subscribes.removeWhere((item) => item.url == subscribe.url);
+  Future<int> insert(Subscribe item) async {
+    print('DB_INSERT::: ${item.toJson().toString()}');
+    await _db.transaction((txn) async {
+      item.id = await txn.insert(tableSubscribe, item.toJson());
+    });
+    print('DB_INSERT_KEY_ID::: ${item.id!}');
+    return item.id!;
   }
 
-  Future<void> removeSubscribeFromUrl(String url) async {
-    removeSubscribe(Subscribe(name: 'unnamed', url: url));
+  Future<Subscribe?> getSubscribeById(int id) async {
+    List<Map> maps = await _db
+        .query(tableSubscribe, where: '$columnId = ?', whereArgs: [id]);
+    if (maps.isNotEmpty) {
+      return Subscribe.fromJson(maps.first as Map<String, dynamic>);
+    }
+    return null;
   }
 
-  Future<void> updateSubscribe(Subscribe subscribe) async {
-    final url = subscribe.url;
-    final dir = await Config.ruleDir;
-    final savePath = dir.join(Uri.parse(url).filename).path;
-    await Http.downloadFile(url, savePath);
-    await SiteManager.loadFromDirectory(dir);
+  Future<List<Subscribe>> getSubscribes() async {
+    List<Map<String, dynamic>> maps = await _db.query(
+      tableSubscribe,
+      orderBy: '$columnUpdateDate DESC',
+    );
+    return maps.map((item) => Subscribe.fromJson(item)).toList();
   }
 
-  Future<void> updateSubscribeFromUrl(String url) async {
-    await updateSubscribe(Subscribe(name: 'unnamed', url: url));
+  Future<int> deleteById(int id) async {
+    return await _db
+        .delete(tableSubscribe, where: '$columnId = ?', whereArgs: [id]);
   }
 
-  Future<void> updateAllSubscribe() async {
-     await Future.wait(_subscribes.map((e) => updateSubscribe(e)));
+  Future<int> delete(Subscribe item) async {
+    return await _db
+        .delete(tableSubscribe, where: '$columnId = ?', whereArgs: [item.id]);
   }
+
+  Future<int> update(Subscribe task) async {
+    return await _db.update(tableSubscribe, task.toJson(),
+        where: '$columnId = ?', whereArgs: [task.id]);
+  }
+
+  Future close() async => _db.close();
 }
 
 class Subscribe {
-  Subscribe({required this.name, required this.url, this.updateTime});
+  Subscribe({this.name, this.url, this.version, this.updateDate});
 
-  String name;
-  String url;
-  String? updateTime;
+  int? id;
+  int? version;
+  String? name;
+  String? url;
+  String? updateDate;
 
   bool equals(Subscribe s) {
     if (name == s.name && url == s.url) {
       return true;
     }
     return false;
+  }
+
+  Subscribe.fromJson(Map<String, dynamic> json) {
+    name = json['name'];
+    url = json['url'];
+    id = json['id'];
+    version = json['version'];
+    updateDate = json['updateDate'];
+  }
+
+  Map<String, dynamic> toJson() {
+    Map<String, dynamic> data = {};
+    data['id'] = id;
+    data['version'] = version;
+    data['name'] = name;
+    data['url'] = url;
+    data['updateDate'] = updateDate;
+    return data;
   }
 }

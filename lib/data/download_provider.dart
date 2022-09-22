@@ -17,6 +17,7 @@
 
 import 'dart:io';
 
+import 'package:comic_nyaa/app/config.dart';
 import 'package:comic_nyaa/data/download/nyaa_download_task_queue.dart';
 import 'package:comic_nyaa/library/download/downloadable_queue.dart';
 import 'package:comic_nyaa/utils/extensions.dart';
@@ -38,7 +39,7 @@ const String columnTotalLength = 'totalLength';
 const String columnTasks = 'tasks';
 
 const String createTableDownload = '''
-        create table $tableDownload ( 
+        CREATE TABLE $tableDownload ( 
           $columnId INTEGER PRIMARY KEY AUTOINCREMENT, 
           $columnTitle TEXT NOT NULL,
           $columnCover TEXT NOT NULL,
@@ -58,7 +59,7 @@ class DownloadProvider {
   late Database _db;
 
   Future<DownloadProvider> open(String path) async {
-    _db = await openDatabase(Directory(path).join('nyaa.db').path, version: 5, onCreate: (Database db, int version) async {
+    _db = await openDatabase(path, version: 5, onCreate: (Database db, int version) async {
       await db.execute(createTableDownload);
     }, onDowngrade: (Database db, int oldVersion, int newVersion) async {
       await db.execute(createTableDownload);

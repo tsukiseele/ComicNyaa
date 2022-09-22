@@ -17,6 +17,7 @@
 
 import 'dart:async';
 import 'dart:convert';
+import 'package:comic_nyaa/data/download/nyaa_download_manager.dart';
 import 'package:comic_nyaa/data/http_cache_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -57,7 +58,7 @@ class _ComicNyaaState extends State<ComicNyaa> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: Config.appName,
+      title: AppConfig.appName,
       theme: ThemeData(
         fontFamily: 'ComicNeue',
         primarySwatch: Colors.teal,
@@ -91,8 +92,6 @@ class _ComicNyaaState extends State<ComicNyaa> {
         print('HTTP_CACHE_MANAGER::: READ <<<<<<<<<<<<<<<<< $url');
         return cache;
       }
-      // headers['User-Agent'] =
-      //     r'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36';
       final response = await Http.client.get(Uri.parse(url), headers: headers);
       final body = response.body;
       // print('RESPONSE::: $body');
@@ -103,6 +102,8 @@ class _ComicNyaaState extends State<ComicNyaa> {
       }
       return body;
     });
+    // 初始化下载管理
+    NyaaDownloadManager.instance;
   }
 
   Future<void> setOptimalDisplayMode() async {

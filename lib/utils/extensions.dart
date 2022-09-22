@@ -5,17 +5,21 @@ import 'package:comic_nyaa/utils/uri_extensions.dart';
 
 import '../app/preference.dart';
 
-extension ExtendedPath on Directory {
+extension ExtendedPath on FileSystemEntity {
   Directory joinDir(Directory child) {
-    return join(child.path);
+    return Directory(join(child.path));
   }
 
-  Directory join(String child) {
-    return Directory('$path${Platform.pathSeparator}$child');
+  File joinFile(Directory child) {
+    return File(join(child.path));
+  }
+
+  String join(String child) {
+    return '$path${Platform.pathSeparator}$child';
   }
 }
 
-extension TypedModelEx on TypedModel {
+extension TypedModelExt on TypedModel {
   String getUrl(DownloadResourceLevel downloadResourceLevel) {
     String? url;
     switch (downloadResourceLevel) {

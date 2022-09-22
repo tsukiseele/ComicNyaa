@@ -32,7 +32,7 @@ class _SettingsViewState extends State<StatefulWidget> {
   String _downloadPath = '';
 
   initialized() async {
-    _downloadPath = (await Config.downloadDir).path;
+    _downloadPath = (await AppConfig.downloadDir).path;
     setState(() {});
   }
   @override

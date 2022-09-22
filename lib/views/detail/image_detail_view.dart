@@ -158,7 +158,7 @@ class _ImageDetailViewState extends State<ImageDetailView>
         return;
       }
       String savePath =
-          (await Config.downloadDir).join(Uri.parse(url).filename).path;
+          (await AppConfig.downloadDir).join(Uri.parse(url).filename);
       Fluttertoast.showToast(msg: '下载已添加：$savePath');
       await Http.downloadFile(url, savePath, headers: _origin.site.headers);
 
