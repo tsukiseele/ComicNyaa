@@ -19,10 +19,10 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:comic_nyaa/widget/back_control.dart';
 import 'package:comic_nyaa/views/drawer/nyaa_end_drawer.dart';
+import 'package:comic_nyaa/widget/nyaa_tag_item.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:collection/collection.dart';
-import 'package:luavm/luavm.dart';
 import 'package:material_floating_search_bar/material_floating_search_bar.dart';
 import 'package:comic_nyaa/library/http/http.dart';
 import 'package:comic_nyaa/library/mio/model/site.dart';
@@ -35,13 +35,13 @@ import 'package:comic_nyaa/models/typed_model.dart';
 import 'package:comic_nyaa/widget/marquee_widget.dart';
 import 'package:comic_nyaa/views/pages/gallery_view.dart';
 
-import '../data/subscribe/subscribe_manager.dart';
-import 'drawer/nyaa_drawer.dart';
+import 'package:comic_nyaa/data/subscribe/subscribe_manager.dart';
+import 'package:comic_nyaa/views/drawer/nyaa_drawer.dart';
+
+import '../utils/flutter_utils.dart';
 
 class MainView extends StatefulWidget {
-  const MainView(
-      {Key? key, this.site, this.keywords, this.enableBackControl = false})
-      : super(key: key);
+  const MainView({Key? key, this.site, this.keywords, this.enableBackControl = false}) : super(key: key);
   final Site? site;
   final String? keywords;
   final bool enableBackControl;
@@ -52,12 +52,11 @@ class MainView extends StatefulWidget {
 
 class MainViewState extends State<MainView> with TickerProviderStateMixin {
   final globalKey = GlobalKey<ScaffoldState>();
-  final FloatingSearchBarController _floatingSearchBarController =
-      FloatingSearchBarController();
+  final FloatingSearchBarController _floatingSearchBarController = FloatingSearchBarController();
   final List<GalleryView> _gallerys = [];
   ScrollController? _galleryScrollController;
   List<Site> _sites = [];
-  List<String> _autosuggest = [];
+  List<Suggest> _autosuggest = [];
   int _currentTabIndex = 0;
   int _lastScrollPosition = 0;
   String _keywords = '';
@@ -154,24 +153,15 @@ class MainViewState extends State<MainView> with TickerProviderStateMixin {
 
   void _onGalleryScroll() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (_galleryScrollController == null ||
-          _galleryScrollController?.positions.isNotEmpty != true) return;
+      if (_galleryScrollController == null || _galleryScrollController?.positions.isNotEmpty != true) return;
       if (_galleryScrollController!.position.pixels < 128) {
-        _floatingSearchBarController.isHidden
-            ? _floatingSearchBarController.show()
-            : null;
-      } else if (_galleryScrollController!.position.pixels >
-          _lastScrollPosition + 64) {
+        _floatingSearchBarController.isHidden ? _floatingSearchBarController.show() : null;
+      } else if (_galleryScrollController!.position.pixels > _lastScrollPosition + 64) {
         _lastScrollPosition = _galleryScrollController!.position.pixels.toInt();
-        _floatingSearchBarController.isVisible
-            ? _floatingSearchBarController.hide()
-            : null;
-      } else if (_galleryScrollController!.position.pixels <
-          _lastScrollPosition - 64) {
+        _floatingSearchBarController.isVisible ? _floatingSearchBarController.hide() : null;
+      } else if (_galleryScrollController!.position.pixels < _lastScrollPosition - 64) {
         _lastScrollPosition = _galleryScrollController!.position.pixels.toInt();
-        _floatingSearchBarController.isHidden
-            ? _floatingSearchBarController.show()
-            : null;
+        _floatingSearchBarController.isHidden ? _floatingSearchBarController.show() : null;
       }
     });
   }
@@ -210,9 +200,7 @@ class MainViewState extends State<MainView> with TickerProviderStateMixin {
       floatingActionButton: _buildFab(),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       floatingActionButtonAnimator: FloatingActionButtonAnimator.scaling,
-      body: widget.enableBackControl
-          ? BackControl(child: view, onBack: () => !_closeDrawer())
-          : view,
+      body: widget.enableBackControl ? BackControl(child: view, onBack: () => !_closeDrawer()) : view,
     );
   }
 
@@ -237,8 +225,7 @@ class MainViewState extends State<MainView> with TickerProviderStateMixin {
                   setState(() => _currentTabIndex = index);
                   _listenGalleryScroll();
                   _listenGalleryItemSelected();
-                  _floatingSearchBarController.query =
-                      _currentTab?.controller.keywords ?? '';
+                  _floatingSearchBarController.query = _currentTab?.controller.keywords ?? '';
                 },
                 onScroll: (double value) {},
                 itemCount: _gallerys.length,
@@ -248,12 +235,9 @@ class MainViewState extends State<MainView> with TickerProviderStateMixin {
                 elevation: 8,
                 indicator: const BoxDecoration(
                     color: Colors.white70,
-                    boxShadow: [
-                      BoxShadow(color: Colors.black12, blurRadius: 8)
-                    ],
+                    boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 8)],
                     borderRadius: BorderRadius.all(Radius.circular(20))),
-                pageBuilder: (BuildContext context, int index) =>
-                    _gallerys[index],
+                pageBuilder: (BuildContext context, int index) => _gallerys[index],
                 tabBuilder: (BuildContext context, int index) {
                   return InkWell(
                       onLongPress: () {
@@ -273,29 +257,19 @@ class MainViewState extends State<MainView> with TickerProviderStateMixin {
                             Container(
                               width: 40,
                               height: 40,
-                              padding: EdgeInsets.only(
-                                  top: 8,
-                                  bottom: 8,
-                                  right: _currentTabIndex == index ? 8 : 0),
-                              child: SimpleNetworkImage(
-                                  _gallerys[index].site.icon ?? '',
-                                  fit: BoxFit.contain,
-                                  clearMemoryCacheIfFailed: false),
+                              padding: EdgeInsets.only(top: 8, bottom: 8, right: _currentTabIndex == index ? 8 : 0),
+                              child: SimpleNetworkImage(_gallerys[index].site.icon ?? '',
+                                  fit: BoxFit.contain, clearMemoryCacheIfFailed: false),
                             ),
                             _currentTabIndex == index
                                 ? SizedBox(
-                                    width:
-                                        _currentTabIndex == index ? 96.0 : null,
+                                    width: _currentTabIndex == index ? 96.0 : null,
                                     child: MarqueeWidget(
                                         direction: Axis.horizontal,
-                                        child: Text(
-                                            _gallerys[index].site.name ??
-                                                'unknown',
+                                        child: Text(_gallerys[index].site.name ?? 'unknown',
                                             overflow: TextOverflow.ellipsis,
                                             maxLines: 1,
-                                            style: const TextStyle(
-                                                fontSize: 16,
-                                                color: Colors.black87))))
+                                            style: const TextStyle(fontSize: 16, color: Colors.black87))))
                                 : Container()
                           ])));
                 })
@@ -320,9 +294,7 @@ class MainViewState extends State<MainView> with TickerProviderStateMixin {
             ? FloatingActionButton(
                 backgroundColor: _getTabColor(_currentTabIndex),
                 onPressed: () => _currentTab?.controller.scrollController
-                    ?.animateTo(0,
-                        duration: const Duration(milliseconds: 1000),
-                        curve: Curves.ease),
+                    ?.animateTo(0, duration: const Duration(milliseconds: 1000), curve: Curves.ease),
                 tooltip: 'Top',
                 child: const Icon(Icons.arrow_upward),
               )
@@ -336,9 +308,45 @@ class MainViewState extends State<MainView> with TickerProviderStateMixin {
               ));
   }
 
+  Future<List<Suggest>> _queryAutoSuggest(String query) async {
+    final lastWordIndex = query.lastIndexOf(' ');
+    final word = query.substring(lastWordIndex > 0 ? lastWordIndex : 0);
+    //
+    final response = await Http.client
+        .get(Uri.parse('https://danbooru.donmai.us/autocomplete.json?search[query]=$word&search[type]=tag_query&limit=15'));
+    final result = List<Map<String, dynamic>>.from(jsonDecode(response.body));
+    final suggests = <Suggest>[];
+    for (final item in result) {
+      final suggest = Suggest();
+      suggest.label = item['value'];
+      suggest.count = item['post_count'].toString();
+      final typeEntry = _getTypeByCode(item['category']);
+      suggest.type = typeEntry['type'];
+      suggest.color = typeEntry['color'][300];
+      suggests.add(suggest);
+    }
+    return suggests;
+  }
+
+  dynamic _getTypeByCode(int code) {
+    switch (code) {
+      case 0:
+        return {'type': 'General', 'color': _getTabColor(code)};
+      case 1:
+        return {'type': 'Artist', 'color': _getTabColor(code)};
+      case 3:
+        return {'type': 'Copyright', 'color': _getTabColor(code)};
+      case 4:
+        return {'type': 'Character', 'color': _getTabColor(code)};
+      case 5:
+        return {'type': 'Meta', 'color': _getTabColor(code)};
+      default:
+        return {'type': 'Unknown', 'color': _getTabColor(code)};
+    }
+  }
+
   Widget _buildFloatingSearchBar() {
-    final isPortrait =
-        MediaQuery.of(context).orientation == Orientation.portrait;
+    final isPortrait = MediaQuery.of(context).orientation == Orientation.portrait;
     return FloatingSearchBar(
         controller: _floatingSearchBarController,
         automaticallyImplyDrawerHamburger: false,
@@ -355,27 +363,14 @@ class MainViewState extends State<MainView> with TickerProviderStateMixin {
         width: isPortrait ? 600 : 500,
         clearQueryOnClose: false,
         closeOnBackdropTap: true,
-        hintStyle: const TextStyle(
-            fontFamily: AppConfig.uiFontFamily,
-            fontSize: 16,
-            color: Colors.black26),
-        queryStyle:
-            const TextStyle(fontFamily: AppConfig.uiFontFamily, fontSize: 16),
+        hintStyle: const TextStyle(fontFamily: AppConfig.uiFontFamily, fontSize: 16, color: Colors.black26),
+        queryStyle: const TextStyle(fontFamily: AppConfig.uiFontFamily, fontSize: 16),
         onQueryChanged: (query) async {
           _keywords = _floatingSearchBarController.query;
-          final lastWordIndex = query.lastIndexOf(' ');
-          final word = query.substring(lastWordIndex > 0 ? lastWordIndex : 0);
-          final response = await Http.client.get(Uri.parse(
-              'https://danbooru.donmai.us/autocomplete.json?search[query]=$word&search[type]=tag_query&limit=10'));
-          ////
-          final val = await Luavm.eval('name', 'return "Hello World"');
-          print('VVVVVVVVV:::$val');
-          ////
-          final result =
-              List<Map<String, dynamic>>.from(jsonDecode(response.body));
+          final autosuggest = await _queryAutoSuggest(query);
+
           setState(() {
-            _autosuggest =
-                result.map((item) => item['value'] as String).toList();
+            _autosuggest = autosuggest;
             print('_autosuggest: $_autosuggest');
           });
         },
@@ -390,10 +385,7 @@ class MainViewState extends State<MainView> with TickerProviderStateMixin {
                   child: SimpleNetworkImage(_currentTab?.site.icon ?? '',
                       error: Text(
                         _currentTab?.site.name?.substring(0, 1) ?? '',
-                        style: const TextStyle(
-                            fontFamily: AppConfig.uiFontFamily,
-                            fontSize: 18,
-                            color: Colors.teal),
+                        style: const TextStyle(fontFamily: AppConfig.uiFontFamily, fontSize: 18, color: Colors.teal),
                       )))),
         ],
         actions: [
@@ -411,10 +403,8 @@ class MainViewState extends State<MainView> with TickerProviderStateMixin {
         onSubmitted: (query) => _onSearch(query),
         onFocusChanged: (isFocus) {
           if (!isFocus) {
-            if (_floatingSearchBarController.query !=
-                _currentTab?.controller.keywords) {
-              setState(() => _floatingSearchBarController.query =
-                  _currentTab?.controller.keywords ?? '');
+            if (_floatingSearchBarController.query != _currentTab?.controller.keywords) {
+              setState(() => _floatingSearchBarController.query = _currentTab?.controller.keywords ?? '');
             }
           }
         },
@@ -427,11 +417,15 @@ class MainViewState extends State<MainView> with TickerProviderStateMixin {
                 children: _autosuggest
                     .map((suggest) => ListTile(
                         leading: const Icon(Icons.search),
-                        onTap: () => _onSearch(_keywords, suggest),
-                        title: Text(
-                          suggest,
-                          style: const TextStyle(
-                              fontFamily: AppConfig.uiFontFamily, fontSize: 14),
+                        onTap: () => _onSearch(_keywords, suggest.label),
+                        title: Row(
+                          children: [
+                            Text(
+                              suggest.label,
+                              style: const TextStyle(fontFamily: AppConfig.uiFontFamily, fontSize: 16),
+                            ),
+                            NyaaTagItem(text: suggest.type, color: suggest.color, isRounded: false)
+                          ],
                         )))
                     .toList(),
               ),
@@ -450,4 +444,11 @@ class MainViewState extends State<MainView> with TickerProviderStateMixin {
     }
     return false;
   }
+}
+
+class Suggest {
+  late String label;
+  late String count;
+  late String type;
+  late Color color;
 }

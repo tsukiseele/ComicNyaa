@@ -18,10 +18,11 @@
 import 'package:flutter/material.dart';
 
 class NyaaTagItem extends StatefulWidget {
-  const NyaaTagItem({Key? key, required this.text, this.color, this.onTap, this.onLongPress})
+  const NyaaTagItem({Key? key, required this.text, this.color, this.onTap, this.onLongPress, this.isRounded = true})
       : super(key: key);
   final String text;
   final Color? color;
+  final bool isRounded;
   final void Function()? onTap;
   final void Function()? onLongPress;
 
@@ -45,7 +46,7 @@ class _NyaaTagItemState extends State<NyaaTagItem>
         child: Material(
             color:
                 widget.color ?? Colors.white60, //Theme.of(context).primaryColor
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: widget.isRounded ? BorderRadius.circular(16) : BorderRadius.zero,
             elevation: 2,
             child: InkWell(
                 onTap: widget.onTap,

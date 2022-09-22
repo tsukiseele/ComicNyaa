@@ -54,7 +54,6 @@ dependencies:
   url_launcher: ^6.1.5
   flutter_cache_manager: ^3.3.0
   get: ^4.6.5
-
   # Rebuild Launch Splash: flutter pub run flutter_native_splash:create
   flutter_native_splash: ^2.2.7
   # Rebuild Icon: flutter pub run flutter_launcher_icons:main
@@ -75,8 +74,9 @@ dev_dependencies:
 
 # The following section is specific to Flutter packages.
 flutter:
-  #assets:
-  #  - static/
+  assets:
+    - assets/scripts/
+#    - packages/comic_nyaa/scripts/json.lua
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.
