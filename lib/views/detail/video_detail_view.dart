@@ -57,7 +57,7 @@ class VideoDetailViewState extends State<VideoDetailView> {
     });
   }
 
-  void getChildren() async {
+  void _getChildren() async {
     // try {
     final parent = widget.model;
     _origin = parent.getOrigin();
@@ -86,9 +86,9 @@ class VideoDetailViewState extends State<VideoDetailView> {
 
   @override
   void initState() {
-    getChildren();
-
     super.initState();
+    _getChildren();
+
   }
 
   @override

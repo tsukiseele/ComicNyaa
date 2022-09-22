@@ -99,7 +99,7 @@ class NyaaEndDrawer extends StatelessWidget {
                             ))),
                     title: Text(
                       site.name ?? '',
-                      style: const TextStyle(fontFamily: Config.uiFontFamily, fontSize: 18, fontWeight: FontWeight.bold),
+                      style: const TextStyle(fontFamily: AppConfig.uiFontFamily, fontSize: 18, fontWeight: FontWeight.bold),
                       textAlign: TextAlign.start,
                       maxLines: 1,
                       softWrap: false,
@@ -117,7 +117,7 @@ class NyaaEndDrawer extends StatelessWidget {
             }));
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       if (_scrollController.positions.isNotEmpty) {
-        print('INITIAL　ＰＯＳ::: $_scrollPosition');
+        print('INITIAL POS::: $_scrollPosition');
         _scrollController.jumpTo(_scrollPosition);
         _scrollController.addListener(() {
           print('POS::: $_scrollPosition');

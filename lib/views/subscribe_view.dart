@@ -15,6 +15,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import 'package:comic_nyaa/data/subscribe/subscribe_manager.dart';
 import 'package:comic_nyaa/data/subscribe_provider.dart';
 import 'package:comic_nyaa/library/mio/core/site_manager.dart';
 import 'package:comic_nyaa/utils/uri_extensions.dart';
@@ -31,7 +32,17 @@ class SubscribeView extends StatefulWidget {
 }
 
 class _SubscribeViewState extends State<SubscribeView> {
-  final List<Subscribe> _subscribes = SubscribeProvider().subscribes;
+  final List<Subscribe> _subscribes = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _initialized();
+  }
+
+  Future<void> _initialized() async {
+    _subscribes.addAll((await SubscribeManager.instance).subscribes);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -46,8 +57,8 @@ class _SubscribeViewState extends State<SubscribeView> {
                 color: Theme.of(context).primaryColor,
                 size: 32,
               ),
-              title: Text(_subscribes[index].name),
-              subtitle: Text(_subscribes[index].url),
+              title: Text(_subscribes[index].name ?? ''),
+              subtitle: Text(_subscribes[index].url ?? ''),
               trailing: IconButton(
                 onPressed: () => onUpdateSubscribe(_subscribes[index]),
                 icon: const Icon(Icons.update, color: Colors.black87),
@@ -63,7 +74,7 @@ class _SubscribeViewState extends State<SubscribeView> {
   
   void onViewSubscibe(Subscribe subscribe) {
     final path = SiteManager.targetInfo.keys.singleWhere((path) =>
-    Uri.parse(subscribe.url).filename ==
+    Uri.parse(subscribe.url!).filename ==
         Uri.parse(path).filename);
     final sites = SiteManager.targetInfo[path] ?? [];
     print('SITE COUNT: ${sites.length}');
@@ -100,7 +111,7 @@ class _SubscribeViewState extends State<SubscribeView> {
                     child: const Text("Updating...")),
               ]));
         });
-    await SubscribeProvider().addSubscribe(subscribe);
+    await (await SubscribeManager.instance).addSubscribe(subscribe);
     Fluttertoast.showToast(msg: '规则已更新');
     ns?.pop();
   }
@@ -181,7 +192,7 @@ class _SubscribeViewState extends State<SubscribeView> {
             ),
             TextButton(
               onPressed: () async {
-                await SubscribeProvider().removeSubscribe(subscribe);
+                await (await SubscribeManager.instance).removeSubscribe(subscribe);
                 ns?.pop();
                 setState(() {});
               },

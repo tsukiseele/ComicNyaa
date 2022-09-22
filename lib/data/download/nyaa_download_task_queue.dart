@@ -106,8 +106,7 @@ class NyaaDownloadTaskQueue extends DownloadTaskQueue<NyaaDownloadTask> {
       } else {
         // 一旦使用散列码，虽然能避免任务名重复，但是将失去缓存检测，这里不使用散列
         directory = Directory(directory)
-            .join(title /*'${title}_${cover.hashCode}'*/)
-            .path;
+            .join(title /*'${title}_${cover.hashCode}'*/);
         for (var child in parent.children!) {
           add(NyaaDownloadTask.fromUrl(directory, child.getUrl(level),
               title: child.title, cover: child.coverUrl, headers: headers));

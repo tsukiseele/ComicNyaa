@@ -52,7 +52,7 @@ class NyaaDownloadTask extends DownloadTask {
   }
 
   factory NyaaDownloadTask.fromUrl(String downloadDir, String url, {String? title, String? cover, Map<String, String>? headers}) {
-    final path = Directory(downloadDir).join(Uri.parse(url).filename).path;
+    final path = Directory(downloadDir).join(Uri.parse(url).filename);
     return NyaaDownloadTask(url, path, DateTime.now(), title: title, cover: cover, headers: headers);
   }
 }

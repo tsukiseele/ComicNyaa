@@ -29,7 +29,7 @@ class NyaaDownloadManager {
 
   static Future<NyaaDownloadManager> get instance async {
     return _instance ??= NyaaDownloadManager._(
-        await DownloadProvider().open(await getDatabasesPath()));
+        await DownloadProvider().open(await AppConfig.databasePath));
   }
 
   NyaaDownloadManager._(this.downloadProvider) {
@@ -47,7 +47,7 @@ class NyaaDownloadManager {
   }
 
   Future<void> add(TypedModel item) async {
-    final downloadDir = await Config.downloadDir;
+    final downloadDir = await AppConfig.downloadDir;
     final downloadLevel =
         (await NyaaPreferences.instance).downloadResourceLevel;
     final task = NyaaDownloadTaskQueue(
@@ -60,7 +60,7 @@ class NyaaDownloadManager {
   }
 
   Future<void> addAll(Iterable<TypedModel> items) async {
-    final downloadDir = await Config.downloadDir;
+    final downloadDir = await AppConfig.downloadDir;
     final downloadLevel =
         (await NyaaPreferences.instance).downloadResourceLevel;
     final tasks = items.map((item) => NyaaDownloadTaskQueue(
