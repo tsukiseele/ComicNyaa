@@ -19,7 +19,7 @@ extension ExtendedPath on FileSystemEntity {
   }
 }
 
-extension TypedModelEx on TypedModel {
+extension TypedModelExt on TypedModel {
   String getUrl(DownloadResourceLevel downloadResourceLevel) {
     String? url;
     switch (downloadResourceLevel) {
