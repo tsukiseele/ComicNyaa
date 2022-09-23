@@ -51,4 +51,9 @@ class NyaaPreferences {
         .singleWhereOrNull((item) => item.value == level) ??
         defaultDownloadResourceLevel;
   }
+
+  void setTabHistory(List<int> ids) {
+    preferences.setString('tab_history', ids.toString());
+  }
+
 }

@@ -25,8 +25,10 @@ import 'package:comic_nyaa/widget/back_control.dart';
 import 'package:comic_nyaa/views/drawer/nyaa_end_drawer.dart';
 import 'package:comic_nyaa/widget/nyaa_tag_item.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:collection/collection.dart';
+import 'package:get/get.dart';
 import 'package:material_floating_search_bar/material_floating_search_bar.dart';
 import 'package:comic_nyaa/library/http/http.dart';
 import 'package:comic_nyaa/library/mio/model/site.dart';
@@ -343,10 +345,11 @@ class MainViewState extends State<MainView> with TickerProviderStateMixin {
               ));
   }
 
-  static _queryAutosuggest(Tuple2<SendPort, String> message) async {
-    final autosuggest =
-        await YandereAutosuggest().queryAutoSuggest(message.item2);
-    message.item1.send(autosuggest.length > 20 ? autosuggest.sublist(0, 20) : autosuggest);
+  static _queryAutosuggest(Tuple3<SendPort, String, String> message) async {
+    final autosuggest = await YandereAutosuggest.instance
+        .queryAutoSuggest(message.item2, message.item3);
+    message.item1.send(
+        autosuggest.length > 20 ? autosuggest.sublist(0, 20) : autosuggest);
   }
 
   Widget _buildFloatingSearchBar() {
@@ -376,12 +379,12 @@ class MainViewState extends State<MainView> with TickerProviderStateMixin {
             const TextStyle(fontFamily: AppConfig.uiFontFamily, fontSize: 16),
         onQueryChanged: (query) async {
           _keywords = _floatingSearchBarController.query;
+          // query
           ReceivePort port = ReceivePort();
-          Isolate isolate = await Isolate.spawn(
-              _queryAutosuggest, Tuple2(port.sendPort, query));
-          port.listen((message) {
-            setState(() => _autosuggest = message);
-          });
+          final json = await rootBundle.loadString('assets/data/summary.json');
+          await Isolate.spawn(
+              _queryAutosuggest, Tuple3(port.sendPort, json, query));
+          port.listen((message) => setState(() => _autosuggest = message));
         },
         transition: CircularFloatingSearchBarTransition(),
         leadingActions: [
@@ -429,23 +432,25 @@ class MainViewState extends State<MainView> with TickerProviderStateMixin {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: _autosuggest
-                    .map((suggest) => ListTile(
+                    .map(
+                      (suggest) => ListTile(
                         leading: const Icon(Icons.search),
                         onTap: () => _onSearch(_keywords, suggest.label),
-                        title: Row(
-                          children: [
-                            Text(
-                              suggest.label,
-                              style: const TextStyle(
-                                  fontFamily: AppConfig.uiFontFamily,
-                                  fontSize: 16),
-                            ),
-                            NyaaTagItem(
-                                text: suggest.type,
-                                color: ColorUtil.fromHex(suggest.color),
-                                isRounded: false)
-                          ],
-                        )))
+                        title: Text(
+                          suggest.label,
+                          style: const TextStyle(
+                              fontFamily: AppConfig.uiFontFamily, fontSize: 16),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        trailing: NyaaTagItem(
+                            text: suggest.type,
+                            textStyle: const TextStyle(
+                                fontSize: 14, color: Colors.white),
+                            color: ColorUtil.fromHex(suggest.color),
+                            isRounded: false),
+                      ),
+                    )
                     .toList(),
               ),
             ));

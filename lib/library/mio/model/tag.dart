@@ -20,4 +20,5 @@ class Tag {
   late String count;
   late String type;
   late String color;
+  late String alias;
 }

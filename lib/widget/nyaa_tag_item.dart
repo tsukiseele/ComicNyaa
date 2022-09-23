@@ -18,9 +18,10 @@
 import 'package:flutter/material.dart';
 
 class NyaaTagItem extends StatefulWidget {
-  const NyaaTagItem({Key? key, required this.text, this.color, this.onTap, this.onLongPress, this.isRounded = true})
+  const NyaaTagItem({Key? key, required this.text, this.color, this.onTap, this.onLongPress, this.isRounded = true, this.textStyle})
       : super(key: key);
   final String text;
+  final TextStyle? textStyle;
   final Color? color;
   final bool isRounded;
   final void Function()? onTap;
@@ -55,7 +56,7 @@ class _NyaaTagItemState extends State<NyaaTagItem>
                     padding: const EdgeInsets.only(left: 8, top: 4, right: 8, bottom: 4),
                     child: Text(
                       widget.text,
-                      style: const TextStyle(fontSize: 16, color: Colors.white),
+                      style: widget.textStyle ?? const TextStyle(fontSize: 16, color: Colors.white),
                     )))));
   }
 
