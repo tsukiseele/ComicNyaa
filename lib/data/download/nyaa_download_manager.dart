@@ -18,7 +18,6 @@
 import 'package:comic_nyaa/data/download/nyaa_download_task_queue.dart';
 import 'package:comic_nyaa/data/download_provider.dart';
 import 'package:comic_nyaa/library/download/download_manager.dart';
-import 'package:sqflite/sqflite.dart';
 
 import '../../app/config.dart';
 import '../../app/preference.dart';
@@ -29,7 +28,7 @@ class NyaaDownloadManager {
 
   static Future<NyaaDownloadManager> get instance async {
     return _instance ??= NyaaDownloadManager._(
-        await DownloadProvider().open(await AppConfig.databasePath));
+        await DownloadProvider().open());
   }
 
   NyaaDownloadManager._(this.downloadProvider) {

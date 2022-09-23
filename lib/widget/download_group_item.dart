@@ -22,7 +22,6 @@ import 'package:comic_nyaa/widget/simple_network_image.dart';
 import 'package:comic_nyaa/widget/triangle_painter.dart';
 import 'package:comic_nyaa/data/download/nyaa_download_task_queue.dart';
 import 'package:comic_nyaa/library/download/downloadable.dart';
-import 'package:comic_nyaa/widget/ink_stack.dart';
 
 const Color idle = Colors.grey;
 const Color downloading = Colors.blue;

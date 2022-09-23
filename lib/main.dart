@@ -16,7 +16,6 @@
  */
 
 import 'dart:async';
-import 'dart:convert';
 import 'package:comic_nyaa/data/download/nyaa_download_manager.dart';
 import 'package:comic_nyaa/data/http_cache_provider.dart';
 import 'package:flutter/material.dart';

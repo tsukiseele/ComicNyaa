@@ -32,7 +32,7 @@ class SubscribeView extends StatefulWidget {
 }
 
 class _SubscribeViewState extends State<SubscribeView> {
-  final List<Subscribe> _subscribes = [];
+  List<Subscribe> _subscribes = [];
 
   @override
   void initState() {
@@ -41,7 +41,9 @@ class _SubscribeViewState extends State<SubscribeView> {
   }
 
   Future<void> _initialized() async {
-    _subscribes.addAll((await SubscribeManager.instance).subscribes);
+    final subscribes = await (await SubscribeManager.instance).subscribes;
+    setState(() => _subscribes = subscribes);
+    print('SUBSCRIBE::: $_subscribes');
   }
 
   @override
@@ -71,11 +73,10 @@ class _SubscribeViewState extends State<SubscribeView> {
           onPressed: onAddSubscribe, child: const Icon(Icons.add, size: 32)),
     );
   }
-  
+
   void onViewSubscibe(Subscribe subscribe) {
     final path = SiteManager.targetInfo.keys.singleWhere((path) =>
-    Uri.parse(subscribe.url!).filename ==
-        Uri.parse(path).filename);
+        Uri.parse(subscribe.url!).filename == Uri.parse(path).filename);
     final sites = SiteManager.targetInfo[path] ?? [];
     print('SITE COUNT: ${sites.length}');
     showDialog(
@@ -90,8 +91,7 @@ class _SubscribeViewState extends State<SubscribeView> {
                       itemCount: sites.length,
                       itemBuilder: (ctx, index) => ListTile(
                           title: Text(sites[index].name ?? ''),
-                          subtitle:
-                          Text(sites[index].details ?? '')))));
+                          subtitle: Text(sites[index].details ?? '')))));
         });
   }
 
@@ -159,7 +159,11 @@ class _SubscribeViewState extends State<SubscribeView> {
                   final name = nameField.text.toString().trim();
                   final url = urlField.text.toString().trim();
                   if (name.isNotEmpty && url.isNotEmpty) {
-                    await onUpdateSubscribe(Subscribe(name: name, url: url));
+                    await onUpdateSubscribe(Subscribe(
+                        name: name,
+                        url: url,
+                        updateDate: DateTime.now().toIso8601String(),
+                        version: 1));
                     ns?.pop();
                     setState(() {});
                   } else {
@@ -192,7 +196,8 @@ class _SubscribeViewState extends State<SubscribeView> {
             ),
             TextButton(
               onPressed: () async {
-                await (await SubscribeManager.instance).removeSubscribe(subscribe);
+                await (await SubscribeManager.instance)
+                    .removeSubscribe(subscribe);
                 ns?.pop();
                 setState(() {});
               },

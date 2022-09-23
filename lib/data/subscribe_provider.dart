@@ -15,13 +15,13 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import 'dart:io';
-
-import 'package:comic_nyaa/app/config.dart';
 import 'package:comic_nyaa/utils/extensions.dart';
 import 'package:sqflite/sqflite.dart';
 
+import '../app/config.dart';
+
 const String tableSubscribe = 'subscribe';
+const int version = 1;
 const String columnId = 'id';
 const String columnName = 'name';
 const String columnUrl = 'url';
@@ -34,20 +34,27 @@ const String createTableSubscribe = '''
           $columnName TEXT NOT NULL,
           $columnUrl TEXT NOT NULL,
           $columnUpdateDate TEXT NOT NULL,
-          $columnVersion INTEGER NOT NULL,
+          $columnVersion INTEGER NOT NULL)
         ''';
 
 class SubscribeProvider {
   late Database _db;
 
-  Future<SubscribeProvider> open(String path) async {
-    _db = await openDatabase(path, version: 1,
+  Future<SubscribeProvider> open() async {
+    final path = (await AppConfig.databaseDir).join(tableSubscribe);
+    bool isFirstCreated = false;
+    _db = await openDatabase(path, version: version,
         onCreate: (Database db, int version) async {
       await db.execute(createTableSubscribe);
-      await insert(Subscribe(name: 'Default', url: 'https://hlo.li/static/rules.zip', version: 1, updateDate: DateTime.now().toIso8601String()));
-    }, onDowngrade: (Database db, int oldVersion, int newVersion) async {
-      await db.execute(createTableSubscribe);
+      isFirstCreated = true;
     });
+    if (isFirstCreated) {
+      await insert(Subscribe(
+          name: 'Default',
+          url: 'https://hlo.li/static/rules.zip',
+          version: 1,
+          updateDate: DateTime.now().toIso8601String()));
+    }
     return this;
   }
 

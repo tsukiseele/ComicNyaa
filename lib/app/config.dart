@@ -32,7 +32,7 @@ class AppConfig {
   static Directory? _appDir;
   static Directory? _ruleDir;
   static Directory? _downloadDir;
-  static String? _databasePath;
+  static Directory? _databaseDir;
 
   static Future<Directory> get appDir async {
     _appDir ??= await getApplicationDocumentsDirectory();
@@ -52,9 +52,9 @@ class AppConfig {
     return _downloadDir!;
   }
 
-  static Future<String> get databasePath async {
-    _databasePath ??= Directory(await getDatabasesPath()).join(databaseName);
-    return _databasePath!;
+  static Future<Directory> get databaseDir async {
+    _databaseDir ??= Directory(await getDatabasesPath());
+    return _databaseDir!;
   }
 }
 

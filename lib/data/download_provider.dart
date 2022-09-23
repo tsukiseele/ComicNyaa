@@ -15,15 +15,14 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import 'dart:io';
-
 import 'package:comic_nyaa/app/config.dart';
 import 'package:comic_nyaa/data/download/nyaa_download_task_queue.dart';
-import 'package:comic_nyaa/library/download/downloadable_queue.dart';
+import 'package:comic_nyaa/data/subscribe_provider.dart';
 import 'package:comic_nyaa/utils/extensions.dart';
 import 'package:sqflite/sqflite.dart';
 
 const String tableDownload = 'download';
+const int version = 1;
 const String columnId = 'id';
 const String columnDirectory = 'directory';
 const String columnTitle = 'title';
@@ -55,13 +54,12 @@ const String createTableDownload = '''
           $columnUrl TEXT NOT NULL)
         ''';
 
-class DownloadProvider {
+class DownloadProvider  {
   late Database _db;
 
-  Future<DownloadProvider> open(String path) async {
-    _db = await openDatabase(path, version: 5, onCreate: (Database db, int version) async {
-      await db.execute(createTableDownload);
-    }, onDowngrade: (Database db, int oldVersion, int newVersion) async {
+  Future<DownloadProvider> open() async {
+    final path = (await AppConfig.databaseDir).join(tableDownload);
+    _db = await openDatabase(path, version: version, onCreate: (Database db, int version) async {
       await db.execute(createTableDownload);
     });
     return this;
@@ -105,4 +103,5 @@ class DownloadProvider {
   }
 
   Future close() async => _db.close();
+
 }

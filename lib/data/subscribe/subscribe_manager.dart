@@ -16,57 +16,49 @@
  */
 
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:collection/collection.dart';
 import 'package:comic_nyaa/utils/extensions.dart';
 import 'package:comic_nyaa/utils/uri_extensions.dart';
-import 'package:sqflite/sqflite.dart';
-
 import '../../app/config.dart';
 import '../../library/http/http.dart';
 import '../../library/mio/core/site_manager.dart';
 import '../subscribe_provider.dart';
 
 class SubscribeManager {
-  SubscribeManager._(this._provider) {
-    restoreSubscribe();
-  }
+  SubscribeManager._(this._provider);
 
   static SubscribeManager? _instance;
 
   static Future<SubscribeManager> get instance async {
-    final provider = await SubscribeProvider().open(await AppConfig.databasePath);
+    final provider = await SubscribeProvider().open();
     return _instance ??= SubscribeManager._(provider);
   }
 
   final SubscribeProvider _provider;
 
-  final _subscribes = <Subscribe>[
-    // Subscribe(name: 'Default', url: 'https://hlo.li/static/rules.zip')
-  ];
-
-  List<Subscribe> get subscribes {
-    return _subscribes;
+  Future<List<Subscribe>> get subscribes async {
+    return await _provider.getSubscribes();
   }
 
-  restoreSubscribe() async =>
-      _subscribes.addAll(await _provider.getSubscribes());
-
   Future<bool> addSubscribe(Subscribe subscribe) async {
-    Subscribe? existed = _subscribes.firstWhereIndexedOrNull((i, item) {
-      if (item.equals(subscribe)) {
-        subscribes[i] = subscribe;
+    final list = await subscribes;
+    Subscribe? existed = list.firstWhereIndexedOrNull((i, item) {
+      if (item.url == subscribe.url) {
+        // list[i] = subscribe;
         return true;
       }
       return false;
     });
-    if (existed == null) _subscribes.add(subscribe);
-    return await updateSubscribe(subscribe);
+    if (existed == null) {
+      subscribe.id = await _provider.insert(subscribe);
+    } // return await updateSubscribe(subscribe);
+    return true;
   }
 
   Future<void> removeSubscribe(Subscribe subscribe) async {
-    _subscribes.removeWhere((item) => item.url == subscribe.url);
+    final list = await subscribes;
+    list.removeWhere((item) => item.url == subscribe.url);
   }
 
   Future<void> removeSubscribeFromUrl(String url) async {
@@ -88,11 +80,13 @@ class SubscribeManager {
   }
 
   Future<void> updateAllSubscribe() async {
-    await Future.wait(_subscribes.map((e) => updateSubscribe(e)));
+    final list = await subscribes;
+    await Future.wait(list.map((e) => updateSubscribe(e)));
   }
 
   Future<void> checkAndUpdateAllSubscribe() async {
-    await Future.wait(_subscribes.map((e) => _checkUpdate(e)));
+    final list = await subscribes;
+    await Future.wait(list.map((e) => _checkUpdate(e)));
   }
 
   Future<bool> _checkUpdate(Subscribe subscribe) async {

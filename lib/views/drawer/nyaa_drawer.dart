@@ -17,8 +17,6 @@
 
 import 'package:flutter/material.dart';
 
-import '../../app/config.dart';
-import '../../library/mio/model/site.dart';
 import '../../utils/flutter_utils.dart';
 import '../../widget/simple_network_image.dart';
 import '../download_view.dart';
@@ -37,12 +35,7 @@ class NyaaDrawer extends StatelessWidget {
           child: Material(
               elevation: 4,
               child: Stack(children: [
-                const SimpleNetworkImage(
-                  'https://cdn.jsdelivr.net/gh/nyarray/LoliHost/images/94d6d0e7be187770e5d538539d95a12a.jpeg',
-                  fit: BoxFit.cover,
-                  width: double.maxFinite,
-                  height: 160 + kToolbarHeight,
-                ),
+                _buildHeader(),
                 Positioned.fill(
                   child: Container(
                       decoration: BoxDecoration(
@@ -102,8 +95,9 @@ class NyaaDrawer extends StatelessWidget {
         child: Material(
             elevation: 4,
             child: SimpleNetworkImage(
-              'https://cdn.jsdelivr.net/gh/nyarray/LoliHost/images/7c4f1d7ea2dadd3ca835b9b2b9219681.webp',
+              'https://cdn.jsdelivr.net/gh/nyarray/LoliHost/images/94d6d0e7be187770e5d538539d95a12a.jpeg',
               fit: BoxFit.cover,
+              width: double.maxFinite,
               height: 160 + kToolbarHeight,
             )));
   }

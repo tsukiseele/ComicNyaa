@@ -5,7 +5,11 @@
 // gestures. You can also use WidgetTester to find child widgets in the widget
 // tree, read text, and verify that the values of widget properties are correct.
 
+import 'package:comic_nyaa/library/mio/label/yandere_autosuggest.dart';
+
 void main() async {
+  final result = await YandereAutosuggest().queryAutoSuggest('peko');
+  print('R::: $result');
   // const u = 'https://hanime1.me/search?query=bdsm&genre=&sort=&year=&month=&duration=';
   // final response = await Http.client()
   //     .get(u, options: Options(responseType: ResponseType.plain));

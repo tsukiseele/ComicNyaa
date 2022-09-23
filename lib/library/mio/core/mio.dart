@@ -34,6 +34,8 @@ class Mio<T extends DataModel> {
   String? _keywords;
   String? _sectionName;
 
+  static Future<String> Function(String url, {Map<String, String>? headers}) get requestAsText => _request;
+
   static Future<String> Function(String url, {Map<String, String>? headers})
       _request = (url, {Map<String, String>? headers}) async {
     HttpClientRequest request = await HttpClient().getUrl(Uri.parse(url));
