@@ -1,5 +1,6 @@
 ## ComicNyaa
-一个跨平台的漫画/图库聚合的流式阅读器，所有数据源均采用插件式加载.  
+一个跨平台的漫画/图库聚合的流式阅读器，所有数据源均采用插件式加载.   
+查看现有插件库，请参见：[ComicNyaa-Plugins](https://github.com/tsukiseele/ComicNyaa-Plugins)
 > ポトフちゃんとワトラちゃんがすごくかわいいです！
 
 ## Futures
