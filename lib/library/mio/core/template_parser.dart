@@ -110,9 +110,9 @@ class TemplateParser {
           ? int.parse(pageMatch.group(2) ?? '1')
           : 1;
 
-      print('BEFORE FINAL PAGE: [$p] offset: [$offset], range: [$range]');
+      // print('BEFORE FINAL PAGE: [$p] offset: [$offset], range: [$range]');
       p = (p + offset) * range;
-      print('AFTER FINAL PAGE: [$p] offset: [$offset], range: [$range]');
+      // print('AFTER FINAL PAGE: [$p] offset: [$offset], range: [$range]');
     }
     return template
         .replaceAll(REG_PAGE_MATCH, p.toString())

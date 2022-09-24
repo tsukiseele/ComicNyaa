@@ -16,6 +16,7 @@
  */
 
 import 'dart:async';
+import 'package:comic_nyaa/app/preference.dart';
 import 'package:comic_nyaa/data/download/nyaa_download_manager.dart';
 import 'package:comic_nyaa/data/http_cache_provider.dart';
 import 'package:flutter/material.dart';
@@ -54,6 +55,10 @@ class ComicNyaa extends StatefulWidget {
 }
 
 class _ComicNyaaState extends State<ComicNyaa> {
+  void location(Locale? deviceLocale, Iterable<Locale> supportedLocales) async {
+    (await NyaaPreferences.instance).setLocale(deviceLocale?.languageCode ?? 'zh-TW');
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -61,9 +66,11 @@ class _ComicNyaaState extends State<ComicNyaa> {
       theme: ThemeData(
         fontFamily: 'ComicNeue',
         primarySwatch: Colors.teal,
-      ),
+      ), localeResolutionCallback: (deviceLocale, supportedLocales) {
+      location(deviceLocale, supportedLocales);
+      return deviceLocale;
+    },
       home: const MainView(enableBackControl: true),
-      // home: const BackView(child: MainView())
     );
   }
 
@@ -83,8 +90,8 @@ class _ComicNyaaState extends State<ComicNyaa> {
       headers ??= <String, String>{};
       // 域前置解析
       url = await sni.parse(url, headers: headers);
-      // print('REQUEST::: $url');
-      // print('HEADERS::: $headers');
+      print('REQUEST::: $url');
+      print('HEADERS::: $headers');
       // 读取缓存
       final cache = await HttpCache.instance.getAsString(url);
       if (cache != null) {
@@ -110,13 +117,13 @@ class _ComicNyaaState extends State<ComicNyaa> {
     final DisplayMode active = await FlutterDisplayMode.active;
     final List<DisplayMode> sameResolution = supported
         .where((DisplayMode m) =>
-            m.width == active.width && m.height == active.height)
+    m.width == active.width && m.height == active.height)
         .toList()
       ..sort((DisplayMode a, DisplayMode b) =>
           b.refreshRate.compareTo(a.refreshRate));
 
     final DisplayMode mostOptimalMode =
-        sameResolution.isNotEmpty ? sameResolution.first : active;
+    sameResolution.isNotEmpty ? sameResolution.first : active;
 
     /// This setting is per session.
     /// Please ensure this was placed with `initState` of your root widget.

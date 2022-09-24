@@ -59,4 +59,14 @@ extension TypedModelExt on TypedModel {
     url = url ?? coverUrl ?? sampleUrl ?? largerUrl ?? originUrl;
     return url?.asUrl ?? '';
   }
+
+
+  isSni() async {
+    final df = getOrigin().site.domainFronting;
+    final locale = (await NyaaPreferences.instance).locale;
+    if (locale == df?.country) {
+      return true;
+    }
+    return false;
+  }
 }

@@ -37,10 +37,9 @@ class _SubscribeViewState extends State<SubscribeView> {
   @override
   void initState() {
     super.initState();
-    _initialized();
   }
 
-  Future<void> _initialized() async {
+  Future<void> _update() async {
     final subscribes = await (await SubscribeManager.instance).subscribes;
     setState(() => _subscribes = subscribes);
     print('SUBSCRIBE::: $_subscribes');
@@ -111,7 +110,7 @@ class _SubscribeViewState extends State<SubscribeView> {
                     child: const Text("Updating...")),
               ]));
         });
-    await (await SubscribeManager.instance).addSubscribe(subscribe);
+    await (await SubscribeManager.instance).updateSubscribe(subscribe);
     Fluttertoast.showToast(msg: '规则已更新');
     ns?.pop();
   }
@@ -165,7 +164,7 @@ class _SubscribeViewState extends State<SubscribeView> {
                         updateDate: DateTime.now().toIso8601String(),
                         version: 1));
                     ns?.pop();
-                    setState(() {});
+                    setState(() => _update());
                   } else {
                     Fluttertoast.showToast(msg: "订阅信息不能为空");
                   }
@@ -197,9 +196,9 @@ class _SubscribeViewState extends State<SubscribeView> {
             TextButton(
               onPressed: () async {
                 await (await SubscribeManager.instance)
-                    .removeSubscribe(subscribe);
+                    .deleteSubscribe(subscribe);
                 ns?.pop();
-                setState(() {});
+                setState(() => _update());
               },
               child: Text(
                 "确定",

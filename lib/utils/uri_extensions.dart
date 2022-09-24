@@ -10,6 +10,7 @@ extension UriExtension on Uri {
   String get filename {
     return Uri.parse(toString().split("/").last.split('?').first).decodeComponentDeep();
   }
+
 }
 
 extension UrlBuilder on String {

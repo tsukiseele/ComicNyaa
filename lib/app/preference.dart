@@ -15,6 +15,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import 'dart:ui';
+
 import 'package:collection/collection.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -55,5 +57,8 @@ class NyaaPreferences {
   void setTabHistory(List<int> ids) {
     preferences.setString('tab_history', ids.toString());
   }
-
+  String get locale => preferences.getString('locale') ?? 'zh-TW';
+  void setLocale(String locale) {
+    preferences.setString('locale', locale);
+  }
 }

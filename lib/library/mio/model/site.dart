@@ -17,6 +17,20 @@
 
 import '../utils/base_map.dart';
 
+class DomainFronting {
+  String? country;
+
+  DomainFronting.fromJson(Map<String, dynamic> json) {
+    country = json['country'];
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['country'] = country;
+    return data;
+  }
+}
+
 class Site {
   String? name;
   int? id;
@@ -28,6 +42,7 @@ class Site {
   String? icon;
   Headers? headers;
   Sections? sections;
+  DomainFronting? domainFronting;
 
   Site(
       {this.name,
@@ -52,6 +67,7 @@ class Site {
     icon = json['icon'];
     headers = json['headers'] != null ? Headers.fromJson(json['headers']) : null;
     sections = json['sections'] != null ? Sections.fromJson(json['sections']) : null;
+    domainFronting = json['domainFronting'] != null ? DomainFronting.fromJson(json['domainFronting']) : null;
   }
 
   Map<String, dynamic> toJson() {
@@ -69,6 +85,9 @@ class Site {
     }
     if (sections != null) {
       data['sections'] = sections!.toJson();
+    }
+    if (domainFronting != null) {
+      data['domainFronting'] = domainFronting!.toJson();
     }
     return data;
   }

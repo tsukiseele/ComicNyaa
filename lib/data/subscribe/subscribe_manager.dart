@@ -58,13 +58,18 @@ class SubscribeManager {
     return true;
   }
 
-  Future<void> removeSubscribe(Subscribe subscribe) async {
-    final list = await subscribes;
-    list.removeWhere((item) => item.url == subscribe.url);
+  Future<void> deleteSubscribe(Subscribe subscribe) async {
+    // final list = await subscribes;
+    // list.removeWhere((item) => item.url == subscribe.url);
+    _provider.delete(subscribe);
   }
 
-  Future<void> removeSubscribeFromUrl(String url) async {
-    removeSubscribe(Subscribe(name: 'unnamed', url: url));
+  Future<void> deleteSubscribeFromUrl(String url) async {
+    // removeSubscribe(Subscribe(name: 'unnamed', url: url));
+    final find = (await subscribes).firstWhereOrNull((s) => s.url == url);
+    if (find != null) {
+      _provider.delete(find);
+    }
   }
 
   Future<bool> updateSubscribe(Subscribe subscribe) async {
