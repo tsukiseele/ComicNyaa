@@ -16,10 +16,13 @@
  */
 
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:collection/collection.dart';
 import 'package:comic_nyaa/utils/extensions.dart';
 import 'package:comic_nyaa/utils/uri_extensions.dart';
+import 'package:sqflite/sqflite.dart';
+
 import '../../app/config.dart';
 import '../../library/http/http.dart';
 import '../../library/mio/core/site_manager.dart';
@@ -31,8 +34,7 @@ class SubscribeManager {
   static SubscribeManager? _instance;
 
   static Future<SubscribeManager> get instance async {
-    final provider = await SubscribeProvider().open();
-    return _instance ??= SubscribeManager._(provider);
+    return _instance ??= SubscribeManager._(await SubscribeProvider().open());
   }
 
   final SubscribeProvider _provider;
@@ -52,7 +54,7 @@ class SubscribeManager {
     });
     if (existed == null) {
       subscribe.id = await _provider.insert(subscribe);
-    } // return await updateSubscribe(subscribe);
+    }
     return true;
   }
 

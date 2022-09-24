@@ -40,7 +40,7 @@ getIpFromNc(HttpClient client, String host) async {
 }
 
 void main() async {
-  const url = 'https://e-hentai.org';
+  const url = 'https://exhentai.org/g/2334095/1681957c70/';
   final headers = {
     'Cookie': 'igneous=ed27332b5; ipb_member_id=4249385; ipb_pass_hash=887e9708aaae76e7161526fd299cff64; sl=dm_1;'
   };
