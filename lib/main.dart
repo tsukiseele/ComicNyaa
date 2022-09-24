@@ -89,9 +89,9 @@ class _ComicNyaaState extends State<ComicNyaa> {
       // 发送请求 Http Client
       headers ??= <String, String>{};
       // 域前置解析
-      url = await sni.parse(url, headers: headers);
-      print('REQUEST::: $url');
-      print('HEADERS::: $headers');
+      // url = await sni.parse(url, headers: headers);
+      // print('REQUEST::: $url');
+      // print('HEADERS::: $headers');
       // 读取缓存
       final cache = await HttpCache.instance.getAsString(url);
       if (cache != null) {
