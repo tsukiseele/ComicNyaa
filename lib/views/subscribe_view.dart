@@ -28,7 +28,7 @@ class SubscribeView extends StatefulWidget {
   const SubscribeView({Key? key}) : super(key: key);
 
   @override
-  State<StatefulWidget> createState() => _SubscribeViewState();
+  State<SubscribeView> createState() => _SubscribeViewState();
 }
 
 class _SubscribeViewState extends State<SubscribeView> {
@@ -37,6 +37,7 @@ class _SubscribeViewState extends State<SubscribeView> {
   @override
   void initState() {
     super.initState();
+    _update();
   }
 
   Future<void> _update() async {
@@ -68,14 +69,13 @@ class _SubscribeViewState extends State<SubscribeView> {
               onTap: () => onViewSubscibe(_subscribes[index]),
             );
           }),
-      floatingActionButton: FloatingActionButton(
-          onPressed: onAddSubscribe, child: const Icon(Icons.add, size: 32)),
+      floatingActionButton: FloatingActionButton(onPressed: onAddSubscribe, child: const Icon(Icons.add, size: 32)),
     );
   }
 
   void onViewSubscibe(Subscribe subscribe) {
-    final path = SiteManager.targetInfo.keys.singleWhere((path) =>
-        Uri.parse(subscribe.url!).filename == Uri.parse(path).filename);
+    final path =
+        SiteManager.targetInfo.keys.singleWhere((path) => Uri.parse(subscribe.url!).filename == Uri.parse(path).filename);
     final sites = SiteManager.targetInfo[path] ?? [];
     print('SITE COUNT: ${sites.length}');
     showDialog(
@@ -88,9 +88,8 @@ class _SubscribeViewState extends State<SubscribeView> {
                   width: double.maxFinite,
                   child: ListView.builder(
                       itemCount: sites.length,
-                      itemBuilder: (ctx, index) => ListTile(
-                          title: Text(sites[index].name ?? ''),
-                          subtitle: Text(sites[index].details ?? '')))));
+                      itemBuilder: (ctx, index) =>
+                          ListTile(title: Text(sites[index].name ?? ''), subtitle: Text(sites[index].details ?? '')))));
         });
   }
 
@@ -105,14 +104,17 @@ class _SubscribeViewState extends State<SubscribeView> {
               title: const Text('正在更新订阅'),
               content: Row(children: [
                 const CircularProgressIndicator(),
-                Container(
-                    margin: const EdgeInsets.only(left: 16),
-                    child: const Text("Updating...")),
+                Container(margin: const EdgeInsets.only(left: 16), child: const Text("Updating...")),
               ]));
         });
-    await (await SubscribeManager.instance).updateSubscribe(subscribe);
-    Fluttertoast.showToast(msg: '规则已更新');
-    ns?.pop();
+    try {
+      await (await SubscribeManager.instance).updateSubscribe(subscribe);
+      Fluttertoast.showToast(msg: '规则已更新');
+    } catch (e) {
+      Fluttertoast.showToast(msg: '更新失败');
+    } finally {
+      ns?.pop();
+    }
   }
 
   void onAddSubscribe() {
@@ -142,7 +144,7 @@ class _SubscribeViewState extends State<SubscribeView> {
                     // contentPadding: EdgeInsets.all(10.0),
                     icon: Icon(Icons.link),
                     labelText: "订阅链接",
-                    hintText: "https://hlo.li/static/rules.zip"),
+                    hintText: "https://xxx.xxx/xxx.zip"),
               )
             ])),
             actions: [
@@ -155,14 +157,15 @@ class _SubscribeViewState extends State<SubscribeView> {
               ),
               TextButton(
                 onPressed: () async {
-                  final name = nameField.text.toString().trim();
-                  final url = urlField.text.toString().trim();
-                  if (name.isNotEmpty && url.isNotEmpty) {
-                    await onUpdateSubscribe(Subscribe(
-                        name: name,
-                        url: url,
-                        updateDate: DateTime.now().toIso8601String(),
-                        version: 1));
+                  var name = nameField.text.toString().trim();
+                  var url = urlField.text.toString().trim();
+                  if (name.isEmpty) {
+                    name = 'New Subscribe';
+                  }
+                  if (url.isNotEmpty) {
+                    final subscribe = Subscribe(name: name, url: url, updateDate: DateTime.now().toIso8601String(), version: 1);
+                    (await SubscribeManager.instance).addSubscribe(subscribe);
+                    await onUpdateSubscribe(subscribe);
                     ns?.pop();
                     setState(() => _update());
                   } else {
@@ -195,8 +198,7 @@ class _SubscribeViewState extends State<SubscribeView> {
             ),
             TextButton(
               onPressed: () async {
-                await (await SubscribeManager.instance)
-                    .deleteSubscribe(subscribe);
+                await (await SubscribeManager.instance).deleteSubscribe(subscribe);
                 ns?.pop();
                 setState(() => _update());
               },

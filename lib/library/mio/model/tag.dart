@@ -17,42 +17,45 @@
 
 import 'package:tuple/tuple.dart';
 
+enum TagType {
+  general('General', '#0075f8'),
+  artist('Artist', '#c00004'),
+  copyright('Copyright', '#a800aa'),
+  character('Character', '#00ab2c'),
+  meta('Meta', '#007f7f'),
+  unknown('Unknown', '#cd5da0');
+
+  const TagType(this.name, this.color);
+
+  final String name;
+  final String color;
+}
+
 class Tag {
   String label;
   int? typeCode;
-  String? type;
-  String? color;
+  TagType? type;
   String? count;
   String? alias;
 
-  Tag(
-      {required this.label,
-      this.typeCode,
-      this.type,
-      this.color,
-      this.count,
-      this.alias}) {
-    if (typeCode != null) {
-      final data = getTypeByCode(typeCode!);
-      type ??= data.item1;
-      color ??= data.item2;
-    }
+  Tag({required this.label, this.typeCode, this.type, this.count, this.alias}) {
+    if (typeCode != null) type = getTypeByCode(typeCode!);
   }
 
-  Tuple2<String, String> getTypeByCode(int code) {
+  TagType getTypeByCode(int code) {
     switch (code) {
       case 0:
-        return const Tuple2('General', '#0075f8');
+        return TagType.general;
       case 1:
-        return const Tuple2('Artist', '#c00004');
+        return TagType.meta;
       case 3:
-        return const Tuple2('Copyright', '#a800aa');
+        return TagType.copyright;
       case 4:
-        return const Tuple2('Character', '#00ab2c');
+        return TagType.character;
       case 5:
-        return const Tuple2('Meta', '#007f7f');
+        return TagType.artist;
       default:
-        return const Tuple2('Unknown', '#cd5da0');
+        return TagType.unknown;
     }
   }
 }

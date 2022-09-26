@@ -66,9 +66,10 @@ class _ComicNyaaState extends State<ComicNyaa> {
       theme: ThemeData(
         fontFamily: 'ComicNeue',
         primarySwatch: Colors.teal,
-      ), localeResolutionCallback: (deviceLocale, supportedLocales) {
+      ),
+      localeResolutionCallback: (deviceLocale, supportedLocales) {
       location(deviceLocale, supportedLocales);
-      return deviceLocale;
+      return supportedLocales.first;
     },
       home: const MainView(enableBackControl: true),
     );
