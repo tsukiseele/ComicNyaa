@@ -50,8 +50,8 @@ class SubscribeProvider {
     });
     if (isFirstCreated) {
       await insert(Subscribe(
-          name: 'Default',
-          url: 'https://hlo.li/static/rules.zip',
+          name: 'Official',
+          url: 'https://hlo.li/static/official.zip',
           version: 1,
           updateDate: DateTime.now().toIso8601String()));
     }
