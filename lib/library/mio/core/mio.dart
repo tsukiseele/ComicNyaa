@@ -21,10 +21,10 @@ import 'dart:io';
 
 import 'package:collection/collection.dart';
 import 'package:html/parser.dart';
-import 'package:comic_nyaa/library/mio/core/template_parser.dart';
-import 'package:comic_nyaa/library/mio/model/data_origin.dart';
-import 'package:comic_nyaa/library/mio/model/data_model.dart';
-import 'package:comic_nyaa/library/mio/model/site.dart';
+import '../core/template_parser.dart';
+import '../model/data_origin.dart';
+import '../model/data_model.dart';
+import '../model/site.dart';
 
 /// 站点内容解析器，通过加载JSON配置抓取网页内容，并返回JSON数据
 /// （因为Flutter不支持运行时反射，故不使用反射构建）
@@ -129,7 +129,7 @@ class Mio<T extends DataModel> {
         final children = await parseRules(
             url, childrenSelector!.rules!, page = page, _keywords = '');
         page++;
-        // 获取唯一键，用于判断
+        // 获取唯一键，用于对比
         final List<String> newKeys = isMulitPage
             ? children.map((item) => item[k$key].toString()).toList()
             : [];

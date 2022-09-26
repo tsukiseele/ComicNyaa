@@ -17,9 +17,7 @@
 
 import 'dart:convert';
 
-import 'package:comic_nyaa/library/mio/core/mio.dart';
-import 'package:comic_nyaa/library/mio/label/autosuggest.dart';
-
+import '../core/mio.dart';
 import '../model/tag.dart';
 
 class YandereAutosuggest {
@@ -31,55 +29,17 @@ class YandereAutosuggest {
 
   List<Tag> tags = [];
 
-  dynamic _getTypeByCode(int code) {
-    switch (code) {
-      case 0:
-        return {'type': 'General', 'color': '#0075f8'};
-      case 1:
-        return {'type': 'Artist', 'color': '#c00004'};
-      case 3:
-        return {'type': 'Copyright', 'color': '#a800aa'};
-      case 4:
-        return {'type': 'Character', 'color': '#00ab2c'};
-      case 5:
-        return {'type': 'Meta', 'color': '#007f7f'};
-      default:
-        return {'type': 'Unknown', 'color': '#cd5da0'};
-    }
-  }
-
-  Future<List<Tag>> queryAutoSuggest(String json, String query,
+  Future<List<Tag>> queryAutoSuggest(String query,
       {int? limit}) async {
     final lastWordIndex = query.lastIndexOf(' ');
     final word = query.substring(lastWordIndex > 0 ? lastWordIndex : 0);
-    //
-    print('TAG START LENGTH:: ${tags.length}');
     if (tags.isEmpty) {
-      // final json = await Mio.requestAsText('https://yande.re/tag/summary.json');
-
-      final result = Map<String, dynamic>.from(jsonDecode(json));
-      final version = result['version'];
-      final data = result['data'] as String;
-      final kvs = data.split(' ');
-      // print('KVS: $kvs' );
-      for (var item in kvs) {
-        final entry = item.split('`');
-        // print(entry);
-        if (entry.length > 1) {
-          final tag = Tag();
-          final typeEntry = _getTypeByCode(int.parse(entry[0]));
-          tag.type = typeEntry['type'];
-          tag.color = typeEntry['color'];
-          tag.label = entry[1];
-          tags.add(tag);
-        }
-      }
+      final json = await Mio.requestAsText('https://yande.re/tag/summary.json');
+      tags = queryAllSuggest(json);
     }
-    // print('TAGS: $tags' );
-    // print('TAG END LENGTH:: ${tags.length}');
     final suggests = <Tag>[];
     for (var tag in tags) {
-      if (tag.label.contains(word)) {
+      if (tag.label.startsWith(word)) {
         suggests.add(tag);
         if (limit != null && suggests.length >= limit) break;
       }
@@ -88,12 +48,9 @@ class YandereAutosuggest {
     return suggests;
   }
 
-  Future<List<Tag>> queryAllSuggest(String json) async {
-    //
-    print('TAG START LENGTH:: ${tags.length}');
-    if (tags.isEmpty) {
+  List<Tag> queryAllSuggest(String json) {
+    final tags = <Tag>[];
       // final json = await Mio.requestAsText('https://yande.re/tag/summary.json');
-
       final result = Map<String, dynamic>.from(jsonDecode(json));
       final version = result['version'];
       final data = result['data'] as String;
@@ -101,24 +58,13 @@ class YandereAutosuggest {
       // print('KVS: $kvs' );
       for (var item in kvs) {
         final entry = item.split('`');
-        // print(entry);
         if (entry.length > 1) {
-          final tag = Tag();
-          final typeEntry = _getTypeByCode(int.parse(entry[0]));
-          tag.type = typeEntry['type'];
-          tag.color = typeEntry['color'];
-          tag.label = entry[1];
-          if (entry.length> 2) {
-
-            tag.alias = entry.sublist(2,entry.length).toString();
-          }
-          tags.add(tag);
+          tags.add(Tag(
+              typeCode: int.parse(entry[0]),
+              label: entry[1],
+              alias: entry.length > 2 ? entry[2] : null));
         }
       }
-    }
-    // print('TAGS: $tags' );
-    // print('TAG END LENGTH:: ${tags.length}');
-
     return tags;
   }
 }

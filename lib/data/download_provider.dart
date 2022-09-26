@@ -17,7 +17,6 @@
 
 import 'package:comic_nyaa/app/config.dart';
 import 'package:comic_nyaa/data/download/nyaa_download_task_queue.dart';
-import 'package:comic_nyaa/data/subscribe_provider.dart';
 import 'package:comic_nyaa/utils/extensions.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -58,7 +57,7 @@ class DownloadProvider  {
   late Database _db;
 
   Future<DownloadProvider> open() async {
-    final path = (await AppConfig.databaseDir).join(tableDownload);
+    final path = (await AppConfig.databaseDir).join('$tableDownload.db');
     _db = await openDatabase(path, version: version, onCreate: (Database db, int version) async {
       await db.execute(createTableDownload);
     });

@@ -19,7 +19,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:archive/archive.dart';
-import 'package:comic_nyaa/library/mio/model/data_origin.dart';
+import '../model/data_origin.dart';
 
 import '../model/site.dart';
 

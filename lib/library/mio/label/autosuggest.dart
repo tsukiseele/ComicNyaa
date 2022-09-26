@@ -14,13 +14,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
-import 'dart:convert';
-
-import 'package:comic_nyaa/library/mio/core/mio.dart';
-
 import '../model/tag.dart';
 
-abstract class AutoSuggest {
-  Future<List<Tag>> queryAutoSuggest(String query);
+abstract class TagAutoSuggest {
+  Future<List<Tag>> queryAutoSuggest(String query, {int? limit});
 }

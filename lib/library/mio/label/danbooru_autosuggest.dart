@@ -17,35 +17,20 @@
 
 import 'dart:convert';
 
-import 'package:comic_nyaa/library/mio/core/mio.dart';
-import 'package:comic_nyaa/library/mio/label/autosuggest.dart';
+import '../core/mio.dart';
+import '../label/autosuggest.dart';
 
 import '../model/tag.dart';
 
-class DanbooruAutosuggest extends AutoSuggest {
+class DanbooruAutosuggest extends TagAutoSuggest {
   static final DanbooruAutosuggest _instance = DanbooruAutosuggest._();
+
   factory DanbooruAutosuggest() => _instance;
+
   DanbooruAutosuggest._();
 
-  dynamic _getTypeByCode(int code) {
-    switch (code) {
-      case 0:
-        return {'type': 'General', 'color': '#0075f8'};
-      case 1:
-        return {'type': 'Artist', 'color': '#c00004'};
-      case 3:
-        return {'type': 'Copyright', 'color': '#a800aa'};
-      case 4:
-        return {'type': 'Character', 'color': '#00ab2c'};
-      case 5:
-        return {'type': 'Meta', 'color': '#007f7f'};
-      default:
-        return {'type': 'Unknown', 'color': '#cd5da0'};
-    }
-  }
-
   @override
-  Future<List<Tag>> queryAutoSuggest(String query) async {
+  Future<List<Tag>> queryAutoSuggest(String query, {int? limit}) async {
     final lastWordIndex = query.lastIndexOf(' ');
     final word = query.substring(lastWordIndex > 0 ? lastWordIndex : 0);
     //
@@ -54,13 +39,10 @@ class DanbooruAutosuggest extends AutoSuggest {
     final result = List<Map<String, dynamic>>.from(jsonDecode(text));
     final suggests = <Tag>[];
     for (final item in result) {
-      final suggest = Tag();
-      final typeEntry = _getTypeByCode(item['category']);
-      suggest.label = item['value'];
-      suggest.count = item['post_count'].toString();
-      suggest.type = typeEntry['type'];
-      suggest.color = typeEntry['color'];
-      suggests.add(suggest);
+      suggests.add(Tag(
+          typeCode: item['category'],
+          label: item['value'],
+          count: item['post_count'].toString()));
     }
     return suggests;
   }

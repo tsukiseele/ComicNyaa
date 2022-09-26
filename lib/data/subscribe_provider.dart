@@ -41,7 +41,7 @@ class SubscribeProvider {
   late Database _db;
 
   Future<SubscribeProvider> open() async {
-    final path = (await AppConfig.databaseDir).join(tableSubscribe);
+    final path = (await AppConfig.databaseDir).join('$tableSubscribe.db');
     bool isFirstCreated = false;
     _db = await openDatabase(path, version: version,
         onCreate: (Database db, int version) async {

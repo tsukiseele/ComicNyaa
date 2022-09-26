@@ -15,7 +15,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import 'package:comic_nyaa/library/mio/model/site.dart';
+import 'site.dart';
 
 class DataOrigin {
   Site site;

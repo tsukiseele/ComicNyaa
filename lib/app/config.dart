@@ -28,7 +28,6 @@ class AppConfig {
 
   static const downloadDirectoryName = 'ComicNyaa';
   static const rulesDirectoryName = 'rules';
-  static const databaseName = 'nyaa.db';
   static Directory? _appDir;
   static Directory? _ruleDir;
   static Directory? _downloadDir;

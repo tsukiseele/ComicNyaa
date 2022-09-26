@@ -18,6 +18,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:isolate';
+import 'package:comic_nyaa/data/tags/tags_autosuggest.dart';
 import 'package:comic_nyaa/library/mio/label/danbooru_autosuggest.dart';
 import 'package:comic_nyaa/library/mio/label/yandere_autosuggest.dart';
 import 'package:comic_nyaa/utils/flutter_utils.dart';
@@ -345,12 +346,12 @@ class MainViewState extends State<MainView> with TickerProviderStateMixin {
               ));
   }
 
-  static _queryAutosuggest(Tuple3<SendPort, String, String> message) async {
-    final autosuggest = await YandereAutosuggest.instance
-        .queryAutoSuggest(message.item2, message.item3);
-    message.item1.send(
-        autosuggest.length > 20 ? autosuggest.sublist(0, 20) : autosuggest);
-  }
+  // static _queryAutosuggest(Tuple3<SendPort, String, String> message) async {
+  //   final autosuggest = await YandereAutosuggest.instance
+  //       .queryAutoSuggest(message.item2, message.item3);
+  //   message.item1.send(
+  //       autosuggest.length > 20 ? autosuggest.sublist(0, 20) : autosuggest);
+  // }
 
   Widget _buildFloatingSearchBar() {
     final isPortrait =
@@ -378,13 +379,18 @@ class MainViewState extends State<MainView> with TickerProviderStateMixin {
         queryStyle:
             const TextStyle(fontFamily: AppConfig.uiFontFamily, fontSize: 16),
         onQueryChanged: (query) async {
-          _keywords = _floatingSearchBarController.query;
+          // _keywords = _floatingSearchBarController.query;
+          _keywords = query;
+
+          final autosuggest = await SearchAutoSuggest.instance.queryAutoSuggest(query);
+          const limit = 20;
+          setState(() => _autosuggest = autosuggest.sublist(0, autosuggest.length > limit ? limit : autosuggest.length));
           // query
-          ReceivePort port = ReceivePort();
-          final json = await rootBundle.loadString('assets/data/summary.json');
-          await Isolate.spawn(
-              _queryAutosuggest, Tuple3(port.sendPort, json, query));
-          port.listen((message) => setState(() => _autosuggest = message));
+          // ReceivePort port = ReceivePort();
+          // final json = await rootBundle.loadString('assets/data/summary.json');
+          // await Isolate.spawn(
+          //     _queryAutosuggest, Tuple3(port.sendPort, json, query));
+          // port.listen((message) => setState(() => _autosuggest = message));
         },
         transition: CircularFloatingSearchBarTransition(),
         leadingActions: [
@@ -444,10 +450,10 @@ class MainViewState extends State<MainView> with TickerProviderStateMixin {
                           overflow: TextOverflow.ellipsis,
                         ),
                         trailing: NyaaTagItem(
-                            text: suggest.type,
+                            text: suggest.type ?? '',
                             textStyle: const TextStyle(
                                 fontSize: 14, color: Colors.white),
-                            color: ColorUtil.fromHex(suggest.color),
+                            color: suggest.color != null ? ColorUtil.fromHex(suggest.color!) : null,
                             isRounded: false),
                       ),
                     )
