@@ -155,7 +155,7 @@ class Mio<T extends DataModel> {
           // 操作参数处理
           // print('SELECTOR: ${childrenSelector.toJson().toString()}');
           // 判断是否拉平子节点，否则追加到子节点下
-          if (childrenSelector.flat != null && childrenSelector.flat == true) {
+          if (childrenSelector.flat == true) {
             item.addAll(children.first);
             // print('FLAT CHILDREN ITEM: ${item.toString()}');
             break;
@@ -260,7 +260,7 @@ class Mio<T extends DataModel> {
           }
         }
         // 判断是否拉平子节点(并终止获取)，否则追加到子节点下，
-        if (childrenSelector.flat != null && childrenSelector.flat == true) {
+        if (childrenSelector.flat == true) {
           item.addAll(children.first);
           yield [item];
           break;
