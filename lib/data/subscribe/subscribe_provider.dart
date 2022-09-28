@@ -15,10 +15,9 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import 'package:comic_nyaa/app/app_config.dart';
 import 'package:comic_nyaa/utils/extensions.dart';
 import 'package:sqflite/sqflite.dart';
-
-import '../app/config.dart';
 
 const String tableSubscribe = 'subscribe';
 const int version = 1;

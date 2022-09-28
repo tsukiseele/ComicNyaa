@@ -23,10 +23,10 @@ import 'package:comic_nyaa/utils/extensions.dart';
 import 'package:comic_nyaa/utils/uri_extensions.dart';
 import 'package:sqflite/sqflite.dart';
 
-import '../../app/config.dart';
+import '../../app/app_config.dart';
 import '../../library/http/http.dart';
 import '../../library/mio/core/site_manager.dart';
-import '../subscribe_provider.dart';
+import 'subscribe_provider.dart';
 
 class SubscribeManager {
   SubscribeManager._(this._provider);

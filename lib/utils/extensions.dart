@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:comic_nyaa/models/typed_model.dart';
 import 'package:comic_nyaa/utils/uri_extensions.dart';
 
-import '../app/preference.dart';
+import '../app/app_preference.dart';
 
 extension ExtendedPath on FileSystemEntity {
   Directory joinDir(Directory child) {
@@ -63,7 +63,7 @@ extension TypedModelExt on TypedModel {
 
   isSni() async {
     final df = getOrigin().site.domainFronting;
-    final locale = (await NyaaPreferences.instance).locale;
+    final locale = (await AppPreferences.instance).locale;
     if (locale == df?.country) {
       return true;
     }

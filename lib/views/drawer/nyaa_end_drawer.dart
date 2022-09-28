@@ -18,7 +18,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../../app/config.dart';
+import '../../app/app_config.dart';
 import '../../library/mio/model/site.dart';
 import '../../widget/simple_network_image.dart';
 

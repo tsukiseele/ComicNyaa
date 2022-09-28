@@ -266,8 +266,8 @@ class _GalleryViewState extends State<GalleryView>
 
   @override
   Widget build(BuildContext context) {
-    _topOffset = kToolbarHeight + MediaQuery.of(context).viewPadding.top;
     super.build(context);
+    _topOffset = kToolbarHeight + MediaQuery.of(context).viewPadding.top;
     return Column(children: [
       Flexible(
         child: RawScrollbar(
@@ -291,14 +291,21 @@ class _GalleryViewState extends State<GalleryView>
                 onLoading: () => _onNext(),
                 physics: const BouncingScrollPhysics(),
                 // onLoading: _onLoading,
-                child: MasonryGridView.count(
-                    padding: EdgeInsets.fromLTRB(8, _topOffset + 8, 8, 0),
-                    crossAxisCount: 3,
-                    mainAxisSpacing: 8.0,
-                    crossAxisSpacing: 8.0,
-                    itemCount: _items.length,
-                    controller: _scrollController,
-                    itemBuilder: _buildItem))),
+                child: _items.isNotEmpty
+                    ? MasonryGridView.count(
+                        padding: EdgeInsets.fromLTRB(8, _topOffset + 8, 8, 0),
+                        crossAxisCount: 3,
+                        mainAxisSpacing: 8.0,
+                        crossAxisSpacing: 8.0,
+                        itemCount: _items.length,
+                        controller: _scrollController,
+                        itemBuilder: _buildItem)
+                    : const Center(
+                        child: Text(
+                          '没有数据',
+                          style: TextStyle(fontSize: 24),
+                        ),
+                      ))),
       ),
     ]);
   }

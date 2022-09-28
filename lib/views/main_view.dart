@@ -36,7 +36,7 @@ import 'package:comic_nyaa/library/mio/model/site.dart';
 import 'package:comic_nyaa/library/mio/core/site_manager.dart';
 import 'package:comic_nyaa/widget/nyaa_tab_view.dart';
 import 'package:comic_nyaa/widget/simple_network_image.dart';
-import 'package:comic_nyaa/app/config.dart';
+import 'package:comic_nyaa/app/app_config.dart';
 import 'package:comic_nyaa/data/download/nyaa_download_manager.dart';
 import 'package:comic_nyaa/models/typed_model.dart';
 import 'package:comic_nyaa/widget/marquee_widget.dart';
