@@ -55,7 +55,8 @@ class SearchAutoSuggest extends TagAutoSuggest {
 
       // Copy from asset
       ByteData data = await rootBundle.load(assetsDatabasePath);
-      List<int> bytes = data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
+      List<int> bytes =
+          data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
 
       // Write and flush the bytes written
       await File(path).writeAsBytes(bytes, flush: true);
@@ -74,8 +75,9 @@ class SearchAutoSuggest extends TagAutoSuggest {
   @override
   Future<List<Tag>> queryAutoSuggest(String query, {int? limit}) async {
     final db = await getDatabase();
-    final result =
-        await db.rawQuery('SELECT * FROM $tableName WHERE $columnName LIKE \'$query%\'${limit != null ? ' LIMIT $limit' : ''}');
+    query = query.replaceAll('_', '\\_').replaceAll('%', '\\%');
+    final result = await db.rawQuery(
+        'SELECT * FROM $tableName WHERE $columnName LIKE \'$query%\' ESCAPE \'\\\' ${limit != null ? ' LIMIT $limit' : ''}');
     return result.map((item) {
       return Tag(label: item['tag'] as String, typeCode: item['ttype'] as int);
     }).toList();
