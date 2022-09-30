@@ -3,7 +3,7 @@
 查看现有插件库，请参见：[ComicNyaa-Plugins](https://github.com/tsukiseele/ComicNyaa-Plugins)
 > ポトフちゃんとワトラちゃんがすごくかわいいです！
 
-## Futures
+## Features
 - [x] 使用插件式的资源解析器
 - [x] 对图库以及漫画的阅读基础支持
 - [x] 对视频站点的支持
