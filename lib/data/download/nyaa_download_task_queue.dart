@@ -23,7 +23,7 @@ import 'package:comic_nyaa/models/typed_model.dart';
 import 'package:comic_nyaa/utils/extensions.dart';
 import 'package:comic_nyaa/utils/string_extensions.dart';
 
-import '../../app/preference.dart';
+import '../../app/app_preference.dart';
 import '../../library/mio/core/mio.dart';
 import 'nyaa_download_manager.dart';
 import 'nyaa_download_task.dart';

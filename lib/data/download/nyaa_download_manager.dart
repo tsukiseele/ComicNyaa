@@ -16,11 +16,11 @@
  */
 
 import 'package:comic_nyaa/data/download/nyaa_download_task_queue.dart';
-import 'package:comic_nyaa/data/download_provider.dart';
+import 'package:comic_nyaa/data/download/download_provider.dart';
 import 'package:comic_nyaa/library/download/download_manager.dart';
 
-import '../../app/config.dart';
-import '../../app/preference.dart';
+import '../../app/app_config.dart';
+import '../../app/app_preference.dart';
 import '../../models/typed_model.dart';
 
 class NyaaDownloadManager {
@@ -48,7 +48,7 @@ class NyaaDownloadManager {
   Future<void> add(TypedModel item) async {
     final downloadDir = await AppConfig.downloadDir;
     final downloadLevel =
-        (await NyaaPreferences.instance).downloadResourceLevel;
+        (await AppPreferences.instance).downloadResourceLevel;
     final task = NyaaDownloadTaskQueue(
         parent: item,
         directory: downloadDir.path,
@@ -61,7 +61,7 @@ class NyaaDownloadManager {
   Future<void> addAll(Iterable<TypedModel> items) async {
     final downloadDir = await AppConfig.downloadDir;
     final downloadLevel =
-        (await NyaaPreferences.instance).downloadResourceLevel;
+        (await AppPreferences.instance).downloadResourceLevel;
     final tasks = items.map((item) => NyaaDownloadTaskQueue(
         parent: item,
         directory: downloadDir.path,

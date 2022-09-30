@@ -15,7 +15,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import 'package:comic_nyaa/app/config.dart';
+import 'package:comic_nyaa/app/app_config.dart';
 import 'package:comic_nyaa/data/download/nyaa_download_task_queue.dart';
 import 'package:comic_nyaa/utils/extensions.dart';
 import 'package:sqflite/sqflite.dart';

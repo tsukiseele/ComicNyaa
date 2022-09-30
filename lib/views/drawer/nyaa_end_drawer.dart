@@ -18,12 +18,12 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../../app/config.dart';
+import '../../app/app_config.dart';
 import '../../library/mio/model/site.dart';
 import '../../widget/simple_network_image.dart';
 
 class _Controller extends GetxController {
-  var expandState = <int, bool>{}.obs;
+  var expandState = <int, bool>{0: true}.obs;
   var scrollPosition = 0.0.obs;
 }
 

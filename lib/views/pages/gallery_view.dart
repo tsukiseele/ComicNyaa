@@ -53,13 +53,14 @@ class GalleryView extends StatefulWidget {
       required this.site,
       required this.heroKey,
       this.color,
-      this.scrollbarColor})
+      this.scrollbarColor, this.empty})
       : super(key: key);
   final GalleryController controller = GalleryController();
   final Site site;
   final String heroKey;
   final Color? color;
   final Color? scrollbarColor;
+  final Widget? empty;
 
   @override
   State<GalleryView> createState() => _GalleryViewState();
@@ -266,8 +267,8 @@ class _GalleryViewState extends State<GalleryView>
 
   @override
   Widget build(BuildContext context) {
-    _topOffset = kToolbarHeight + MediaQuery.of(context).viewPadding.top;
     super.build(context);
+    _topOffset = kToolbarHeight + MediaQuery.of(context).viewPadding.top;
     return Column(children: [
       Flexible(
         child: RawScrollbar(
@@ -291,14 +292,21 @@ class _GalleryViewState extends State<GalleryView>
                 onLoading: () => _onNext(),
                 physics: const BouncingScrollPhysics(),
                 // onLoading: _onLoading,
-                child: MasonryGridView.count(
-                    padding: EdgeInsets.fromLTRB(8, _topOffset + 8, 8, 0),
-                    crossAxisCount: 3,
-                    mainAxisSpacing: 8.0,
-                    crossAxisSpacing: 8.0,
-                    itemCount: _items.length,
-                    controller: _scrollController,
-                    itemBuilder: _buildItem))),
+                child: _items.isNotEmpty || _refreshController.isLoading || _refreshController.isRefresh
+                    ? MasonryGridView.count(
+                        padding: EdgeInsets.fromLTRB(8, _topOffset + 8, 8, 0),
+                        crossAxisCount: 3,
+                        mainAxisSpacing: 8.0,
+                        crossAxisSpacing: 8.0,
+                        itemCount: _items.length,
+                        controller: _scrollController,
+                        itemBuilder: _buildItem)
+                    : widget.empty ?? const Center(
+                        child: Text(
+                          'No data',
+                          style: TextStyle(fontSize: 24),
+                        ),
+                      ))),
       ),
     ]);
   }
@@ -400,10 +408,8 @@ class _GalleryViewState extends State<GalleryView>
   void didUpdateWidget(covariant GalleryView oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.site.id != oldWidget.site.id) {
-      print(
-          'didUpdateWidget:::::: NAME: ${oldWidget.site.name} >>>>>>>> ${widget.site.name}');
-      print(
-          'didUpdateWidget:::::: DATA: ${widget.controller.items} <<<<<<<< ${oldWidget.controller.items}');
+      // print('didUpdateWidget:::::: NAME: ${oldWidget.site.name} >>>>>>>> ${widget.site.name}');
+      // print('didUpdateWidget:::::: DATA: ${widget.controller.items} <<<<<<<< ${oldWidget.controller.items}');
       // 销毁被旧的滚动控制器
       // oldWidget.controller.scrollController?.dispose();
       setState(() {

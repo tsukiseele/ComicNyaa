@@ -16,13 +16,13 @@
  */
 
 import 'package:comic_nyaa/data/subscribe/subscribe_manager.dart';
-import 'package:comic_nyaa/data/subscribe_provider.dart';
+import 'package:comic_nyaa/data/subscribe/subscribe_provider.dart';
 import 'package:comic_nyaa/library/mio/core/site_manager.dart';
 import 'package:comic_nyaa/utils/uri_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
-import '../data/subscribe_provider.dart';
+import '../data/subscribe/subscribe_provider.dart';
 
 class SubscribeView extends StatefulWidget {
   const SubscribeView({Key? key}) : super(key: key);

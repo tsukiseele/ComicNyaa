@@ -47,13 +47,13 @@ class Tag {
       case 0:
         return TagType.general;
       case 1:
-        return TagType.meta;
+        return TagType.artist;
       case 3:
         return TagType.copyright;
       case 4:
         return TagType.character;
       case 5:
-        return TagType.artist;
+        return TagType.meta;
       default:
         return TagType.unknown;
     }

@@ -15,7 +15,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import 'package:comic_nyaa/app/config.dart';
+import 'package:comic_nyaa/app/app_config.dart';
 import 'package:comic_nyaa/library/mio/core/mio.dart';
 import 'package:comic_nyaa/library/mio/model/data_origin.dart';
 import 'package:comic_nyaa/models/typed_model.dart';
@@ -33,7 +33,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:url_launcher/url_launcher_string.dart';
-import '../app/preference.dart';
+import '../app/app_preference.dart';
 import '../library/http/http.dart';
 import '../utils/flutter_utils.dart';
 
@@ -138,7 +138,7 @@ class _SimpleImageDetailViewState extends State<SimpleImageDetailView>
   void _onDownload(TypedModel model) async {
     try {
       final downloadLevel =
-          (await NyaaPreferences.instance).downloadResourceLevel;
+          (await AppPreferences.instance).downloadResourceLevel;
       String? url;
       switch (downloadLevel) {
         case DownloadResourceLevel.low:

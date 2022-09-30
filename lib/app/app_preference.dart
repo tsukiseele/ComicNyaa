@@ -33,14 +33,14 @@ enum DownloadResourceLevel {
       DownloadResourceLevel.values.firstWhere((item) => item.value == value);
 }
 
-class NyaaPreferences {
-  NyaaPreferences._(this.preferences);
+class AppPreferences {
+  AppPreferences._(this.preferences);
 
-  static NyaaPreferences? _instance;
+  static AppPreferences? _instance;
 
-  static Future<NyaaPreferences> get instance async {
+  static Future<AppPreferences> get instance async {
     return _instance ??=
-        NyaaPreferences._(await SharedPreferences.getInstance());
+        AppPreferences._(await SharedPreferences.getInstance());
   }
 
   static const defaultDownloadResourceLevel = DownloadResourceLevel.medium;

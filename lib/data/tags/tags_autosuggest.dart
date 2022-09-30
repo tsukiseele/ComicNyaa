@@ -15,10 +15,9 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import 'dart:typed_data';
 import 'dart:io';
 import 'package:flutter/services.dart';
-import 'package:path/path.dart';
+import 'package:path/path.dart' as path;
 import 'package:comic_nyaa/library/mio/label/autosuggest.dart';
 import 'package:comic_nyaa/library/mio/model/tag.dart';
 import 'package:sqflite/sqflite.dart';
@@ -26,8 +25,9 @@ import 'package:sqflite/sqflite.dart';
 class SearchAutoSuggest extends TagAutoSuggest {
   static const databaseName = 'tags.db';
   static const tableName = 'tags';
-  static const columnName = 'tag';
-  static final assetsDatabasePath = join('assets', 'data', databaseName);
+  static const columnTag = 'tag';
+  static const columnAlias = 'tag';
+  static final assetsDatabasePath = path.join('assets', 'data', databaseName);
 
   SearchAutoSuggest._();
 
@@ -39,10 +39,10 @@ class SearchAutoSuggest extends TagAutoSuggest {
 
   Future<Database> getAndCreateDatabaseFromAssets() async {
     final databasesPath = await getDatabasesPath();
-    final path = join(databasesPath, databaseName);
+    final cpPath = path.join(databasesPath, databaseName);
 
     // Check if the database exists
-    final exists = await databaseExists(path);
+    final exists = await databaseExists(cpPath);
 
     if (!exists) {
       // Should happen only the first time you launch your application
@@ -50,20 +50,21 @@ class SearchAutoSuggest extends TagAutoSuggest {
 
       // Make sure the parent directory exists
       try {
-        await Directory(dirname(path)).create(recursive: true);
+        await Directory(path.dirname(cpPath)).create(recursive: true);
       } catch (_) {}
 
       // Copy from asset
       ByteData data = await rootBundle.load(assetsDatabasePath);
-      List<int> bytes = data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
+      List<int> bytes =
+          data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
 
       // Write and flush the bytes written
-      await File(path).writeAsBytes(bytes, flush: true);
+      await File(cpPath).writeAsBytes(bytes, flush: true);
     } else {
       print("Opening existing database");
     }
     // open the read only database
-    return await openReadOnlyDatabase(path);
+    return await openReadOnlyDatabase(cpPath);
   }
 
   Future<Database> getDatabase() async {
@@ -74,10 +75,11 @@ class SearchAutoSuggest extends TagAutoSuggest {
   @override
   Future<List<Tag>> queryAutoSuggest(String query, {int? limit}) async {
     final db = await getDatabase();
-    final result =
-        await db.rawQuery('SELECT * FROM $tableName WHERE $columnName LIKE \'$query%\'${limit != null ? ' LIMIT $limit' : ''}');
+    query = query.replaceAll('_', '\\_').replaceAll('%', '\\%').replaceAll('[', '\\[');
+    final result = await db.rawQuery(
+        'SELECT * FROM $tableName WHERE $columnTag LIKE \'%$query%\' ESCAPE \'\\\' OR $columnAlias LIKE \'%$query%\' ESCAPE \'\\\' ${limit != null ? ' LIMIT $limit' : ''}');
     return result.map((item) {
-      return Tag(label: item['tag'] as String, typeCode: item['ttype'] as int);
+      return Tag(label: item['tag'] as String, typeCode: item['type'] as int, alias: item['alias'] as String);
     }).toList();
   }
 }

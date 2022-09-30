@@ -16,14 +16,14 @@
  */
 
 import 'dart:async';
-import 'package:comic_nyaa/app/preference.dart';
+import 'package:comic_nyaa/app/app_preference.dart';
 import 'package:comic_nyaa/data/download/nyaa_download_manager.dart';
 import 'package:comic_nyaa/data/http_cache_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_displaymode/flutter_displaymode.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
-import 'app/config.dart';
+import 'app/app_config.dart';
 import 'library/http/http.dart';
 import 'library/http/sni.dart' as sni;
 import 'library/mio/core/mio.dart';
@@ -56,7 +56,7 @@ class ComicNyaa extends StatefulWidget {
 
 class _ComicNyaaState extends State<ComicNyaa> {
   void location(Locale? deviceLocale, Iterable<Locale> supportedLocales) async {
-    (await NyaaPreferences.instance).setLocale(deviceLocale?.languageCode ?? 'zh-TW');
+    (await AppPreferences.instance).setLocale(deviceLocale?.languageCode ?? 'zh-TW');
   }
 
   @override
