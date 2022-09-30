@@ -24,6 +24,7 @@ import 'package:comic_nyaa/library/mio/label/yandere_autosuggest.dart';
 import 'package:comic_nyaa/utils/flutter_utils.dart';
 import 'package:comic_nyaa/widget/back_control.dart';
 import 'package:comic_nyaa/views/drawer/nyaa_end_drawer.dart';
+import 'package:comic_nyaa/widget/empty_data.dart';
 import 'package:comic_nyaa/widget/nyaa_tag_item.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -292,10 +293,12 @@ class MainViewState extends State<MainView> with TickerProviderStateMixin {
   }
 
   GalleryView _buildTab(Site site) {
+    final color = _getTabColor(_gallerys.length);
     return GalleryView(
       site: site,
       heroKey: _gallerys.length.toString(),
-      color: _getTabColor(_gallerys.length),
+      color: color,
+      empty: EmptyData(text: '无可用数据', color: color, textColor: color,),
     );
   }
 
@@ -352,9 +355,9 @@ class MainViewState extends State<MainView> with TickerProviderStateMixin {
           const limit = 20;
           final lastWordIndex = query.lastIndexOf(' ');
           final word = query.substring(lastWordIndex > 0 ? lastWordIndex : 0).trim();
-          print('QUERYYYYY: $word');
+          // print('QUERYYYYY: $word');
           final autosuggest = await SearchAutoSuggest.instance.queryAutoSuggest(word, limit: limit);
-          print('RESULT:: $autosuggest');
+          // print('RESULT:: $autosuggest');
           setState(() => _autosuggest = autosuggest);
         },
         transition: CircularFloatingSearchBarTransition(),
