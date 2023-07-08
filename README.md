@@ -27,8 +27,8 @@
 ## Support 
 
 - Android 5.1+
-- IOS 未测试
-- Window 未来可能支持
+- IOS
+- Window 暂不支持
 
 ## Usage
 - 注意：中国大陆用户请配合梯子使用
