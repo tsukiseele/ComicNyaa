@@ -49,8 +49,8 @@ class SubscribeProvider {
     });
     if (isFirstCreated) {
       await insert(Subscribe(
-          name: 'Official',
-          url: 'https://hlo.li/static/official.zip',
+          name: 'Default',
+          url: 'https://cdn.jsdelivr.net/gh/tsukiseele/ComicNyaa-Plugins@main/default.zip',
           version: 1,
           updateDate: DateTime.now().toIso8601String()));
     }

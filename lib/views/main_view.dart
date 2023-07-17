@@ -18,6 +18,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:isolate';
+import 'dart:math';
 import 'package:comic_nyaa/data/tags/tags_autosuggest.dart';
 import 'package:comic_nyaa/library/mio/label/danbooru_autosuggest.dart';
 import 'package:comic_nyaa/library/mio/label/yandere_autosuggest.dart';
@@ -91,6 +92,7 @@ class MainViewState extends State<MainView> with TickerProviderStateMixin {
     await _checkUpdate();
     setState(() {
       _sites = SiteManager.sites.values.toList();
+      print('loaded $_sites');
       // 打开默认标签
       if (widget.site != null) {
         _addTab(widget.site!);

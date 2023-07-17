@@ -64,7 +64,7 @@ class _ComicNyaaState extends State<ComicNyaa> {
     return MaterialApp(
       title: AppConfig.appName,
       theme: ThemeData(
-        fontFamily: 'ComicNeue',
+        // fontFamily: 'ComicNeue',
         primarySwatch: Colors.teal,
       ),
       localeResolutionCallback: (deviceLocale, supportedLocales) {

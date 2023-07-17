@@ -17,6 +17,7 @@
 
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
 
 import 'package:archive/archive.dart';
 import '../model/data_origin.dart';
@@ -55,7 +56,7 @@ class SiteManager {
   /// 从目录加载规则，默认加载所有.zip文件（不递归）
   ///
   static Future<List<Site>> loadFromDirectory(Directory dir,
-      {String suffix = '.zip'}) async {
+      {String suffix = '.zip', String ruleSuffix = '.json'}) async {
     final sites = <Site>[];
     await for (final file in dir.list()) {
       final isAllow = file.path.endsWith(suffix);
@@ -63,7 +64,8 @@ class SiteManager {
         final bytes = File(file.path).readAsBytesSync();
         final archive = ZipDecoder().decodeBytes(bytes);
         for (final entry in archive) {
-          if (entry.isFile) {
+          if (entry.isFile && entry.name.endsWith(ruleSuffix)) {
+            print(entry.name);
             final json = jsonDecode(utf8.decode(entry.content));
             final jsonMap = Map<String, dynamic>.from(json);
             final site = Site.fromJson(jsonMap);

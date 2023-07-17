@@ -210,7 +210,6 @@ class DownloadQueueItem extends StatelessWidget {
   }
 
   Future<void> onRestart(NyaaDownloadTaskQueue tasks) async {
-    print('RRRRRRRRRRRRRRRRRRRRRRRRRRRRRR');
     await tasks.start();
     final successfulCount = tasks.tasks
         .where((item) => item.status == DownloadStatus.successful)

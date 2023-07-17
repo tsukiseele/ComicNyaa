@@ -15,6 +15,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import 'dart:math';
+
 import 'package:comic_nyaa/data/subscribe/subscribe_manager.dart';
 import 'package:comic_nyaa/data/subscribe/subscribe_provider.dart';
 import 'package:comic_nyaa/library/mio/core/site_manager.dart';
@@ -111,6 +113,7 @@ class _SubscribeViewState extends State<SubscribeView> {
       await (await SubscribeManager.instance).updateSubscribe(subscribe);
       Fluttertoast.showToast(msg: '规则已更新');
     } catch (e) {
+      print(e);
       Fluttertoast.showToast(msg: '更新失败');
     } finally {
       ns?.pop();
