@@ -15,7 +15,10 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import 'package:comic_nyaa/utils/public_api.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:get/get_state_manager/src/simple/get_controllers.dart';
 
 import '../../utils/flutter_utils.dart';
 import '../../widget/simple_network_image.dart';
@@ -23,11 +26,23 @@ import '../download_view.dart';
 import '../settings_view.dart';
 import '../subscribe_view.dart';
 
+class _NyaaDrawerController extends GetxController {
+  final banner = ''.obs;
+  final hitokito = Rxn<Hitokito>();
+}
+
 class NyaaDrawer extends StatelessWidget {
   const NyaaDrawer({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    final controller = Get.put(_NyaaDrawerController());
+    if (controller.banner.value.isEmpty) {
+      apiRandomImage().then((value) => controller.banner.value = value);
+    }
+    if (controller.hitokito.value == null) {
+      apiHitokito().then((value) => controller.hitokito.value = value);
+    }
     return Drawer(
         child: ListView(padding: EdgeInsets.zero, children: [
       Container(
@@ -35,7 +50,7 @@ class NyaaDrawer extends StatelessWidget {
           child: Material(
               elevation: 4,
               child: Stack(children: [
-                _buildHeader(),
+                _buildHeader(controller),
                 Positioned.fill(
                   child: Container(
                       decoration: BoxDecoration(
@@ -53,15 +68,12 @@ class NyaaDrawer extends StatelessWidget {
                               ])),
                       padding: const EdgeInsets.all(8),
                       alignment: Alignment.bottomLeft,
-                      child: Text(
-                          "Os iustī meditabitur sapientiam, Et lingua eius loquetur iudicium.",
+                      child: Obx(() => Text(
+                          controller.hitokito.value?.hitokoto ?? '',
                           style: TextStyle(
-                              color: Colors.teal[200],
-                              fontSize: 18,
-                              // fontWeight: FontWeight.bold,
-                              shadows: [
-                                Shadow(color: Colors.teal[100]!, blurRadius: 8)
-                              ]))),
+                              color: Colors.teal[100],
+                              fontSize: 16
+                          )))),
                 ),
               ]))),
       ListTile(
@@ -89,16 +101,17 @@ class NyaaDrawer extends StatelessWidget {
     ]));
   }
 
-  Widget _buildHeader() {
-    return const Padding(
-        padding: EdgeInsets.only(bottom: 8),
-        child: Material(
+  Widget _buildHeader(_NyaaDrawerController controller) {
+    return Material(
             elevation: 4,
-            child: SimpleNetworkImage(
-              'https://cdn.jsdelivr.net/gh/nyarray/LoliHost/images/94d6d0e7be187770e5d538539d95a12a.jpeg',
-              fit: BoxFit.cover,
-              width: double.maxFinite,
-              height: 160 + kToolbarHeight,
-            )));
+            child: Obx(() => controller.banner.value.isNotEmpty
+                ? SimpleNetworkImage(
+                    controller.banner.value,
+                    fit: BoxFit.cover,
+                    width: double.maxFinite,
+                    height: 160 + kToolbarHeight,
+                    animationDuration: Duration.zero,
+                  )
+                : Container(height: 160 + kToolbarHeight)));
   }
 }

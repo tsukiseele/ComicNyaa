@@ -34,7 +34,7 @@ Color getColorByStatus(DownloadStatus status) {
     case DownloadStatus.pause:
       return idle;
     case DownloadStatus.init:
-    case DownloadStatus.loading:
+    case DownloadStatus.progress:
       return downloading;
     case DownloadStatus.successful:
       return successful;
@@ -90,7 +90,7 @@ class DownloadQueueItem extends StatelessWidget {
     if (item.status == DownloadStatus.init) {
       return const LinearProgressIndicator();
     }
-    if (item.status == DownloadStatus.loading) {
+    if (item.status == DownloadStatus.progress) {
       if (item.progress != null && item.progress!.totalLength > 0) {
         return LinearProgressIndicator(
             value: item.progress!.completedLength / item.progress!.totalLength);
@@ -191,7 +191,7 @@ class DownloadQueueItem extends StatelessWidget {
                                     const EdgeInsets.only(left: 4, right: 4),
                                 child: _buildProgressText(item.progress),
                               )),
-                              item.status == DownloadStatus.loading
+                              item.status == DownloadStatus.progress
                                   ? InkWell(
                                       onTap: () => onPause(item),
                                       child: const Padding(

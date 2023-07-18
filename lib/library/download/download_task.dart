@@ -37,7 +37,7 @@ class DownloadTask extends Downloadable<void> {
   @override
   Future<void> onDownloading() async {
     print('DownloadTask::: downloading >>> url: $url, path: $path');
-    status = DownloadStatus.loading;
+    status = DownloadStatus.progress;
     try {
       final target = File(path);
       // 存在则跳过，直接返回
@@ -54,7 +54,7 @@ class DownloadTask extends Downloadable<void> {
       }
       // 开始下载并监听回调
       await Http.downloadFileBreakPointer(url, path, headers: headers, onProgress: (received, total) {
-        status = DownloadStatus.loading;
+        status = DownloadStatus.progress;
         progress = DownloadProgress(received, total);
         onProgress(progress!);
       });

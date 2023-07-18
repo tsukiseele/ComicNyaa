@@ -56,7 +56,7 @@ class DownloadTaskQueue<T extends Downloadable> extends DownloadableQueue<T> {
 
   @override
   Future<void> onDownloading() async {
-    status = DownloadStatus.loading;
+    status = DownloadStatus.progress;
     if (tasks.isNotEmpty) {
       queue.clear();
       queue.addAll(tasks);

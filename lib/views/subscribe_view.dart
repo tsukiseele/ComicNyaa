@@ -56,6 +56,7 @@ class _SubscribeViewState extends State<SubscribeView> {
           itemCount: _subscribes.length,
           itemBuilder: (ctx, index) {
             return ListTile(
+              contentPadding: const EdgeInsets.all(8),
               leading: Icon(
                 Icons.subscript,
                 color: Theme.of(context).primaryColor,

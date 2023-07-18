@@ -48,6 +48,8 @@ import 'package:comic_nyaa/views/pages/gallery_view.dart';
 import 'package:comic_nyaa/data/subscribe/subscribe_manager.dart';
 import 'package:comic_nyaa/views/drawer/nyaa_drawer.dart';
 import 'package:tuple/tuple.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 
 import '../library/mio/model/tag.dart';
 
@@ -92,7 +94,6 @@ class MainViewState extends State<MainView> with TickerProviderStateMixin {
     await _checkUpdate();
     setState(() {
       _sites = SiteManager.sites.values.toList();
-      print('loaded $_sites');
       // 打开默认标签
       if (widget.site != null) {
         _addTab(widget.site!);

@@ -15,6 +15,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import 'package:comic_nyaa/utils/public_api.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -22,13 +23,15 @@ import '../../app/app_config.dart';
 import '../../library/mio/model/site.dart';
 import '../../widget/simple_network_image.dart';
 
-class _Controller extends GetxController {
+class _NyaaEndController extends GetxController {
   var expandState = <int, bool>{0: true}.obs;
   var scrollPosition = 0.0.obs;
+  var banner = ''.obs;
 }
 
 class NyaaEndDrawer extends StatelessWidget {
-  NyaaEndDrawer({Key? key, required this.sites, this.onItemTap}) : super(key: key);
+  NyaaEndDrawer({Key? key, required this.sites, this.onItemTap})
+      : super(key: key);
 
   final List<Site> sites;
   final void Function(Site site)? onItemTap;
@@ -49,7 +52,10 @@ class NyaaEndDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final _Controller controller = Get.put(_Controller());
+    final controller = Get.put(_NyaaEndController());
+    if (controller.banner.value.isEmpty) {
+      apiRandomImage().then((value) => controller.banner.value = value);
+    }
     final siteTypeMap = <String, List<Site>>{};
     for (final site in sites) {
       final type = site.type ?? 'unknown';
@@ -59,7 +65,7 @@ class NyaaEndDrawer extends StatelessWidget {
         siteTypeMap[type] = [site];
       }
     }
-    final group =  siteTypeMap.entries.toList();
+    final group = siteTypeMap.entries.toList();
     final drawer = Drawer(
         elevation: 8,
         child: ListView.builder(
@@ -68,7 +74,7 @@ class NyaaEndDrawer extends StatelessWidget {
             itemCount: group.length + 1,
             itemBuilder: (ctx, i) {
               final index = i - 1;
-              if (index < 0) return _buildHeader();
+              if (index < 0) return _buildHeader(controller);
               final groupItem = group[index];
               return ExpansionTile(
                 leading: Icon(
@@ -76,8 +82,10 @@ class NyaaEndDrawer extends StatelessWidget {
                   size: 32,
                 ),
                 initiallyExpanded: controller.expandState[index] ?? false,
-                onExpansionChanged: (isExpand) => controller.expandState[index] = isExpand,
-                title: Text('${groupItem.key}s'.toUpperCase(), style: const TextStyle(fontSize: 16)),
+                onExpansionChanged: (isExpand) =>
+                    controller.expandState[index] = isExpand,
+                title: Text('${groupItem.key}s'.toUpperCase(),
+                    style: const TextStyle(fontSize: 16)),
                 children: List.generate(groupItem.value.length, (index) {
                   final site = groupItem.value[index];
                   return ListTile(
@@ -93,11 +101,15 @@ class NyaaEndDrawer extends StatelessWidget {
                             child: SimpleNetworkImage(
                               site.icon ?? '',
                               fit: BoxFit.cover,
-                              error: const Icon(Icons.image_not_supported, size: 32),
+                              error: const Icon(Icons.image_not_supported,
+                                  size: 32),
                             ))),
                     title: Text(
                       site.name ?? '',
-                      style: const TextStyle(fontFamily: AppConfig.uiFontFamily, fontSize: 18, fontWeight: FontWeight.bold),
+                      style: const TextStyle(
+                          fontFamily: AppConfig.uiFontFamily,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold),
                       textAlign: TextAlign.start,
                       maxLines: 1,
                       softWrap: false,
@@ -107,7 +119,8 @@ class NyaaEndDrawer extends StatelessWidget {
                       site.details ?? '',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(fontSize: 14, color: Colors.black26),
+                      style:
+                          const TextStyle(fontSize: 14, color: Colors.black26),
                     ),
                   );
                 }),
@@ -124,15 +137,15 @@ class NyaaEndDrawer extends StatelessWidget {
     return drawer;
   }
 
-  Widget _buildHeader() {
-    return const Padding(
-        padding: EdgeInsets.only(bottom: 8),
+  Widget _buildHeader(_NyaaEndController controller) {
+    return Padding(
+        padding: const EdgeInsets.only(bottom: 8),
         child: Material(
             elevation: 4,
-            child: SimpleNetworkImage(
-              'https://cdn.jsdelivr.net/gh/nyarray/LoliHost/images/7c4f1d7ea2dadd3ca835b9b2b9219681.webp',
-              fit: BoxFit.cover,
-              height: 160 + kToolbarHeight,
-            )));
+            child: Obx(() => controller.banner.value.isNotEmpty
+                    ? SimpleNetworkImage(controller.banner.value,
+                        animationDuration: Duration.zero,
+                        fit: BoxFit.cover, height: 160 + kToolbarHeight)
+                    : Container(height: 160 + kToolbarHeight))));
   }
 }

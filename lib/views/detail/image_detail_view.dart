@@ -29,6 +29,7 @@ import 'package:comic_nyaa/widget/nyaa_tags.dart';
 import 'package:comic_nyaa/widget/simple_network_image.dart';
 import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:url_launcher/url_launcher_string.dart';
@@ -37,7 +38,8 @@ import '../../library/http/http.dart';
 import '../../utils/flutter_utils.dart';
 
 class ImageDetailView extends StatefulWidget {
-  const ImageDetailView({Key? key, required this.models, required this.heroKey, this.index = 0})
+  const ImageDetailView(
+      {Key? key, required this.models, required this.heroKey, this.index = 0})
       : assert(models.length > 0),
         super(key: key);
   final title = '画廊';
@@ -174,7 +176,6 @@ class _ImageDetailViewState extends State<ImageDetailView>
     _initialized();
   }
 
-
   Widget _buildLoading(String placeholder, {int? current, int? total}) {
     double? progress;
     String progressText = 'Loading...';
@@ -245,8 +246,7 @@ class _ImageDetailViewState extends State<ImageDetailView>
                       final heroTag = '${widget.heroKey}-$placeholder-$index';
                       if (url.isEmpty) {
                         return Hero(
-                            tag: heroTag,
-                            child: _buildLoading(placeholder));
+                            tag: heroTag, child: _buildLoading(placeholder));
                       }
                       void Function() animationListener = () {};
                       Widget image = ExtendedImage.network(
@@ -391,8 +391,10 @@ class _ImageDetailViewState extends State<ImageDetailView>
                 padding: const EdgeInsets.only(
                     top: 8, left: 16, bottom: 24, right: 16),
                 children: [
+                  // _buildTitleView('Title'),
                   _buildTitleView('标题'),
                   Text(title ?? ''),
+                  // _buildTitleView('Tags'),
                   _buildTitleView('标签'),
                   NyaaTags(
                       itemCount: tags.length,
@@ -407,12 +409,33 @@ class _ImageDetailViewState extends State<ImageDetailView>
                                       keywords: tags[index]));
                             },
                           )),
-                  _buildTitleView('预览源'),
-                  _buildLink(_models[_currentIndex].sampleUrl ?? '无'),
-                  _buildTitleView('压缩源'),
-                  _buildLink(_models[_currentIndex].largerUrl ?? '无'),
-                  _buildTitleView('原始源'),
-                  _buildLink(_models[_currentIndex].originUrl ?? '无'),
+                  _models[_currentIndex].sampleUrl != null
+                      ? Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                              // _buildTitleView('Preview source url'),
+                              _buildTitleView('预览源'),
+                              _buildLink(_models[_currentIndex].sampleUrl ?? '')
+                            ])
+                      : Container(),
+                  _models[_currentIndex].largerUrl != null
+                      ? Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                              // _buildTitleView('Compressed source url'),
+                              _buildTitleView('压缩源'),
+                              _buildLink(_models[_currentIndex].largerUrl ?? '')
+                            ])
+                      : Container(),
+                  _models[_currentIndex].originUrl != null
+                      ? Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                              // _buildTitleView('Original source url'),
+                              _buildTitleView('原始源'),
+                              _buildLink(_models[_currentIndex].originUrl ?? '')
+                            ])
+                      : Container(),
                 ])));
   }
 
@@ -428,9 +451,13 @@ class _ImageDetailViewState extends State<ImageDetailView>
 
   Widget _buildLink(String url) {
     return InkWell(
-        onTap: () async {
+        onTap: () {
+          Clipboard.setData(ClipboardData(text: url));
+          Fluttertoast.showToast(msg: '已复制到剪切板');
+        },
+        onLongPress: () async {
           if (await canLaunchUrlString(url)) {
-            await launchUrlString(url);
+            await launchUrlString(url, mode: LaunchMode.externalApplication);
           } else {
             throw "Could not launch $url";
           }

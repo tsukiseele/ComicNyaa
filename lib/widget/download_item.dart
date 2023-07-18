@@ -48,7 +48,7 @@ class DownloadItem extends StatelessWidget {
     if (item.status == DownloadStatus.init) {
       return const LinearProgressIndicator();
     }
-    if (item.status == DownloadStatus.loading) {
+    if (item.status == DownloadStatus.progress) {
       if (item.progress != null && item.progress!.totalLength > 0) {
         return LinearProgressIndicator(value: item.progress!.completedLength / item.progress!.totalLength);
       } else {
@@ -127,7 +127,7 @@ class DownloadItem extends StatelessWidget {
                               padding: const EdgeInsets.only(left: 4, right: 4),
                               child: _buildProgressText(item.progress),
                             )),
-                            item.status == DownloadStatus.loading
+                            item.status == DownloadStatus.progress
                                 ? InkWell(
                                 onTap: () => onPause(item),
                                 child: const Padding(padding: EdgeInsets.all(4), child: Icon(Icons.pause)))

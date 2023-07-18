@@ -21,7 +21,7 @@ import 'package:flutter/cupertino.dart';
 enum DownloadStatus {
   idle('IDLE'),
   init('INIT'),
-  loading('LOADING'),
+  progress('PROGRESS'),
   pause('PAUSE'),
   failed('FAILED'),
   successful('SUCCESSFUL');
