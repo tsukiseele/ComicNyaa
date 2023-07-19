@@ -67,9 +67,8 @@ class _DownloadViewState extends State<DownloadView> {
     return Scaffold(
       appBar: AppBar(title: const Text('下载')),
       body: Material(
-          child: Container(
-        padding: const EdgeInsets.only(top: 4, bottom: 4),
         child: ListView(
+          padding: const EdgeInsets.all(8),
             children: List.generate(_downloadList.length, (index) {
           final item = _downloadList[index];
           return item.isSingle()
@@ -84,7 +83,7 @@ class _DownloadViewState extends State<DownloadView> {
                   onLongPress: () => _onItemLongPress(item),
                 );
         })),
-      )),
+      ),
     );
   }
 

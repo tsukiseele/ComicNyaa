@@ -105,11 +105,12 @@ class DownloadQueueItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final origin = item.parent.getOrigin();
     return Container(
-        height: 112,
-        margin: const EdgeInsets.only(top: 4, bottom: 4, left: 8, right: 8),
+        height: 108,
+        margin: const EdgeInsets.only(bottom: 8),
         child: Material(
-            elevation: 1,
-            borderRadius: BorderRadius.circular(2),
+            elevation: 0.5,
+            color: const Color.fromARGB(255, 224, 240, 240),
+            borderRadius: BorderRadius.circular(4),
             clipBehavior: Clip.hardEdge,
             child: InkWell(onTap: onTap, onLongPress: onLongPress, child:
               Row(mainAxisSize: MainAxisSize.min, children: [
@@ -120,7 +121,7 @@ class DownloadQueueItem extends StatelessWidget {
                         item.cover,
                         headers: item.headers,
                         width: 80,
-                        fit: BoxFit.contain,
+                        fit: BoxFit.cover,
                         height: double.maxFinite,
                       ),
                       Positioned(
@@ -140,7 +141,7 @@ class DownloadQueueItem extends StatelessWidget {
                     ])),
                 Expanded(
                   child: Container(
-                      margin: const EdgeInsets.all(8),
+                      margin: const EdgeInsets.only(top: 4, right: 8, bottom: 4, left: 8),
                       child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [

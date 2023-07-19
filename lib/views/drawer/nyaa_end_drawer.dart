@@ -84,13 +84,13 @@ class NyaaEndDrawer extends StatelessWidget {
                 initiallyExpanded: controller.expandState[index] ?? false,
                 onExpansionChanged: (isExpand) =>
                     controller.expandState[index] = isExpand,
-                title: Text('${groupItem.key}s'.toUpperCase(),
-                    style: const TextStyle(fontSize: 16)),
+                title: Text(groupItem.key.toUpperCase(),
+                    style: const TextStyle(fontSize: 18)),
                 children: List.generate(groupItem.value.length, (index) {
                   final site = groupItem.value[index];
                   return ListTile(
                     dense: true,
-                    contentPadding: const EdgeInsets.only(left: 32, right: 8),
+                    contentPadding: const EdgeInsets.only(left: 32),
                     onTap: () => onItemTap?.call(site),
                     leading: SizedBox(
                         width: 32,
@@ -120,7 +120,7 @@ class NyaaEndDrawer extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style:
-                          const TextStyle(fontSize: 14, color: Colors.black26),
+                          const TextStyle(fontSize: 12, color: Colors.black26),
                     ),
                   );
                 }),

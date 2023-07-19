@@ -48,6 +48,7 @@ class _DownloadDetailViewState extends State<DownloadDetailView> {
       appBar: AppBar(title: Text(widget.queue.title)),
       body: Material(
           child: ListView(
+            padding: const EdgeInsets.all(8),
         children:
             List.generate(tasks.length, (index) => DownloadItem(tasks[index], origin: widget.queue.parent.getOrigin())),
       )),
