@@ -28,7 +28,7 @@ import '../subscribe_view.dart';
 
 class _NyaaDrawerController extends GetxController {
   final banner = ''.obs;
-  final hitokito = Rxn<Hitokito>();
+  final hitokoto = Rxn<Hitokoto>();
 }
 
 class NyaaDrawer extends StatelessWidget {
@@ -40,8 +40,8 @@ class NyaaDrawer extends StatelessWidget {
     if (controller.banner.value.isEmpty) {
       apiRandomImage().then((value) => controller.banner.value = value);
     }
-    if (controller.hitokito.value == null) {
-      apiHitokito().then((value) => controller.hitokito.value = value);
+    if (controller.hitokoto.value == null) {
+      apiHitokoto().then((value) => controller.hitokoto.value = value);
     }
     return Drawer(
         child: ListView(padding: EdgeInsets.zero, children: [
@@ -69,7 +69,7 @@ class NyaaDrawer extends StatelessWidget {
                       padding: const EdgeInsets.all(8),
                       alignment: Alignment.bottomLeft,
                       child: Obx(() => Text(
-                          controller.hitokito.value?.hitokoto ?? '',
+                          controller.hitokoto.value?.hitokoto ?? '',
                           style: TextStyle(
                               color: Colors.teal[100],
                               fontSize: 16

@@ -2,18 +2,18 @@ import 'dart:convert';
 
 import '../library/http/http.dart';
 
-class Hitokito {
+class Hitokoto {
   String hitokoto = '';
   String type = '';
   String from = '';
 
-  Hitokito.fromJson(Map<String, dynamic> json) {
+  Hitokoto.fromJson(Map<String, dynamic> json) {
     hitokoto = json['hitokoto'];
     type = json['type'];
     from = json['from'];
   }
 
-  Hitokito();
+  Hitokoto();
 }
 
 Future<String> apiRandomImage() async {
@@ -24,8 +24,8 @@ Future<String> apiRandomImage() async {
   return url;
 }
 
-Future<Hitokito> apiHitokito() async {
+Future<Hitokoto> apiHitokoto() async {
   final response =
       await Http.client.get(Uri.parse('https://v1.hitokoto.cn/?c=a&c=b'));
-  return Hitokito.fromJson(jsonDecode(response.body));
+  return Hitokoto.fromJson(jsonDecode(response.body));
 }
